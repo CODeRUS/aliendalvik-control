@@ -15,12 +15,27 @@ Adaptor::~Adaptor()
 
 void Adaptor::sendKeyevent(int code)
 {
-    QByteArray ANDROID_ROOT(qgetenv("ANDROID_ROOT"));
-    qputenv("CLASSPATH", ANDROID_ROOT + "/framework/input.jar");
+    runCommand("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code));
+}
+
+void Adaptor::sendInput(const QString &text)
+{
+    runCommand("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
+}
+
+void Adaptor::sendIntent(const QString &intent)
+{
+    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
+}
+
+void Adaptor::runCommand(const QString &jar, const QStringList &params)
+{
+    QString ANDROID_ROOT(qgetenv("ANDROID_ROOT"));
+    qputenv("CLASSPATH", QString("%1/framework/%2").arg(ANDROID_ROOT).arg(jar).toUtf8());
 
     QString program = ANDROID_ROOT + "/bin/app_process";
     QStringList arguments;
-    arguments << (ANDROID_ROOT + "/bin") << "com.android.commands.input.Input" << "keyevent" << QString::number(code);
+    arguments << (ANDROID_ROOT + "/bin") << params;
 
     QProcess myProcess;
     myProcess.startDetached(program, arguments);

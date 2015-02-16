@@ -15,6 +15,11 @@ public:
 
 public slots:
     void sendKeyevent(int code);
+    void sendInput(const QString &text);
+    void sendIntent(const QString &intent);
+
+private:
+    void runCommand(const QString &jar, const QStringList &params);
 
 };
 
