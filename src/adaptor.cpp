@@ -23,9 +23,14 @@ void Adaptor::sendInput(const QString &text)
     runCommand("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
 }
 
-void Adaptor::sendIntent(const QString &intent)
+void Adaptor::broadcastIntent(const QString &intent)
 {
     runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
+}
+
+void Adaptor::startIntent(const QString &intent)
+{
+    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.split(" "));
 }
 
 void Adaptor::runCommand(const QString &jar, const QStringList &params)
