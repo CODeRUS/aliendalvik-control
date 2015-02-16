@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/100000/dbus/user_bus_socket");
 
-    QByteArray ANDROID_ROOT("/system");
+    QByteArray ANDROID_ROOT("/opt/alien/system");
     if (argc > 1) {
         ANDROID_ROOT = argv[1];
     }
@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
     QByteArray LD_LIBRARY_PATH(qgetenv("LD_LIBRARY_PATH"));
     LD_LIBRARY_PATH.prepend("/system_jolla/lib:");
     LD_LIBRARY_PATH.prepend("/vendor/lib:");
-    LD_LIBRARY_PATH.prepend("/system/lib:");
-    LD_LIBRARY_PATH.prepend("/system/vendor/lib:");
+    LD_LIBRARY_PATH.prepend(ANDROID_ROOT + "/lib:");
+    LD_LIBRARY_PATH.prepend(ANDROID_ROOT + "/vendor/lib:");
     qputenv("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
 
     qputenv("SYSTEM_USER_LANG", "C");
