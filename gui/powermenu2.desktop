@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=powermenu2
+Exec=powermenu2-gui
+Name=Powermenu 2
+
