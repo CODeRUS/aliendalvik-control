@@ -6,7 +6,7 @@ Page {
     id: page
     objectName: "configurationPage"
 
-    property var actionsList: ["blank", "tklock", "devlock", "shutdown", "unblank", "tkunlock", "dbus1", "dbus2"]
+    property var actionsList: ["blank", "tklock", "devlock", "shutdown", "unblank", "tkunlock", "vibrate", "dbus1", "dbus2", "dbus3", "dbus4", "dbus5", "dbus6"]
 
     function dummy() {
         qsTr("blank")
@@ -15,8 +15,13 @@ Page {
         qsTr("shutdown")
         qsTr("unblank")
         qsTr("tkunlock")
+        qsTr("vibrate")
         qsTr("dbus1")
         qsTr("dbus2")
+        qsTr("dbus3")
+        qsTr("dbus4")
+        qsTr("dbus5")
+        qsTr("dbus6")
     }
 
     function selectShortcut1(path) {
@@ -25,6 +30,10 @@ Page {
 
     function selectShortcut2(path) {
         configurationPowermenu.applicationShortcut2 = path
+    }
+
+    function selectShortcut3(path) {
+        configurationPowermenu.applicationShortcut3 = path
     }
 
     function updateActionList(actions, action) {
@@ -63,6 +72,13 @@ Page {
         anchors.fill: page
         contentHeight: column.height
 
+        PullDownMenu {
+            MenuItem {
+                text: "Restore to defaults"
+                onClicked: helper.resetToDefaults()
+            }
+        }
+
         Column {
             id: column
             width: flick.width
@@ -80,7 +96,7 @@ Page {
 
                 menu: ContextMenu {
                     Repeater {
-                        model: 8
+                        model: actionsList.length
                         TextSwitch {
                             property var actions: helper.shortPressActionOn.split(",")
                             text: qsTr(actionsList[index])
@@ -88,6 +104,7 @@ Page {
                             onClicked: helper.shortPressActionOn = updateActionList(helper.shortPressActionOn, actionsList[index])
                         }
                     }
+                    onActiveChanged: if (active) flick.interactive = true
                 }
             }
 
@@ -99,7 +116,7 @@ Page {
 
                 menu: ContextMenu {
                     Repeater {
-                        model: 8
+                        model: actionsList.length
                         TextSwitch {
                             property var actions: helper.shortPressActionOff.split(",")
                             text: qsTr(actionsList[index])
@@ -107,6 +124,7 @@ Page {
                             onClicked: helper.shortPressActionOff = updateActionList(helper.shortPressActionOff, actionsList[index])
                         }
                     }
+                    onActiveChanged: if (active) flick.interactive = true
                 }
             }
 
@@ -118,7 +136,7 @@ Page {
 
                 menu: ContextMenu {
                     Repeater {
-                        model: 8
+                        model: actionsList.length
                         TextSwitch {
                             property var actions: helper.longPressActionOn.split(",")
                             text: qsTr(actionsList[index])
@@ -126,6 +144,7 @@ Page {
                             onClicked: helper.longPressActionOn = updateActionList(helper.longPressActionOn, actionsList[index])
                         }
                     }
+                    onActiveChanged: if (active) flick.interactive = true
                 }
             }
 
@@ -137,7 +156,7 @@ Page {
 
                 menu: ContextMenu {
                     Repeater {
-                        model: 8
+                        model: actionsList.length
                         TextSwitch {
                             property var actions: helper.longPressActionOff.split(",")
                             text: qsTr(actionsList[index])
@@ -145,6 +164,7 @@ Page {
                             onClicked: helper.longPressActionOff = updateActionList(helper.longPressActionOff, actionsList[index])
                         }
                     }
+                    onActiveChanged: if (active) flick.interactive = true
                 }
             }
 
@@ -156,7 +176,7 @@ Page {
 
                 menu: ContextMenu {
                     Repeater {
-                        model: 8
+                        model: actionsList.length
                         TextSwitch {
                             property var actions: helper.doublePressActionOn.split(",")
                             text: qsTr(actionsList[index])
@@ -164,6 +184,7 @@ Page {
                             onClicked: helper.doublePressActionOn = updateActionList(helper.doublePressActionOn, actionsList[index])
                         }
                     }
+                    onActiveChanged: if (active) flick.interactive = true
                 }
             }
 
@@ -175,7 +196,7 @@ Page {
 
                 menu: ContextMenu {
                     Repeater {
-                        model: 8
+                        model: actionsList.length
                         TextSwitch {
                             property var actions: helper.doublePressActionOff.split(",")
                             text: qsTr(actionsList[index])
@@ -183,11 +204,12 @@ Page {
                             onClicked: helper.doublePressActionOff = updateActionList(helper.doublePressActionOff, actionsList[index])
                         }
                     }
+                    onActiveChanged: if (active) flick.interactive = true
                 }
             }
 
             ValueButton {
-                label: qsTr("Application")
+                label: qsTr("Application 1")
                 value: helper.readDesktopName(configurationPowermenu.applicationShortcut1)
                 onClicked: {
                     var selector = pageStack.push(Qt.resolvedUrl("ShortcutsPage.qml"), {selectedValues: [configurationPowermenu.applicationShortcut1], showHidden: configurationPowermenu.showHiddenShortcuts})
@@ -195,39 +217,28 @@ Page {
                 }
             }
 
-            /*ValueButton {
+            ValueButton {
                 label: qsTr("Application 2")
                 value: helper.readDesktopName(configurationPowermenu.applicationShortcut2)
                 onClicked: {
                     var selector = pageStack.push(Qt.resolvedUrl("ShortcutsPage.qml"), {selectedValues: [configurationPowermenu.applicationShortcut2], showHidden: configurationPowermenu.showHiddenShortcuts})
                     selector.selected.connect(page.selectShortcut2)
                 }
-            }*/
+            }
 
-            ComboBox {
-                width: parent.width
-                label: qsTr("Shutdown controls")
-                currentIndex: configurationPowermenu.showShutdown ? 0 : 1
-
-                menu: ContextMenu {
-                    MenuItem {
-                        text: qsTr("Shown")
-                        onClicked: {
-                            configurationPowermenu.showShutdown = true
-                        }
-                    }
-                    MenuItem {
-                        text: qsTr("Hidden")
-                        onClicked: {
-                            configurationPowermenu.showShutdown = false
-                        }
-                    }
+            ValueButton {
+                label: qsTr("Application 3")
+                value: helper.readDesktopName(configurationPowermenu.applicationShortcut2)
+                onClicked: {
+                    var selector = pageStack.push(Qt.resolvedUrl("ShortcutsPage.qml"), {selectedValues: [configurationPowermenu.applicationShortcut3], showHidden: configurationPowermenu.showHiddenShortcuts})
+                    selector.selected.connect(page.selectShortcut3)
                 }
             }
 
             ComboBox {
                 width: parent.width
                 label: qsTr("Show hidden shortcuts")
+                description: qsTr("Inside settings selector only")
                 currentIndex: configurationPowermenu.showHiddenShortcuts ? 0 : 1
 
                 menu: ContextMenu {
@@ -241,27 +252,6 @@ Page {
                         text: qsTr("No")
                         onClicked: {
                             configurationPowermenu.showHiddenShortcuts = false
-                        }
-                    }
-                }
-            }
-
-            ComboBox {
-                width: parent.width
-                label: qsTr("Fancy menu background")
-                currentIndex: configurationPowermenu.fancyBackground ? 0 : 1
-
-                menu: ContextMenu {
-                    MenuItem {
-                        text: qsTr("Yes")
-                        onClicked: {
-                            configurationPowermenu.fancyBackground = true
-                        }
-                    }
-                    MenuItem {
-                        text: qsTr("No")
-                        onClicked: {
-                            configurationPowermenu.fancyBackground = false
                         }
                     }
                 }

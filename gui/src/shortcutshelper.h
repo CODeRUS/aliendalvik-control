@@ -45,8 +45,18 @@ public:
     QString getShortPressActionOff();
     void setShortPressActionOff(const QString &action);
 
+    Q_PROPERTY(QString action1 READ getAction1 WRITE setAction1 NOTIFY action1Changed)
+    QString getAction1();
+    void setAction1(const QString &action);
+
+    Q_PROPERTY(QString action2 READ getAction2 WRITE setAction2 NOTIFY action2Changed)
+    QString getAction2();
+    void setAction2(const QString &action);
+
     Q_PROPERTY(QString bannerPath READ bannerPath NOTIFY bannerPathChanged)
     QString bannerPath() const;
+
+    Q_INVOKABLE void resetToDefaults();
 
     Q_INVOKABLE void checkActivation(const QString &code);
 
@@ -72,6 +82,8 @@ signals:
     void doublePressActionOffChanged();
     void shortPressActionOnChanged();
     void shortPressActionOffChanged();
+    void action1Changed();
+    void action2Changed();
 };
 
 #endif // SHORTCUTSHELPER_H

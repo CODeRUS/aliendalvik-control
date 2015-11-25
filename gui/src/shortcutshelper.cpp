@@ -170,9 +170,54 @@ void ShortcutsHelper::setShortPressActionOff(const QString &action)
     }
 }
 
+QString ShortcutsHelper::getAction1()
+{
+    if (iface) {
+        QDBusReply<QString> reply = iface->call("getAction1");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return "power-key-menu";
+}
+
+void ShortcutsHelper::setAction1(const QString &action)
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "setAction1", action);
+        Q_EMIT action1Changed();
+    }
+}
+
+QString ShortcutsHelper::getAction2()
+{
+    if (iface) {
+        QDBusReply<QString> reply = iface->call("getAction2");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return "event2";
+}
+
+void ShortcutsHelper::setAction2(const QString &action)
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "setAction2", action);
+        Q_EMIT action2Changed();
+    }
+}
+
 QString ShortcutsHelper::bannerPath() const
 {
     return _bannerPath;
+}
+
+void ShortcutsHelper::resetToDefaults()
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "resetToDefaults");
+    }
 }
 
 void ShortcutsHelper::checkActivation(const QString &code)

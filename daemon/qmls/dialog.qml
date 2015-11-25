@@ -1,44 +1,29 @@
 import QtQuick 2.1
-import org.nemomobile.dbus 1.0
-import org.nemomobile.configuration 1.0
 import Sailfish.Silica 1.0
-import org.coderus.desktopfilemodel 1.0
+import org.nemomobile.dbus 2.0
+import org.nemomobile.configuration 1.0
+import org.coderus.powermenu.controls 1.0
+import "components"
 
-SystemWindow {
-    id: powerMenuDialog
+MainWindow {
+    id: window
 
-    property Item remorse
-    property Item tiledBackground
-
-    Component.onCompleted: {
-        console.log("PowerMenuDialog Loaded!")
-
-        var shaderComponent = Qt.createComponent("/usr/share/powermenu2/qml/ShaderTiledBackground.qml");
-        tiledBackground = shaderComponent.createObject(powerMenuDialogBackground, {"color": Theme.primaryColor, "visible": configurationPowermenu.fancyBackground});
-    }
-
-    function hideDialog() {
+    onDisappeared: {
+        editMode = false
         view.close()
     }
-
-    function restart() {
-        dsmeDbus.call("req_reboot", [])
-        hideDialog()
-    }
-
-    function shutdown() {
-        dsmeDbus.call("req_shutdown", [])
-        hideDialog()
-    }
+    property Item remorse
+    property bool editMode: false
 
     function remorseRestart() {
         if (!remorse) {
-            remorse = remorseComponent.createObject(powerMenuDialog)
+            remorse = remorseComponent.createObject(root)
         }
 
-        remorse.execute("Reboot phone",
+        remorse.execute("Reboot device",
                         function() {
-                            powerMenuDialog.restart()
+                            dsmeDbus.restart()
+                            view.close()
                         },
                         3000
         )
@@ -46,181 +31,348 @@ SystemWindow {
 
     function remorseShutdown() {
         if (!remorse) {
-            remorse = remorseComponent.createObject(powerMenuDialog)
+            remorse = remorseComponent.createObject(root)
         }
 
-        remorse.execute("Shutdown phone",
+        remorse.execute("Shutdown device",
                         function() {
-                            powerMenuDialog.shutdown()
+                            dsmeDbus.shutdown()
+                            view.close()
                         },
                         3000
         )
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: Theme.rgba(Theme.highlightDimmerColor, 0.8)
+    function showSettingsPage(page) {
+        if (page && page.length > 0) {
+            settingsIface.call("showPage", [page])
+            window.disappear()
+        }
     }
 
-    Rectangle {
-        id: powerMenuDialogBackground
-
-        property int maximumHeight: powerMenuDialog.height - column.y - (configurationPowermenu.showShutdown ? (buttonRow.y + buttonRow.height) : 0) - Theme.itemSizeMedium
-        width: parent.width
-        height: column.height + column.y
-        color: Theme.highlightBackgroundColor
-
-        Column {
-            id: column
-            width: parent.width
-            y: Theme.paddingLarge
-            spacing: 0
-            z: 1
-
-            Label {
-                text: "Power Menu"
-                maximumLineCount: 2
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-                width: parent.width
-
-                font.pixelSize: Theme.fontSizeLarge
-                color: Theme.rgba("black", 0.6)
-            }
-
-            Row {
-                id: buttonRow
-                property real buttonWidth: width / 2
-                width: parent.width
-                visible: configurationPowermenu.showShutdown
-
-                SystemDialogButton {
-                    width: buttonRow.buttonWidth
-                    text: "Shutdown"
-                    iconSource: "image://theme/icon-l-power?#000000"
-                    onClicked: {
-                        powerMenuDialog.remorseShutdown()
-                    }
-                }
-
-                SystemDialogButton {
-                    width: buttonRow.buttonWidth
-                    text: "Reboot"
-                    iconSource: "image://theme/icon-l-backup?#000000"
-                    onClicked: {
-                        powerMenuDialog.remorseRestart()
-                    }
-                }
-            }
-
-            ListView {
-                width: parent.width
-                height: Math.min(contentHeight, powerMenuDialogBackground.maximumHeight)
-                model: desktopModel
-                interactive: contentHeight > height
-                clip: true
-                delegate: BackgroundItem {
-                    id: item
-                    width: parent.width
-                    height: 100
-                    highlightedColor: Theme.rgba(Theme.highlightDimmerColor, Theme.highlightBackgroundOpacity)
-
-                    Image {
-                        id: iconImage
-                        source: model.icon
-                        width: 80
-                        height: 80
-                        smooth: true
-                        anchors {
-                            left: parent.left
-                            leftMargin: Theme.paddingLarge
-                            verticalCenter: parent.verticalCenter
-                        }
-                    }
-
-                    Label {
-                        text: model.name
-                        anchors {
-                            left: iconImage.right
-                            leftMargin: Theme.paddingMedium
-                            verticalCenter: parent.verticalCenter
-                        }
-                        color: item.highlighted ? Theme.highlightColor : Theme.rgba(Theme.highlightDimmerColor, 0.8)
-                    }
-
-                    onClicked: {
-                        Qt.openUrlExternally(model.path)
-                        hideDialog()
-                    }
-                }
-                VerticalScrollDecorator {}
+    Connections {
+        target: view
+        onVisibleChanged: {
+            if (view.visible) {
+                mceRequest.typedCall("get_display_status",
+                                      [],
+                                      function (result) {
+                                          if (result == "on") {
+                                              window.appear()
+                                          }
+                                          else {
+                                              view.close()
+                                          }
+                                      })
             }
         }
     }
 
     MouseArea {
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-            top: powerMenuDialogBackground.bottom
-        }
-
+        anchors.fill: parent
+        preventStealing: true
         onClicked: {
-            hideDialog()
-        }
-
-        Image {
-            width: parent.width
-            source: "image://theme/graphic-system-gradient?" + Theme.highlightBackgroundColor
+            window.disappear()
         }
     }
 
-    Behavior on opacity { FadeAnimation {} }
+    Item {
+        id: root
+        anchors.fill: parent
+        anchors.bottomMargin: Theme.horizontalPageMargin * 4
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            color: Theme.highlightDimmerColor
+            height: controlRow1.height + Math.min(grid.height, grid.contentHeight + Theme.horizontalPageMargin)
+
+            MouseArea {
+                anchors.fill: parent
+            }
+
+            Behavior on height {
+                NumberAnimation { duration: 500 }
+            }
+        }
+
+        Row {
+            id: controlRow1
+            height: Theme.itemSizeExtraLarge
+
+            BackgroundIconButton {
+                width: root.width / 3
+                height: parent.height
+                iconSource: "image://theme/icon-l-power"
+                title: "Shutdown"
+                enabled: !editMode
+                onClicked: remorseShutdown()
+            }
+
+            BackgroundIconButton {
+                width: root.width / 3
+                height: parent.height
+                iconSource: "image://theme/icon-l-reboot"
+                title: "Reboot"
+                enabled: !editMode
+                onClicked: remorseRestart()
+            }
+
+            BackgroundIconButton {
+                width: root.width / 3
+                height: parent.height
+                iconSource: editMode ? "image://theme/icon-m-developer-mode" : "image://theme/icon-m-device-lock"
+                title: editMode ? "Edit mode" : "Lock"
+                highlighted: down || editMode
+                onClicked: {
+                    if (editMode) {
+                        editMode = false
+                    }
+                    else if (doubleTimer.running) {
+                        doubleTimer.stop()
+                        mceRequest.call("req_display_state_off", [])
+                        lipstickDevicelock.call("setState", [1])
+                    }
+                    else {
+                        doubleTimer.restart()
+                    }
+                }
+                onPressAndHold: {
+                    editMode = !editMode
+                }
+                Timer {
+                    id: doubleTimer
+                    interval: 200
+                    onTriggered: {
+                        mceRequest.call("req_display_state_off", [])
+                    }
+                }
+            }
+        }
+
+        GridView {
+            id: grid
+            anchors {
+                top: controlRow1.bottom
+                left: parent.left
+                leftMargin: (root.width - (grid.cellWidth * Math.floor(root.width / grid.cellWidth))) / 2
+                right: parent.right
+                rightMargin: leftMargin
+                bottom: parent.bottom
+                bottomMargin: leftMargin
+            }
+            pixelAligned: true
+            flickDeceleration: Theme.flickDeceleration
+            maximumFlickVelocity: Theme.maximumFlickVelocity
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+            cacheBuffer: cellHeight
+            interactive: contentHeight > height
+            cellWidth: Theme.itemSizeExtraLarge
+            cellHeight: Theme.itemSizeLarge
+
+            add: Transition {
+                SequentialAnimation {
+                    NumberAnimation { properties: "z"; to: -1; duration: 1 }
+                    NumberAnimation { properties: "opacity"; to: 0.0; duration: 1 }
+                    NumberAnimation { properties: "x,y"; duration: 1 }
+                    NumberAnimation { properties: "z"; to: 0; duration: 500 }
+                    NumberAnimation { properties: "opacity"; from: 0.0; to: 1.0; duration: 300 }
+                }
+            }
+            remove: Transition {
+                ParallelAnimation {
+                    NumberAnimation { properties: "z"; to: -1; duration: 1 }
+                    NumberAnimation { properties: "x"; to: 0; duration: 100 }
+                    NumberAnimation { properties: "opacity"; to: 0.0; duration: 100 }
+                }
+            }
+            displaced: Transition {
+                NumberAnimation { properties: "x,y"; duration: 500 }
+            }
+
+            model: TogglesModel {
+                id: gridModel
+                editMode: window.editMode
+            }
+            delegate: Item {
+                id: gridDelegate
+                width: grid.cellWidth
+                height: grid.cellHeight
+                clip: true
+
+                Rectangle {
+                    id: itemDelegate
+                    width: gridDelegate.width
+                    height: gridDelegate.height
+                    color: actionDelegate.pressed
+                           ? Theme.rgba(Theme.highlightBackgroundColor, Theme.highlightBackgroundOpacity)
+                           : "transparent"
+                    x: 0
+                    y: 0
+
+                    Loader {
+                        id: loaderDelegate
+                        anchors.fill: parent
+                        source: model.source
+                        property var sourceModel: model
+                        property bool hiddenProperty: gridModel.hidden.indexOf(model.path) >= 0
+                    }
+
+                    MouseArea {
+                        id: actionDelegate
+                        anchors.fill: parent
+                        property int dragIndex: index
+                        onDragIndexChanged: {
+                            if (drag.target) {
+                                gridModel.move(index, dragIndex)
+                            }
+                        }
+                        onPressed: {
+                            if (!editMode) {
+                                loaderDelegate.item.pressed = true
+                            }
+                        }
+                        onClicked: {
+                            if (editMode) {
+                                if (!model.icon || model.icon.length == 0) {
+                                    gridModel.hideToggle(model.path)
+                                }
+                            }
+                            else if (doubleTimer2.running) {
+                                doubleTimer2.stop()
+                                loaderDelegate.item.doubleClicked()
+                            }
+                            else {
+                                doubleTimer2.restart()
+                            }
+                        }
+                        Timer {
+                            id: doubleTimer2
+                            interval: 200
+                            onTriggered: {
+                                loaderDelegate.item.clicked()
+                            }
+                        }
+                        onReleased: {
+                            if (drag.target) {
+                                drag.target = null
+                                itemDelegate.parent = gridDelegate
+                                itemDelegate.x = 0
+                                itemDelegate.y = 0
+                            }
+                            loaderDelegate.item.pressed = false
+                        }
+                        onPressAndHold: {
+                            if (editMode) {
+                                drag.target = itemDelegate
+                                var newPos = mapToItem(reorderPlaceholder, mouseX, mouseY)
+                                itemDelegate.parent = reorderPlaceholder
+                                itemDelegate.x = newPos.x - itemDelegate.width / 2
+                                itemDelegate.y = newPos.y - itemDelegate.height
+                            }
+                        }
+                        onPositionChanged: {
+                            if (drag.target) {
+                                dragIndex = grid.indexAt(itemDelegate.x + itemDelegate.width / 2, itemDelegate.y + itemDelegate.height / 2)
+                            }
+                        }
+                        onContainsMouseChanged: {
+                            if (!drag.target && !editMode) {
+                                loaderDelegate.item.pressed = containsMouse
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        Item {
+            id: reorderPlaceholder
+            anchors.fill: grid
+        }
+    }
 
     DBusInterface {
         id: dsmeDbus
-        busType: DBusInterface.SystemBus
-        destination: "com.nokia.dsme"
+        bus: DBus.SystemBus
+        service: "com.nokia.dsme"
         path: "/com/nokia/dsme/request"
         iface: "com.nokia.dsme.request"
+
+        function restart() {
+            call("req_reboot", [])
+        }
+
+        function shutdown() {
+            call("req_shutdown", [])
+        }
     }
 
     DBusInterface {
         id: mceDbus
-        busType: DBusInterface.SystemBus
-        destination: "com.nokia.mce"
+        bus: DBus.SystemBus
+        service: "com.nokia.mce"
         path: "/com/nokia/mce/signal"
         iface: "com.nokia.mce.signal"
         signalsEnabled: true
         function display_status_ind(status) {
+            displayStatus = status
             if (status == "off") {
-                hideDialog()
+                view.close()
             }
         }
+        property string displayStatus: "off"
     }
 
-    DesktopFileSortModel {
-        id: desktopModel
-        filterShortcuts: configurationPowermenu.shortcuts
-        onlySelected: true
-        showHidden: true
+    DBusInterface {
+        id: mceRequest
+        bus: DBus.SystemBus
+        service: 'com.nokia.mce'
+        path: '/com/nokia/mce/request'
+        iface: 'com.nokia.mce.request'
     }
 
-    ConfigurationGroup {
-        id: configurationPowermenu
-        path: "/apps/powermenu"
-        property bool showShutdown: true
-        property variant shortcuts
-        property bool fancyBackground: true
-        onFancyBackgroundChanged: tiledBackground.visible = fancyBackground
+    DBusInterface {
+        id: lipstickDevicelock
+        bus: DBus.SystemBus
+        service: 'org.nemomobile.lipstick'
+        path: '/devicelock'
+        iface: 'org.nemomobile.lipstick.devicelock'
+    }
+
+    DBusInterface {
+        id: settingsIface
+        bus: DBus.SessionBus
+        service: 'com.jolla.settings'
+        path: '/com/jolla/settings/ui'
+        iface: 'com.jolla.settings.ui'
     }
 
     Component {
         id: remorseComponent
 
         RemorsePopup {
-            z: 100
+            id: remorsePopup
+            y: 0
+            height: controlRow1.height
+            _seconds: 0
+
+            Rectangle {
+                id: progress
+                width: parent.width * remorsePopup._msRemaining / remorsePopup._timeout
+                height: Theme.paddingSmall
+                color: Theme.highlightBackgroundColor
+                opacity: 0.6
+            }
         }
+    }
+
+    ConfigurationGroup {
+        id: configurationPowermenu
+        path: "/apps/powermenu"
+        property variant shortcuts
     }
 }

@@ -8,14 +8,14 @@ Name:       powermenu2
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    PowerMenu 2
-Version:    0.8.0
+Version:    0.9.0
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://openrepos.net/content/coderus/powermenu2
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   sailfish-version >= 1.1.1
+Requires:   sailfish-version >= 2.0.0
 Conflicts:  powermenu
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)

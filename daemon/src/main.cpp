@@ -29,10 +29,11 @@ void printLog(const QString &message)
 
 QString simpleLog(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    Q_UNUSED(context);
-    return QString("[%1 %2] %3\n").arg(msgTypeToString(type))
-                                     .arg(QDateTime::currentDateTime().toString("hh:mm:ss"))
-                                     .arg(message);
+    return QString("%1 %2 [%3:%4] %5\n").arg(msgTypeToString(type))
+                                        .arg(QDateTime::currentDateTime().toString("hh:mm:ss"))
+                                        .arg(context.function)
+                                        .arg(context.line)
+                                        .arg(message);
 }
 
 void stdoutHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)

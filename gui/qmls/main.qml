@@ -42,11 +42,10 @@ ApplicationWindow
     ConfigurationGroup {
         id: configuration
         path: "/apps/powermenu"
-        property bool showShutdown: true
         property string applicationShortcut1: ""
         property string applicationShortcut2: ""
+        property string applicationShortcut3: ""
         property bool showHiddenShortcuts: false
-        property bool fancyBackground: true
     }
 }
 

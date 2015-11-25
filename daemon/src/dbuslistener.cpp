@@ -7,6 +7,11 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QQmlContext>
 #include <QGuiApplication>
+#include <QtQml>
+
+#include "components/flashlightcontrol.h"
+#include "components/togglesmodel.h"
+#include "components/fileutils.h"
 
 DBusListener::DBusListener(QObject *parent) :
     QObject(parent)
@@ -29,8 +34,16 @@ DBusListener::DBusListener(QObject *parent) :
 
     qDebug() << "listener started";
 
-    setAction1("application1");
-    setAction2("powermenu");
+    setAction1("power-key-menu");
+    setAction2("double-power-key");
+    setAction3("event3");
+    setAction4("event4");
+    setAction5("event5");
+    setAction6("event6");
+
+    qmlRegisterType<FlashlightControl>("org.coderus.powermenu.controls", 1, 0, "Flashlight");
+    qmlRegisterType<TogglesModel>("org.coderus.powermenu.controls", 1, 0, "TogglesModel");
+    qmlRegisterType<FileUtils>("org.coderus.powermenu.controls", 1, 0, "FileUtils");
 }
 
 QString DBusListener::getAction1()
@@ -51,6 +64,46 @@ QString DBusListener::getAction2()
 void DBusListener::setAction2(const QString &action)
 {
     setMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION2, action);
+}
+
+QString DBusListener::getAction3()
+{
+    return getMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION3).toString();
+}
+
+void DBusListener::setAction3(const QString &action)
+{
+    setMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION3, action);
+}
+
+QString DBusListener::getAction4()
+{
+    return getMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION4).toString();
+}
+
+void DBusListener::setAction4(const QString &action)
+{
+    setMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION4, action);
+}
+
+QString DBusListener::getAction5()
+{
+    return getMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION5).toString();
+}
+
+void DBusListener::setAction5(const QString &action)
+{
+    setMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION5, action);
+}
+
+QString DBusListener::getAction6()
+{
+    return getMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION6).toString();
+}
+
+void DBusListener::setAction6(const QString &action)
+{
+    setMceValue(MCE_GCONF_POWERKEY_DBUS_ACTION6, action);
 }
 
 int DBusListener::getLongPressDelay()
@@ -133,6 +186,23 @@ void DBusListener::setShortPressActionOff(const QString &action)
     setMceValue(MCE_GCONF_POWERKEY_ACTIONS_SINGLE_OFF, action);
 }
 
+void DBusListener::resetToDefaults()
+{
+    setAction1("power-key-menu");
+    setAction2("double-power-key");
+    setAction3("event3");
+    setAction4("event4");
+    setAction5("event5");
+    setAction6("event6");
+
+    setShortPressActionOn("blank,tklock");
+    setDoublePressActionOn("blank,tklock,devlock");
+    setLongPressActionOn("dbus1");
+    setShortPressActionOff("unblank");
+    setDoublePressActionOff("unblank,tkunlock,dbus2");
+    setLongPressActionOff("");
+}
+
 void DBusListener::openDesktop(const QString &desktop)
 {
     if (desktop.endsWith(".desktop")) {
@@ -208,19 +278,25 @@ void DBusListener::openPowerMenu()
 void DBusListener::powerButtonTrigger(const QString &triggerName)
 {
     qDebug() << "powerButtonTrigger" << triggerName;
-    if (triggerName == "powermenu") {
+    if (triggerName == "event3") {
         openPowerMenu();
     }
-    else if (triggerName == "application1") {
+    else if (triggerName == "event4") {
         MGConfItem shortcut1("/apps/powermenu/applicationShortcut1");
         if (!shortcut1.value().isNull()) {
             openDesktop(shortcut1.value().toString());
         }
     }
-    else if (triggerName == "application2") {
+    else if (triggerName == "event5") {
         MGConfItem shortcut2("/apps/powermenu/applicationShortcut2");
         if (!shortcut2.value().isNull()) {
             openDesktop(shortcut2.value().toString());
+        }
+    }
+    else if (triggerName == "event6") {
+        MGConfItem shortcut3("/apps/powermenu/applicationShortcut3");
+        if (!shortcut3.value().isNull()) {
+            openDesktop(shortcut3.value().toString());
         }
     }
 }

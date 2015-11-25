@@ -2,142 +2,234 @@
 <!DOCTYPE TS>
 <TS version="2.1">
 <context>
+    <name>AboutPage</name>
+    <message>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="176"/>
+        <source>About Powermenu 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="236"/>
+        <source>Activate product</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="248"/>
+        <source>Enter your PayPal e-mail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="249"/>
+        <source>PayPal e-mail</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ConfigurationPage</name>
     <message>
-        <location filename="ConfigurationPage.qml" line="20"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="12"/>
         <source>blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="21"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="13"/>
         <source>tklock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="22"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="14"/>
         <source>devlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="23"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="15"/>
         <source>shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="24"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="16"/>
         <source>unblank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="25"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="17"/>
         <source>tkunlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="26"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="18"/>
+        <source>vibrate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="19"/>
         <source>dbus1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="27"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="20"/>
         <source>dbus2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="73"/>
-        <source>Restart lipstick</source>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="21"/>
+        <source>dbus3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="79"/>
-        <source>Restart lipstick after first install</source>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="22"/>
+        <source>dbus4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="89"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="23"/>
+        <source>dbus5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="24"/>
+        <source>dbus6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="66"/>
+        <source>No action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="88"/>
         <source>Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="95"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="94"/>
         <source>Shorttap action display on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="114"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="114"/>
         <source>Shorttap action display off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="133"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="134"/>
         <source>Longtap action display on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="152"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="154"/>
         <source>Longtap action display off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="171"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="174"/>
         <source>Doubletap action display on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="190"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="194"/>
         <source>Doubletap action display off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="207"/>
-        <source>Application</source>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="212"/>
+        <source>Application 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="226"/>
-        <source>Shutdown controls</source>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="221"/>
+        <source>Application 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="231"/>
-        <source>Shown</source>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="230"/>
+        <source>Application 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="237"/>
-        <source>Hidden</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ConfigurationPage.qml" line="247"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="240"/>
         <source>Show hidden shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="248"/>
-        <source>For application selector only</source>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="241"/>
+        <source>Inside settings selector only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="253"/>
-        <location filename="ConfigurationPage.qml" line="275"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="246"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="259"/>
-        <location filename="ConfigurationPage.qml" line="281"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="252"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>CoverPage</name>
     <message>
-        <location filename="ConfigurationPage.qml" line="269"/>
-        <source>Fancy menu background</source>
+        <location filename="gui/qmls/cover/CoverPage.qml" line="11"/>
+        <source>Powermenu
+configurator
+9080</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MainPage</name>
+    <message>
+        <location filename="gui/qmls/pages/MainPage.qml" line="24"/>
+        <source>Selected shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ConfigurationPage.qml" line="270"/>
-        <source>Requres lipstick restart</source>
+        <location filename="gui/qmls/pages/MainPage.qml" line="30"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/MainPage.qml" line="37"/>
+        <source>Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/MainPage.qml" line="47"/>
+        <source>Add shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/MainPage.qml" line="58"/>
+        <source>No shortcuts selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/MainPage.qml" line="103"/>
+        <source>Delete shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/MainPage.qml" line="144"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ShortcutsPage</name>
+    <message>
+        <location filename="gui/qmls/pages/ShortcutsPage.qml" line="25"/>
+        <source>Hide search field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/ShortcutsPage.qml" line="26"/>
+        <source>Show search field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="gui/qmls/pages/ShortcutsPage.qml" line="40"/>
+        <source>Select shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

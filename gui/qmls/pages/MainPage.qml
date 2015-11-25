@@ -14,22 +14,6 @@ Page {
         shortcutsConfig.value = list
     }
 
-    function moveShortcutUp(index) {
-        var list = shortcutsConfig.value
-        var temp = list[index - 1]
-        list[index - 1] = list[index]
-        list[index] = temp
-        shortcutsConfig.value = list
-    }
-
-    function moveShortcutDown(index) {
-        var list = shortcutsConfig.value
-        var temp = list[index + 1]
-        list[index + 1] = list[index]
-        list[index] = temp
-        shortcutsConfig.value = list
-    }
-
     SilicaListView {
         id: view
         anchors.fill: page
@@ -126,7 +110,8 @@ Page {
                                             }
                                          }
                                          shortcutsConfig.value = list
-                                     }
+                                     },
+                                     3000
                 )
             }
 
@@ -149,34 +134,6 @@ Page {
                     left: iconImage.right
                     leftMargin: Theme.paddingMedium
                     verticalCenter: parent.verticalCenter
-                }
-            }
-
-            IconButton {
-                id: moveDown
-                icon.source: "image://theme/icon-m-down"
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.paddingLarge
-                    verticalCenter: iconImage.verticalCenter
-                }
-                visible: model.index < view.count - 1
-                onClicked: {
-                    moveShortcutDown(model.index)
-                }
-            }
-
-            IconButton {
-                id: moveUp
-                icon.source: "image://theme/icon-m-up"
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.paddingMedium + Theme.itemSizeSmall
-                    verticalCenter: iconImage.verticalCenter
-                }
-                visible: model.index > 0
-                onClicked: {
-                    moveShortcutUp(model.index)
                 }
             }
 

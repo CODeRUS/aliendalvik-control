@@ -3,8 +3,8 @@ target.path = /usr/bin
 
 QT += dbus
 
-CONFIG += sailfishapp link_pkgconfig
-PKGCONFIG += sailfishapp mlite5
+CONFIG += sailfishapp
+PKGCONFIG += mlite5
 
 desktops.files = powermenu2.desktop
 desktops.path = /usr/share/applications
@@ -21,7 +21,7 @@ images.path = /usr/share/powermenu2
 translations.files = translations/powermenu_en.qm
 translations.path = /usr/share/powermenu2/translations
 
-INSTALLS += target desktops icons qmls images translations
+INSTALLS = target desktops icons qmls images translations
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
