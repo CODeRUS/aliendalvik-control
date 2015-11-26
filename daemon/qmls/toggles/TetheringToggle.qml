@@ -9,7 +9,7 @@ ToggleItem {
     id: root
     anchors.fill: parent
 
-    name: "Tethering"
+    name: qsTr("Tethering")
     icon: "image://theme/icon-m-tether"
     settingsPage: "system_settings/connectivity/tethering"
 

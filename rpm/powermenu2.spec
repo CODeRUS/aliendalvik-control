@@ -8,7 +8,7 @@ Name:       powermenu2
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    PowerMenu 2
-Version:    0.9.0
+Version:    0.9.3
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -99,6 +99,6 @@ systemctl-user restart powermenu.service
 /usr/share/dbus-1/services/org.coderus.powermenu.service
 /usr/lib/systemd/user/*.service
 /usr/lib/systemd/user/post-user-session.target.wants/*.service
-/usr/lib/qt5/qml/org/coderus/desktopfilemodel
+/usr/share/lipstick/quickactions/org.coderus.powermenu.conf
 # >> files
 # << files

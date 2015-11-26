@@ -11,7 +11,7 @@ ToggleItem {
     anchors.fill: parent
 
     settingsPage: "system_settings/connectivity/wlan"
-    name: "Wireless"
+    name: qsTr("Wireless")
     icon: {
         // WLAN off
         if (!wifiTechnology.powered)

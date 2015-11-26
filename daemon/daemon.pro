@@ -15,7 +15,10 @@ systemd.path = /usr/lib/systemd/user
 qmls.files = qmls/*
 qmls.path = /usr/share/powermenu2/qml
 
-INSTALLS = target systemd dbus qmls
+quickactions.files = quickactions/org.coderus.powermenu.conf
+quickactions.path = /usr/share/lipstick/quickactions
+
+INSTALLS = target systemd dbus qmls quickactions
 
 SOURCES += \
     src/dbuslistener.cpp \
@@ -47,4 +50,6 @@ DISTFILES += \
     qmls/toggles/TetheringToggle.qml \
     qmls/toggles/BrightnessToggle.qml \
     qmls/components/ApplicationItem.qml \
-    qmls/toggles/RadiomodeToggle.qml
+    qmls/toggles/RadiomodeToggle.qml \
+    qmls/toggles/VibrationToggle.qml \
+    qmls/toggles/PresenceToggle.qml

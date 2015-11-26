@@ -7,7 +7,7 @@ ToggleItem {
     id: root
     anchors.fill: parent
 
-    name: "Flashlight"
+    name: qsTr("Flashlight")
     icon: "image://theme/icon-camera-wb-tungsten"
 
     onClicked: {

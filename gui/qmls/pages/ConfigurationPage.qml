@@ -228,7 +228,7 @@ Page {
 
             ValueButton {
                 label: qsTr("Application 3")
-                value: helper.readDesktopName(configurationPowermenu.applicationShortcut2)
+                value: helper.readDesktopName(configurationPowermenu.applicationShortcut3)
                 onClicked: {
                     var selector = pageStack.push(Qt.resolvedUrl("ShortcutsPage.qml"), {selectedValues: [configurationPowermenu.applicationShortcut3], showHidden: configurationPowermenu.showHiddenShortcuts})
                     selector.selected.connect(page.selectShortcut3)

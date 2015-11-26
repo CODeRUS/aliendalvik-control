@@ -23,6 +23,14 @@
     </message>
 </context>
 <context>
+    <name>BluetoothToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/BluetoothToggle.qml" line="11"/>
+        <source>Bluetooth</source>
+        <translation>Bluetooth</translation>
+    </message>
+</context>
+<context>
     <name>ConfigurationPage</name>
     <message>
         <location filename="gui/qmls/pages/ConfigurationPage.qml" line="12"/>
@@ -178,6 +186,30 @@ configurator
     </message>
 </context>
 <context>
+    <name>FlashlightToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/FlashlightToggle.qml" line="10"/>
+        <source>Flashlight</source>
+        <translation>Flashlight</translation>
+    </message>
+</context>
+<context>
+    <name>FlightToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/FlightToggle.qml" line="11"/>
+        <source>Flight mode</source>
+        <translation>Flight mode</translation>
+    </message>
+</context>
+<context>
+    <name>LocationToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/LocationToggle.qml" line="11"/>
+        <source>Location</source>
+        <translation>Location</translation>
+    </message>
+</context>
+<context>
     <name>MainPage</name>
     <message>
         <location filename="gui/qmls/pages/MainPage.qml" line="24"/>
@@ -216,6 +248,70 @@ configurator
     </message>
 </context>
 <context>
+    <name>MobilenetworkToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/MobilenetworkToggle.qml" line="11"/>
+        <source>Mobile network</source>
+        <translation>Mobile network</translation>
+    </message>
+</context>
+<context>
+    <name>OrientationlockToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/OrientationlockToggle.qml" line="13"/>
+        <source>portrait</source>
+        <translation>Portrait</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/OrientationlockToggle.qml" line="14"/>
+        <source>landscape</source>
+        <translation>Landscape</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/OrientationlockToggle.qml" line="15"/>
+        <source>dynamic</source>
+        <translation>Dynamic</translation>
+    </message>
+</context>
+<context>
+    <name>RadiomodeToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="10"/>
+        <source>Radio mode</source>
+        <translation>Radio mode</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="25"/>
+        <source>Any</source>
+        <translation>Any</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="26"/>
+        <source>4G</source>
+        <translation>LTE</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="27"/>
+        <source>4G+3G</source>
+        <translation>4G+3G</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="28"/>
+        <source>3G</source>
+        <translation>3G</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="29"/>
+        <source>3G+2G</source>
+        <translation>3G+2G</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="30"/>
+        <source>2G</source>
+        <translation>GSM</translation>
+    </message>
+</context>
+<context>
     <name>ShortcutsPage</name>
     <message>
         <location filename="gui/qmls/pages/ShortcutsPage.qml" line="25"/>
@@ -231,6 +327,63 @@ configurator
         <location filename="gui/qmls/pages/ShortcutsPage.qml" line="40"/>
         <source>Select shortcuts</source>
         <translation>Select shortcuts</translation>
+    </message>
+</context>
+<context>
+    <name>TetheringToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/TetheringToggle.qml" line="12"/>
+        <source>Tethering</source>
+        <translation>Tethering</translation>
+    </message>
+</context>
+<context>
+    <name>VibrationToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/VibrationToggle.qml" line="10"/>
+        <source>Vibration</source>
+        <translation>Vibration</translation>
+    </message>
+</context>
+<context>
+    <name>WifinetworkToggle</name>
+    <message>
+        <location filename="daemon/qmls/toggles/WifinetworkToggle.qml" line="14"/>
+        <source>Wireless</source>
+        <translation>Wireless</translation>
+    </message>
+</context>
+<context>
+    <name>dialog</name>
+    <message>
+        <location filename="daemon/qmls/dialog.qml" line="22"/>
+        <source>Reboot device</source>
+        <translation>Reboot device</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/dialog.qml" line="36"/>
+        <source>Shutdown device</source>
+        <translation>Shutdown device</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/dialog.qml" line="107"/>
+        <source>Shutdown</source>
+        <translation>Shutdown</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/dialog.qml" line="116"/>
+        <source>Reboot</source>
+        <translation>Reboot</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/dialog.qml" line="125"/>
+        <source>Edit mode</source>
+        <translation>Edit mode</translation>
+    </message>
+    <message>
+        <location filename="daemon/qmls/dialog.qml" line="125"/>
+        <source>Lock</source>
+        <translation>Lock</translation>
     </message>
 </context>
 </TS>

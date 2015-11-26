@@ -7,7 +7,7 @@ import "../components"
 ToggleItem {
     id: root
 
-    name: "Radio mode"
+    name: qsTr("Radio mode")
     icon: ""
     settingsPage: "system_settings/connectivity/mobile"
     disabled: !radioSettings.valid
@@ -20,6 +20,15 @@ ToggleItem {
     property var labels: labels1
     property bool _externalChange: false
     property int currentIndex: 0
+
+    function dummyTr() {
+        qsTr("Any")
+        qsTr("4G")
+        qsTr("4G+3G")
+        qsTr("3G")
+        qsTr("3G+2G")
+        qsTr("2G")
+    }
 
     Component.onCompleted: {
         if (fileUtils.exists("/var/lib/patchmanager/ausmt/patches/sailfishos-more-network-modes/unified_diff.patch")) {
@@ -61,7 +70,7 @@ ToggleItem {
         anchors.margins: Theme.paddingMedium
         font.pixelSize: height
         fontSizeMode: Text.HorizontalFit
-        text: labels[currentIndex]
+        text: qsTr(labels[currentIndex])
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: highlighted ? Theme.highlightColor : Theme.primaryColor

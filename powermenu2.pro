@@ -2,7 +2,6 @@ TEMPLATE = subdirs
 SUBDIRS = \
     daemon \
     gui \
-    desktopfilemodel \
     $${NULL}
 
 OTHER_FILES = \

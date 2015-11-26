@@ -8,7 +8,7 @@ ToggleItem {
     id: root
     anchors.fill: parent
 
-    name: "Location"
+    name: qsTr("Location")
     icon: "image://theme/icon-m-gps"
     settingsPage: "system_settings/connectivity/gps_and_location"
 

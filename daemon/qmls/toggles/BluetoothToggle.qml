@@ -8,7 +8,7 @@ ToggleItem {
     id: root
     anchors.fill: parent
 
-    name: "Bluetooth"
+    name: qsTr("Bluetooth")
     icon: "image://theme/icon-m-bluetooth"
     settingsPage: "system_settings/connectivity/bluetooth"
 

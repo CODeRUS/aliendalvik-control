@@ -5,6 +5,7 @@
 #include <sailfishapp.h>
 
 #include "shortcutshelper.h"
+#include "desktopfilesortmodel.h"
 
 const char* msgTypeToString(QtMsgType type)
 {
@@ -46,6 +47,8 @@ void stdoutHandler(QtMsgType type, const QMessageLogContext &context, const QStr
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler(stdoutHandler);
+
+    qmlRegisterType<DesktopFileSortModel>("org.coderus.powermenu.desktopfilemodel", 1, 0, "DesktopFileSortModel");
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     app->setApplicationDisplayName("Powermenu2 settings");

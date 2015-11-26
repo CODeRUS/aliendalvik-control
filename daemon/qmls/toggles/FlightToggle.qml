@@ -8,7 +8,7 @@ ToggleItem {
     id: root
     anchors.fill: parent
 
-    name: "Flight mode"
+    name: qsTr("Flight mode")
     icon: "image://theme/icon-m-airplane-mode"
     active: connMgr.instance.offlineMode
     settingsPage: "system_settings/connectivity/flight"

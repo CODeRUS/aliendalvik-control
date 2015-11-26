@@ -9,31 +9,45 @@ ToggleItem {
 
     settingsPage: "system_settings/look_and_feel/display"
 
-    name: displaySettings.orientationLock[0].toUpperCase() + displaySettings.orientationLock.substr(1)
+    name: {
+        if (displaySettings.orientationLock === "portrait") {
+            return qsTr("Portrait")
+        }
+        else if (displaySettings.orientationLock === "landscape") {
+            return qsTr("Landscape")
+        }
+        else if (displaySettings.orientationLock === "dynamic") {
+            return qsTr("Dynamic")
+        }
+    }
+
     icon: {
-        if (displaySettings.orientationLock == "portrait") {
+        if (displaySettings.orientationLock === "portrait") {
             return "image://theme/icon-m-phone"
         }
-        else if (displaySettings.orientationLock == "landscape") {
+        else if (displaySettings.orientationLock === "landscape") {
             return "image://theme/icon-m-tablet"
         }
-        else {
+        else if (displaySettings.orientationLock === "dynamic") {
             return "image://theme/icon-m-rotate"
         }
     }
 
     onClicked: {
-        if (displaySettings.orientationLock == "portrait") {
+        if (displaySettings.orientationLock === "portrait") {
             displaySettings.orientationLock = "landscape"
         }
-        else if (displaySettings.orientationLock == "landscape") {
+        else if (displaySettings.orientationLock === "landscape") {
             displaySettings.orientationLock = "dynamic"
         }
-        else {
+        else if (displaySettings.orientationLock === "dynamic") {
             displaySettings.orientationLock = "portrait"
         }
     }
 
-    DisplaySettings { id: displaySettings }
+    DisplaySettings {
+        id: displaySettings
+        onOrientationLockChanged: console.log("[" + orientationLock + "]")
+    }
 }
 

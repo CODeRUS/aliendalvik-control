@@ -1,7 +1,6 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import org.nemomobile.dbus 2.0
-import org.nemomobile.configuration 1.0
 import org.coderus.powermenu.controls 1.0
 import "components"
 
@@ -20,13 +19,17 @@ MainWindow {
             remorse = remorseComponent.createObject(root)
         }
 
-        remorse.execute("Reboot device",
+        remorse.execute(qsTr("Reboot device"),
                         function() {
-                            dsmeDbus.restart()
+                            restartDevice()
                             view.close()
                         },
                         3000
         )
+    }
+
+    function restartDevice() {
+        dsmeDbus.call("req_reboot", [])
     }
 
     function remorseShutdown() {
@@ -34,7 +37,7 @@ MainWindow {
             remorse = remorseComponent.createObject(root)
         }
 
-        remorse.execute("Shutdown device",
+        remorse.execute(qsTr("Shutdown device"),
                         function() {
                             dsmeDbus.shutdown()
                             view.close()
@@ -43,11 +46,19 @@ MainWindow {
         )
     }
 
+    function shutdownDevice() {
+        dsmeDbus.call("req_shutdown", [])
+    }
+
     function showSettingsPage(page) {
         if (page && page.length > 0) {
             settingsIface.call("showPage", [page])
             window.disappear()
         }
+    }
+
+    function restartHomescreen() {
+        lipstickSystemdIface.call("Restart", ["replace"])
     }
 
     Connections {
@@ -105,7 +116,7 @@ MainWindow {
                 width: root.width / 3
                 height: parent.height
                 iconSource: "image://theme/icon-l-power"
-                title: "Shutdown"
+                title: qsTr("Shutdown")
                 enabled: !editMode
                 onClicked: remorseShutdown()
             }
@@ -114,16 +125,17 @@ MainWindow {
                 width: root.width / 3
                 height: parent.height
                 iconSource: "image://theme/icon-l-reboot"
-                title: "Reboot"
+                title: qsTr("Reboot")
                 enabled: !editMode
                 onClicked: remorseRestart()
+                onPressAndHold: restartHomescreen()
             }
 
             BackgroundIconButton {
                 width: root.width / 3
                 height: parent.height
                 iconSource: editMode ? "image://theme/icon-m-developer-mode" : "image://theme/icon-m-device-lock"
-                title: editMode ? "Edit mode" : "Lock"
+                title: editMode ? qsTr("Edit mode") : qsTr("Lock")
                 highlighted: down || editMode
                 onClicked: {
                     if (editMode) {
@@ -275,7 +287,10 @@ MainWindow {
                         }
                         onPositionChanged: {
                             if (drag.target) {
-                                dragIndex = grid.indexAt(itemDelegate.x + itemDelegate.width / 2, itemDelegate.y + itemDelegate.height / 2)
+                                var targetIndex = grid.indexAt(itemDelegate.x + itemDelegate.width / 2, itemDelegate.y + itemDelegate.height / 2)
+                                if (targetIndex >= 0) {
+                                    dragIndex = targetIndex
+                                }
                             }
                         }
                         onContainsMouseChanged: {
@@ -301,14 +316,6 @@ MainWindow {
         service: "com.nokia.dsme"
         path: "/com/nokia/dsme/request"
         iface: "com.nokia.dsme.request"
-
-        function restart() {
-            call("req_reboot", [])
-        }
-
-        function shutdown() {
-            call("req_shutdown", [])
-        }
     }
 
     DBusInterface {
@@ -319,12 +326,10 @@ MainWindow {
         iface: "com.nokia.mce.signal"
         signalsEnabled: true
         function display_status_ind(status) {
-            displayStatus = status
             if (status == "off") {
                 view.close()
             }
         }
-        property string displayStatus: "off"
     }
 
     DBusInterface {
@@ -351,6 +356,14 @@ MainWindow {
         iface: 'com.jolla.settings.ui'
     }
 
+    DBusInterface {
+        id: lipstickSystemdIface
+        bus: DBus.SessionBus
+        service: 'org.freedesktop.systemd1'
+        path: '/org/freedesktop/systemd1/unit/lipstick_2eservice'
+        iface: 'org.freedesktop.systemd1.Unit'
+    }
+
     Component {
         id: remorseComponent
 
@@ -368,11 +381,5 @@ MainWindow {
                 opacity: 0.6
             }
         }
-    }
-
-    ConfigurationGroup {
-        id: configurationPowermenu
-        path: "/apps/powermenu"
-        property variant shortcuts
     }
 }

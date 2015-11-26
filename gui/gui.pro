@@ -27,10 +27,16 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += \
     src/main.cpp \
-    src/shortcutshelper.cpp
+    src/shortcutshelper.cpp \
+    src/desktopfilemodelplugin.cpp \
+    src/desktopfilemodel.cpp \
+    src/desktopfilesortmodel.cpp
 
 HEADERS += \
-    src/shortcutshelper.h
+    src/shortcutshelper.h \
+    src/desktopfilemodelplugin.h \
+    src/desktopfilemodel.h \
+    src/desktopfilesortmodel.h
 
 OTHER_FILES += \
     qmls/main.qml \

@@ -8,7 +8,7 @@ ToggleItem {
     id: root
     anchors.fill: parent
 
-    name: "Mobile network"
+    name: qsTr("Mobile network")
     icon: "image://theme/icon-m-mobile-network"
     settingsPage: "system_settings/connectivity/mobile"
     active: networkService.autoConnect
