@@ -59,10 +59,11 @@ MouseArea {
             id: label
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.margins: Theme.paddingMedium
             font.pixelSize: Theme.fontSizeSmall
             color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
             truncationMode: TruncationMode.Fade
-            horizontalAlignment: Text.AlignHCenter
+            horizontalAlignment: paintedWidth > width ? Text.AlignLeft : Text.AlignHCenter
         }
     }
 }

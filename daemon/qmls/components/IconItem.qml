@@ -72,9 +72,10 @@ Item {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.margins: Theme.paddingMedium
         font.pixelSize: Theme.fontSizeExtraSmall
         color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
         truncationMode: TruncationMode.Fade
-        horizontalAlignment: Text.AlignHCenter
+        horizontalAlignment: paintedWidth > width ? Text.AlignLeft : Text.AlignHCenter
     }
 }
