@@ -9,13 +9,22 @@
 #include <QGuiApplication>
 #include <QtQml>
 
-#include "components/flashlightcontrol.h"
 #include "components/togglesmodel.h"
 #include "components/fileutils.h"
+
+#include <mlite5/MGConfItem>
+#include <QDebug>
 
 DBusListener::DBusListener(QObject *parent) :
     QObject(parent)
 {
+    view = NULL;
+}
+
+void DBusListener::startService()
+{
+    qDebug("startService");
+
     QDBusConnection::systemBus().connect("", MCE_SIGNAL_PATH, MCE_SIGNAL_IFACE,
                                          "power_button_trigger", this, SLOT(powerButtonTrigger(QString)));
 
@@ -24,9 +33,6 @@ DBusListener::DBusListener(QObject *parent) :
                              MCE_REQUEST_IFACE,
                              QDBusConnection::systemBus(), this);
 
-    view = NULL;
-
-
     qDebug() << "DBus service" << (QDBusConnection::sessionBus().registerService("org.coderus.powermenu") ? "registered" : "error!");
     qDebug() << "DBus object" << (QDBusConnection::sessionBus().registerObject("/", this,
                                                  QDBusConnection::ExportScriptableContents | QDBusConnection::ExportAllProperties)
@@ -34,16 +40,18 @@ DBusListener::DBusListener(QObject *parent) :
 
     qDebug() << "listener started";
 
-    setAction1("power-key-menu");
-    setAction2("double-power-key");
-    setAction3("event3");
-    setAction4("event4");
-    setAction5("event5");
-    setAction6("event6");
-
-    qmlRegisterType<FlashlightControl>("org.coderus.powermenu.controls", 1, 0, "Flashlight");
     qmlRegisterType<TogglesModel>("org.coderus.powermenu.controls", 1, 0, "TogglesModel");
     qmlRegisterType<FileUtils>("org.coderus.powermenu.controls", 1, 0, "FileUtils");
+
+    flashlight = new FlashlightControl(this);
+    screenshot = new ScreenshotControl(this);
+
+    MGConfItem verConf("/apps/powermenu/version");
+    int version = verConf.value(1).toInt();
+    if (version < 2) {
+        resetToDefaults();
+        verConf.set(2);
+    }
 }
 
 QString DBusListener::getAction1()
@@ -113,7 +121,7 @@ int DBusListener::getLongPressDelay()
 
 void DBusListener::setLongPressDelay(int msecs)
 {
-    setMceValue(MCE_GCONF_POWERKEY_LONG_PRESS_DELAY, QString::number(msecs));
+    setMceValue(MCE_GCONF_POWERKEY_LONG_PRESS_DELAY, msecs);
 }
 
 QString DBusListener::getLongPressActionOn()
@@ -143,7 +151,7 @@ int DBusListener::getDoublePressDelay()
 
 void DBusListener::setDoublePressDelay(int msecs)
 {
-    setMceValue(MCE_GCONF_POWERKEY_DOUBLE_PRESS_DELAY, QString::number(msecs));
+    setMceValue(MCE_GCONF_POWERKEY_DOUBLE_PRESS_DELAY, msecs);
 }
 
 QString DBusListener::getDoublePressActionOn()
@@ -188,6 +196,8 @@ void DBusListener::setShortPressActionOff(const QString &action)
 
 void DBusListener::resetToDefaults()
 {
+    qDebug("resetToDefaults");
+
     setAction1("power-key-menu");
     setAction2("double-power-key");
     setAction3("event3");
@@ -201,6 +211,9 @@ void DBusListener::resetToDefaults()
     setShortPressActionOff("unblank");
     setDoublePressActionOff("unblank,tkunlock,dbus2");
     setLongPressActionOff("");
+
+    setLongPressDelay(1500);
+    setDoublePressDelay(400);
 }
 
 void DBusListener::openDesktop(const QString &desktop)
@@ -235,18 +248,6 @@ void DBusListener::setMceValue(const QString &key, const QVariant &value)
     mce->call(QDBus::AutoDetect, "set_config", key, QVariant::fromValue(QDBusVariant(value)));
 }
 
-void DBusListener::restartSystemService(const QString &serviceName)
-{
-    QDBusInterface systemd("org.freedesktop.systemd1", "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager", QDBusConnection::systemBus());
-    qDebug() << "systemd reply:" << systemd.call(QDBus::NoBlock, "RestartUnit", serviceName, "replace").errorMessage();
-}
-
-void DBusListener::restartUserService(const QString &serviceName)
-{
-    QDBusInterface systemd("org.freedesktop.systemd1", "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager", QDBusConnection::sessionBus());
-    qDebug() << "systemd reply:" << systemd.call(QDBus::NoBlock, "RestartUnit", serviceName, "replace").errorMessage();
-}
-
 void DBusListener::openPowerMenu()
 {
     if (!view) {
@@ -264,6 +265,8 @@ void DBusListener::openPowerMenu()
         view->setClearBeforeRendering(true);
 
         view->rootContext()->setContextProperty("view", view);
+        view->rootContext()->setContextProperty("Flashlight", flashlight);
+        view->rootContext()->setContextProperty("Screenshot", screenshot);
 
         view->setSource(QUrl::fromLocalFile("/usr/share/powermenu2/qml/dialog.qml"));
     }
@@ -272,31 +275,25 @@ void DBusListener::openPowerMenu()
     QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
     native->setWindowProperty(view->handle(), QLatin1String("CATEGORY"), "notification");
 
-    view->showNormal();
+    view->showFullScreen();
 }
 
 void DBusListener::powerButtonTrigger(const QString &triggerName)
 {
     qDebug() << "powerButtonTrigger" << triggerName;
-    if (triggerName == "event3") {
+    if (triggerName == "powermenu2") {
         openPowerMenu();
     }
-    else if (triggerName == "event4") {
-        MGConfItem shortcut1("/apps/powermenu/applicationShortcut1");
-        if (!shortcut1.value().isNull()) {
-            openDesktop(shortcut1.value().toString());
-        }
+    else if (triggerName == "screenshot") {
+        screenshot->save();
     }
-    else if (triggerName == "event5") {
-        MGConfItem shortcut2("/apps/powermenu/applicationShortcut2");
-        if (!shortcut2.value().isNull()) {
-            openDesktop(shortcut2.value().toString());
-        }
+    else if (triggerName == "flashlight") {
+        flashlight->toggle();
     }
-    else if (triggerName == "event6") {
-        MGConfItem shortcut3("/apps/powermenu/applicationShortcut3");
-        if (!shortcut3.value().isNull()) {
-            openDesktop(shortcut3.value().toString());
+    else if (triggerName.startsWith("event")) {
+        MGConfItem shortcut(QString("/apps/powermenu/applicationShortcut%1").arg(triggerName.mid(5)));
+        if (!shortcut.value().isNull()) {
+            openDesktop(shortcut.value().toString());
         }
     }
 }

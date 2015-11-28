@@ -7,16 +7,38 @@ import "components"
 MainWindow {
     id: window
 
-    onDisappeared: {
-        editMode = false
-        view.close()
-    }
     property Item remorse
     property bool editMode: false
 
+    function hideWithCare() {
+        testAppear.stop()
+        testDisappear.stop()
+        editMode = false
+        testItem1.y = -testItem1.height
+        testItem2.y = -testItem2.height
+        view.close()
+    }
+
+    function disappearAnimation() {
+        testDisappear.start()
+    }
+
+    function afterShow() {
+        mceRequest.typedCall("get_display_status",
+                              [],
+                              function (result) {
+                                  if (result == "on") {
+                                      testAppear.start()
+                                  }
+                                  else {
+                                      hideWithCare()
+                                  }
+                              })
+    }
+
     function remorseRestart() {
         if (!remorse) {
-            remorse = remorseComponent.createObject(root)
+            remorse = remorseComponent.createObject(contentItem)
         }
 
         remorse.execute(qsTr("Reboot device"),
@@ -34,12 +56,12 @@ MainWindow {
 
     function remorseShutdown() {
         if (!remorse) {
-            remorse = remorseComponent.createObject(root)
+            remorse = remorseComponent.createObject(contentItem)
         }
 
         remorse.execute(qsTr("Shutdown device"),
                         function() {
-                            dsmeDbus.shutdown()
+                            shutdownDevice()
                             view.close()
                         },
                         3000
@@ -53,7 +75,7 @@ MainWindow {
     function showSettingsPage(page) {
         if (page && page.length > 0) {
             settingsIface.call("showPage", [page])
-            window.disappear()
+            window.hideWithAnimation()
         }
     }
 
@@ -65,16 +87,7 @@ MainWindow {
         target: view
         onVisibleChanged: {
             if (view.visible) {
-                mceRequest.typedCall("get_display_status",
-                                      [],
-                                      function (result) {
-                                          if (result == "on") {
-                                              window.appear()
-                                          }
-                                          else {
-                                              view.close()
-                                          }
-                                      })
+                afterShow()
             }
         }
     }
@@ -83,97 +96,69 @@ MainWindow {
         anchors.fill: parent
         preventStealing: true
         onClicked: {
-            window.disappear()
+            testDisappear.start()
         }
     }
 
-    Item {
-        id: root
-        anchors.fill: parent
-        anchors.bottomMargin: Theme.horizontalPageMargin * 4
+    SequentialAnimation {
+        id: testAppear
+        NumberAnimation {
+            target: testItem2
+            property: "y"
+            from: -testItem2.height
+            to: 0
+            duration: Math.max(testItem2.height, 0)
+        }
+        NumberAnimation {
+            target: testItem1
+            property: "y"
+            from: -testItem1.height
+            to: testItem2.height
+            duration: Math.max(testItem1.height, 0)
+        }
+    }
 
-        Rectangle {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            color: Theme.highlightDimmerColor
-            height: controlRow1.height + Math.min(grid.height, grid.contentHeight + Theme.horizontalPageMargin)
-
-            MouseArea {
-                anchors.fill: parent
-            }
-
-            Behavior on height {
-                NumberAnimation { duration: 500 }
+    SequentialAnimation {
+        id: testDisappear
+        NumberAnimation {
+            target: testItem1
+            property: "y"
+            from: testItem2.height
+            to: -testItem1.height
+            duration: Math.max(testItem1.height, 0)
+        }
+        NumberAnimation {
+            target: testItem2
+            property: "y"
+            from: 0
+            to: -testItem2.height
+            duration: Math.max(testItem2.height, 0)
+        }
+        ScriptAction {
+            script: {
+                editMode = false
+                view.close()
             }
         }
+    }
 
-        Row {
-            id: controlRow1
-            height: Theme.itemSizeExtraLarge
+    Rectangle {
+        id: testItem1
+        width: parent.width
+        color: Theme.highlightDimmerColor
+        height: Math.min(grid.contentHeight + Theme.horizontalPageMargin, grid.height)
+        y: -Screen.height
 
-            BackgroundIconButton {
-                width: root.width / 3
-                height: parent.height
-                iconSource: "image://theme/icon-l-power"
-                title: qsTr("Shutdown")
-                enabled: !editMode
-                onClicked: remorseShutdown()
-            }
-
-            BackgroundIconButton {
-                width: root.width / 3
-                height: parent.height
-                iconSource: "image://theme/icon-l-reboot"
-                title: qsTr("Reboot")
-                enabled: !editMode
-                onClicked: remorseRestart()
-                onPressAndHold: restartHomescreen()
-            }
-
-            BackgroundIconButton {
-                width: root.width / 3
-                height: parent.height
-                iconSource: editMode ? "image://theme/icon-m-developer-mode" : "image://theme/icon-m-device-lock"
-                title: editMode ? qsTr("Edit mode") : qsTr("Lock")
-                highlighted: down || editMode
-                onClicked: {
-                    if (editMode) {
-                        editMode = false
-                    }
-                    else if (doubleTimer.running) {
-                        doubleTimer.stop()
-                        mceRequest.call("req_display_state_off", [])
-                        lipstickDevicelock.call("setState", [1])
-                    }
-                    else {
-                        doubleTimer.restart()
-                    }
-                }
-                onPressAndHold: {
-                    editMode = !editMode
-                }
-                Timer {
-                    id: doubleTimer
-                    interval: 200
-                    onTriggered: {
-                        mceRequest.call("req_display_state_off", [])
-                    }
-                }
-            }
+        Behavior on height {
+            NumberAnimation { duration: 200 }
         }
 
         GridView {
             id: grid
-            anchors {
-                top: controlRow1.bottom
-                left: parent.left
-                leftMargin: (root.width - (grid.cellWidth * Math.floor(root.width / grid.cellWidth))) / 2
-                right: parent.right
-                rightMargin: leftMargin
-                bottom: parent.bottom
-                bottomMargin: leftMargin
-            }
+            property int sideMargin: (parent.width - (grid.cellWidth * Math.floor(parent.width / grid.cellWidth))) / 2
+            width: parent.width - sideMargin
+            height: window.contentItem.height - testItem2.height - Theme.horizontalPageMargin * 4
+            x: sideMargin
             pixelAligned: true
             flickDeceleration: Theme.flickDeceleration
             maximumFlickVelocity: Theme.maximumFlickVelocity
@@ -189,8 +174,8 @@ MainWindow {
                     NumberAnimation { properties: "z"; to: -1; duration: 1 }
                     NumberAnimation { properties: "opacity"; to: 0.0; duration: 1 }
                     NumberAnimation { properties: "x,y"; duration: 1 }
-                    NumberAnimation { properties: "z"; to: 0; duration: 500 }
-                    NumberAnimation { properties: "opacity"; from: 0.0; to: 1.0; duration: 300 }
+                    NumberAnimation { properties: "z"; to: 0; duration: 200 }
+                    NumberAnimation { properties: "opacity"; from: 0.0; to: 1.0; duration: 100 }
                 }
             }
             remove: Transition {
@@ -201,7 +186,7 @@ MainWindow {
                 }
             }
             displaced: Transition {
-                NumberAnimation { properties: "x,y"; duration: 500 }
+                NumberAnimation { properties: "x,y"; duration: 200 }
             }
 
             model: TogglesModel {
@@ -279,8 +264,8 @@ MainWindow {
                         onPressAndHold: {
                             if (editMode) {
                                 drag.target = itemDelegate
-                                var newPos = mapToItem(reorderPlaceholder, mouseX, mouseY)
-                                itemDelegate.parent = reorderPlaceholder
+                                var newPos = mapToItem(grid, mouseX, mouseY)
+                                itemDelegate.parent = grid
                                 itemDelegate.x = newPos.x - itemDelegate.width / 2
                                 itemDelegate.y = newPos.y - itemDelegate.height
                             }
@@ -301,12 +286,67 @@ MainWindow {
                     }
                 }
             }
-
         }
+    }
 
-        Item {
-            id: reorderPlaceholder
-            anchors.fill: grid
+    Rectangle {
+        id: testItem2
+        width: parent.width
+        height: controlRow1.height
+        y: -testItem2.height
+        color: Theme.highlightDimmerColor
+
+        Row {
+            id: controlRow1
+            height: btn1.height
+
+            BackgroundIconButton {
+                id: btn1
+                width: testItem2.width / 3
+                iconSource: "image://theme/graphic-power-off"
+                title: qsTr("Shutdown")
+                enabled: !editMode
+                onClicked: remorseShutdown()
+            }
+
+            BackgroundIconButton {
+                width: testItem2.width / 3
+                iconSource: "image://theme/graphic-reboot"
+                title: qsTr("Reboot")
+                enabled: !editMode
+                onClicked: remorseRestart()
+                onPressAndHold: restartHomescreen()
+            }
+
+            BackgroundIconButton {
+                width: testItem2.width / 3
+                iconSource: editMode ? "image://theme/icon-m-developer-mode" : "image://theme/graphic-display-blank"
+                title: editMode ? qsTr("Edit mode") : qsTr("Lock")
+                highlighted: down || editMode
+                onClicked: {
+                    if (editMode) {
+                        editMode = false
+                    }
+                    else if (doubleTimer.running) {
+                        doubleTimer.stop()
+                        mceRequest.call("req_display_state_off", [])
+                        lipstickDevicelock.call("setState", [1])
+                    }
+                    else {
+                        doubleTimer.restart()
+                    }
+                }
+                onPressAndHold: {
+                    editMode = !editMode
+                }
+                Timer {
+                    id: doubleTimer
+                    interval: 200
+                    onTriggered: {
+                        mceRequest.call("req_display_state_off", [])
+                    }
+                }
+            }
         }
     }
 
@@ -327,7 +367,7 @@ MainWindow {
         signalsEnabled: true
         function display_status_ind(status) {
             if (status == "off") {
-                view.close()
+                hideWithCare()
             }
         }
     }

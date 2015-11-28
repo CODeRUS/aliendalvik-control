@@ -25,13 +25,15 @@ SOURCES += \
     src/main.cpp \
     src/components/flashlightcontrol.cpp \
     src/components/togglesmodel.cpp \
-    src/components/fileutils.cpp
+    src/components/fileutils.cpp \
+    src/components/screenshotcontrol.cpp
 
 HEADERS += \
     src/dbuslistener.h \
     src/components/flashlightcontrol.h \
     src/components/togglesmodel.h \
-    src/components/fileutils.h
+    src/components/fileutils.h \
+    src/components/screenshotcontrol.h
 
 DISTFILES += \
     qmls/dialog.qml \
@@ -52,4 +54,6 @@ DISTFILES += \
     qmls/components/ApplicationItem.qml \
     qmls/toggles/RadiomodeToggle.qml \
     qmls/toggles/VibrationToggle.qml \
-    qmls/toggles/PresenceToggle.qml
+    qmls/toggles/PresenceToggle.qml \
+    qmls/toggles/ScreenshotToggle.qml \
+    qmls/screenshot.qml

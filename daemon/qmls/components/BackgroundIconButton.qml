@@ -3,8 +3,8 @@ import Sailfish.Silica 1.0
 
 MouseArea {
     id: root
-    height: parent.height
-    width: height
+    height: content.height + Theme.paddingLarge * 2
+    width: parent.width
     preventStealing: true
 
     property alias iconSource: image.source
@@ -20,51 +20,50 @@ MouseArea {
                : "transparent"
     }
 
-    Image {
-        id: image
+    Column {
+        id: content
 
-        property color highlightColor: Theme.highlightColor
-        property bool highlighted: root.highlighted
-        property string _highlightSource
+        y: Theme.paddingLarge
+        width: parent.width
+        spacing: Theme.paddingMedium
 
-        anchors.top: parent.top
-        anchors.bottom: label.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.margins: Theme.paddingLarge
-        anchors.bottomMargin: Theme.paddingSmall
-        fillMode: Image.PreserveAspectFit
-        verticalAlignment: Image.AlignVCenter
-        horizontalAlignment: Image.AlignHCenter
-        cache: true
-        smooth: true
+        Image {
+            id: image
 
-        source: highlighted ? _highlightSource : source
+            property color highlightColor: Theme.highlightColor
+            property bool highlighted: root.highlighted
+            property string _highlightSource
 
-        _highlightSource: {
-            if (source != "") {
-                var tmpSource = image.source.toString()
-                var index = tmpSource.lastIndexOf("?")
-                if (index !== -1) {
-                    tmpSource = tmpSource.substring(0, index)
+            anchors.horizontalCenter: parent.horizontalCenter
+            horizontalAlignment: Image.AlignHCenter
+            cache: true
+            smooth: true
+
+            source: highlighted ? _highlightSource : source
+
+            _highlightSource: {
+                if (source != "") {
+                    var tmpSource = image.source.toString()
+                    var index = tmpSource.lastIndexOf("?")
+                    if (index !== -1) {
+                        tmpSource = tmpSource.substring(0, index)
+                    }
+                    return tmpSource + "?" + highlightColor
+                } else {
+                    return ""
                 }
-                return tmpSource + "?" + highlightColor
-            } else {
-                return ""
             }
         }
-    }
 
-    Label {
-        id: label
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: Theme.paddingMedium
-        anchors.left: parent.left
-        anchors.right: parent.right
-        font.pixelSize: Theme.fontSizeSmall
-        color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
-        truncationMode: TruncationMode.Fade
-        horizontalAlignment: Text.AlignHCenter
+        Label {
+            id: label
+            anchors.left: parent.left
+            anchors.right: parent.right
+            font.pixelSize: Theme.fontSizeSmall
+            color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
+            truncationMode: TruncationMode.Fade
+            horizontalAlignment: Text.AlignHCenter
+        }
     }
 }
 

@@ -53,6 +53,22 @@ public:
     QString getAction2();
     void setAction2(const QString &action);
 
+    Q_PROPERTY(QString action3 READ getAction3 WRITE setAction3 NOTIFY action3Changed)
+    QString getAction3();
+    void setAction3(const QString &action);
+
+    Q_PROPERTY(QString action4 READ getAction4 WRITE setAction4 NOTIFY action4Changed)
+    QString getAction4();
+    void setAction4(const QString &action);
+
+    Q_PROPERTY(QString action5 READ getAction5 WRITE setAction5 NOTIFY action5Changed)
+    QString getAction5();
+    void setAction5(const QString &action);
+
+    Q_PROPERTY(QString action6 READ getAction6 WRITE setAction6 NOTIFY action6Changed)
+    QString getAction6();
+    void setAction6(const QString &action);
+
     Q_PROPERTY(QString bannerPath READ bannerPath NOTIFY bannerPathChanged)
     QString bannerPath() const;
 
@@ -84,6 +100,10 @@ signals:
     void shortPressActionOffChanged();
     void action1Changed();
     void action2Changed();
+    void action3Changed();
+    void action4Changed();
+    void action5Changed();
+    void action6Changed();
 };
 
 #endif // SHORTCUTSHELPER_H

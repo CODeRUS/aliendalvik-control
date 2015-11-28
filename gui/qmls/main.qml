@@ -12,9 +12,18 @@ ApplicationWindow
     ConfigurationGroup {
         id: configuration
         path: "/apps/powermenu"
+        property string action1: ""
+        property string action2: ""
+        property string action3: ""
+        property string action4: ""
+        property string action5: ""
+        property string action6: ""
         property string applicationShortcut1: ""
         property string applicationShortcut2: ""
         property string applicationShortcut3: ""
+        property string applicationShortcut4: applicationShortcut1
+        property string applicationShortcut5: applicationShortcut2
+        property string applicationShortcut6: applicationShortcut3
         property bool showHiddenShortcuts: false
     }
 }

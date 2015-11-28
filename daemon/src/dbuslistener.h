@@ -6,6 +6,9 @@
 #include <QtDBus>
 #include <QQuickView>
 
+#include "components/flashlightcontrol.h"
+#include "components/screenshotcontrol.h"
+
 #define MCE_SERVICE "com.nokia.mce"
 
 # define MCE_GCONF_POWERKEY_PATH       "/system/osso/dsm/powerkey"
@@ -104,15 +107,18 @@ public:
 
     Q_SCRIPTABLE void openPowerMenu();
 
+public slots:
+    void startService();
+
 private:
     QVariant getMceValue(const QString &key);
     void setMceValue(const QString &key, const QVariant &value);
 
-    void restartSystemService(const QString &serviceName);
-    void restartUserService(const QString &serviceName);
-
     QQuickView *view;
     QDBusInterface *mce;
+
+    FlashlightControl *flashlight;
+    ScreenshotControl *screenshot;
 
 private slots:
     void powerButtonTrigger(const QString &triggerName);

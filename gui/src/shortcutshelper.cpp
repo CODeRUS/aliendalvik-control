@@ -197,7 +197,7 @@ QString ShortcutsHelper::getAction2()
             return reply.value();
         }
     }
-    return "event2";
+    return "double-power-key";
 }
 
 void ShortcutsHelper::setAction2(const QString &action)
@@ -205,6 +205,82 @@ void ShortcutsHelper::setAction2(const QString &action)
     if (iface) {
         iface->call(QDBus::NoBlock, "setAction2", action);
         Q_EMIT action2Changed();
+    }
+}
+
+QString ShortcutsHelper::getAction3()
+{
+    if (iface) {
+        QDBusReply<QString> reply = iface->call("getAction3");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return "event3";
+}
+
+void ShortcutsHelper::setAction3(const QString &action)
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "setAction3", action);
+        Q_EMIT action3Changed();
+    }
+}
+
+QString ShortcutsHelper::getAction4()
+{
+    if (iface) {
+        QDBusReply<QString> reply = iface->call("getAction4");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return "event4";
+}
+
+void ShortcutsHelper::setAction4(const QString &action)
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "setAction4", action);
+        Q_EMIT action4Changed();
+    }
+}
+
+QString ShortcutsHelper::getAction5()
+{
+    if (iface) {
+        QDBusReply<QString> reply = iface->call("getAction5");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return "event5";
+}
+
+void ShortcutsHelper::setAction5(const QString &action)
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "setAction5", action);
+        Q_EMIT action5Changed();
+    }
+}
+
+QString ShortcutsHelper::getAction6()
+{
+    if (iface) {
+        QDBusReply<QString> reply = iface->call("getAction6");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return "event6";
+}
+
+void ShortcutsHelper::setAction6(const QString &action)
+{
+    if (iface) {
+        iface->call(QDBus::NoBlock, "setAction6", action);
+        Q_EMIT action6Changed();
     }
 }
 

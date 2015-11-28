@@ -46,3 +46,6 @@ OTHER_FILES += \
     qmls/pages/ShortcutsPage.qml \
     qmls/cover/CoverPage.qml \
     qmls/ShaderTiledBackground.qml
+
+DISTFILES += \
+    qmls/pages/UsagePage.qml

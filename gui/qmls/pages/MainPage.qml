@@ -34,6 +34,13 @@ Page {
             }
 
             MenuItem {
+                text: qsTr("How to use")
+                onClicked: {
+                    pageStack.push(Qt.resolvedUrl("UsagePage.qml"))
+                }
+            }
+
+            MenuItem {
                 text: qsTr("Configuration")
                 onClicked: {
                     pageStack.push(Qt.resolvedUrl("ConfigurationPage.qml"))
@@ -73,7 +80,7 @@ Page {
             }
         }
 
-        VerticalScrollDecorator {}
+        VerticalScrollDecorator { flickable: view }
     }
 
     ConfigurationValue {

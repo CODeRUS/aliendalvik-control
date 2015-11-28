@@ -179,15 +179,15 @@ Page {
             Label {
                 text: "v" + Qt.application.version
                 font.pixelSize: Theme.fontSizeMedium
-                width: parent.width
+                width: parent.width - Theme.paddingLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
             }
 
             Label {
-                text: "Fancy menu on power key\nwritten by coderus in 0x7DE\nis dedicated to my beloved"
+                text: "Fancy menu on power key\nwritten by coderus in 0x7DF\nis dedicated to my beloved"
                 font.pixelSize: Theme.fontSizeMedium
-                width: parent.width
+                width: parent.width - Theme.paddingLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
             }
@@ -202,7 +202,7 @@ Page {
             Label {
                 text: "We accept donations via"
                 font.pixelSize: Theme.fontSizeMedium
-                width: parent.width
+                width: parent.width - Theme.paddingLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
             }
@@ -219,7 +219,7 @@ Page {
             Label {
                 text: "Me and my beloved would be grateful for every cent.\nYour donations makes application better and i can spend more time for development."
                 font.pixelSize: Theme.fontSizeMedium
-                width: parent.width
+                width: parent.width - Theme.paddingLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
             }
@@ -227,7 +227,7 @@ Page {
             Label {
                 text: "Thanks to Morpog for application icon."
                 font.pixelSize: Theme.fontSizeMedium
-                width: parent.width
+                width: parent.width - Theme.paddingLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
             }
@@ -255,6 +255,8 @@ Page {
                 }
                 visible: false
             }
+
+            Item { width: 1; height: Theme.paddingLarge }
         }
 
         VerticalScrollDecorator {}

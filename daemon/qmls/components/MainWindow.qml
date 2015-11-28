@@ -9,19 +9,10 @@ Window {
     default property alias _contentChildren: content.data
     property alias contentItem: content
 
-    property bool isPortrait: deviceOrientation == Orientation.Portrait || deviceOrientation == Orientation.PortraitInverted
-    property bool isLandscape: deviceOrientation == Orientation.Landscape || deviceOrientation == Orientation.LandscapeInverted
+    readonly property bool isPortrait: deviceOrientation == Orientation.Portrait || deviceOrientation == Orientation.PortraitInverted
+    readonly property bool isLandscape: deviceOrientation == Orientation.Landscape || deviceOrientation == Orientation.LandscapeInverted
+    readonly property int deviceRotation: rotatingItem.rotation
 
-    signal appeared
-    signal disappeared
-
-    function appear() {
-        appearAnimation.start()
-    }
-
-    function disappear() {
-        disappearAnimation.start()
-    }
 
     Item {
         id: root
@@ -55,30 +46,8 @@ Window {
                 id: content
                 width: parent.width
                 height: parent.height
-                y: -Screen.height
+                y: 0
             }
         }
-    }
-
-    SmoothedAnimation {
-        id: appearAnimation
-        target: content
-        property: "y"
-        from: -Screen.height
-        to: 0
-        alwaysRunToEnd: true
-        duration: 200
-        onStopped: window.appeared()
-    }
-
-    SmoothedAnimation {
-        id: disappearAnimation
-        target: content
-        property: "y"
-        from: 0
-        to: -Screen.height
-        alwaysRunToEnd: true
-        duration: 200
-        onStopped: window.disappeared()
     }
 }

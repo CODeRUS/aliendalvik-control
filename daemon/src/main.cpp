@@ -1,7 +1,12 @@
 #include <QtQuick>
 #include <QGuiApplication>
-
 #include <sailfishapp.h>
+
+#include <QTimer>
+
+#include <unistd.h>
+#include <grp.h>
+#include <pwd.h>
 
 #include "dbuslistener.h"
 
@@ -45,14 +50,17 @@ void stdoutHandler(QtMsgType type, const QMessageLogContext &context, const QStr
 
 int main(int argc, char *argv[])
 {
+    setuid(getpwnam("nemo")->pw_uid);
+    setgid(getgrnam("privileged")->gr_gid);
+
     qInstallMessageHandler(stdoutHandler);
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     app->setQuitOnLastWindowClosed(false);
     app->setApplicationDisplayName("Powermenu 2");
     app->setApplicationName("Powermenu 2");
-    new DBusListener(app.data());
-
+    QScopedPointer<DBusListener> dbus(new DBusListener(app.data()));
+    QTimer::singleShot(1, dbus.data(), SLOT(startService()));
     return app->exec();
 }
 
