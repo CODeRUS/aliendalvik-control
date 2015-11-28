@@ -75,7 +75,7 @@ MainWindow {
     function showSettingsPage(page) {
         if (page && page.length > 0) {
             settingsIface.call("showPage", [page])
-            window.hideWithAnimation()
+            window.disappearAnimation()
         }
     }
 

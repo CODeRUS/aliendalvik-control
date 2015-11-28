@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     app->setApplicationVersion(QString(APP_VERSION));
 
     QTranslator translator;
-    if (translator.load("powermenu_en", "/usr/share/powermenu2/translations", QString(), ".qm")) {
+    if (translator.load(QString("powermenu_%1").arg(QLocale::system().name()), "/usr/share/powermenu2/translations", QString(), ".qm")) {
         app->installTranslator(&translator);
     }
 

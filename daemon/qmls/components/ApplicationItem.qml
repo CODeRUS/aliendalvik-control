@@ -8,7 +8,7 @@ IconItem {
 
     onClicked: {
         launcher.launchApplication()
-        window.disappear()
+        window.disappearAnimation()
     }
 
     LauncherItem {

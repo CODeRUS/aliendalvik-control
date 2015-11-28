@@ -9,10 +9,16 @@ class FlashlightControl : public QObject
 public:
     explicit FlashlightControl(QObject *parent = 0);
 
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
+    bool active();
+
     Q_INVOKABLE void toggle();
 
 private:
-    bool state;
+    bool _active;
+
+signals:
+    void activeChanged();
 
 };
 

@@ -18,7 +18,10 @@
 DBusListener::DBusListener(QObject *parent) :
     QObject(parent)
 {
+    mce = NULL;
     view = NULL;
+    flashlight = NULL;
+    screenshot = NULL;
 }
 
 void DBusListener::startService()

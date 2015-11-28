@@ -4,15 +4,22 @@
 
 FlashlightControl::FlashlightControl(QObject *parent) : QObject(parent)
 {
-    state = false;
+    _active = false;
+}
+
+bool FlashlightControl::active()
+{
+    return _active;
 }
 
 void FlashlightControl::toggle()
 {
     QFile flash("/sys/kernel/debug/flash_adp1650/mode");
     if (flash.open(QFile::WriteOnly)) {
-        flash.write(state ? "0" : "1");
+        flash.write(_active ? "0" : "1");
         flash.close();
-        state = !state;
+        _active = !_active;
+
+        Q_EMIT activeChanged();
     }
 }

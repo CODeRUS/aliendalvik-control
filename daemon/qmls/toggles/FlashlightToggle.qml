@@ -8,6 +8,7 @@ ToggleItem {
 
     name: qsTr("Flashlight")
     icon: "image://theme/icon-camera-wb-tungsten"
+    active: Flashlight.active
 
     onClicked: {
         Flashlight.toggle()
