@@ -8,11 +8,13 @@
 
 #include <QtDBus>
 
-class ScreenshotControl : public QObject
+class Q_DECL_EXPORT ScreenshotControl : public QObject
 {
     Q_OBJECT
 public:
     explicit ScreenshotControl(QObject *parent = 0);
+
+    static ScreenshotControl *GetInstance(QObject *parent = 0);
 
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
     bool busy();

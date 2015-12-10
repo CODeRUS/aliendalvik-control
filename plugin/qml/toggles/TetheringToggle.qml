@@ -3,7 +3,7 @@ import Sailfish.Silica 1.0
 import MeeGo.Connman 0.2
 import com.jolla.connection 1.0
 import MeeGo.QOfono 0.2
-import "../components"
+import org.coderus.powermenu 1.0
 
 ToggleItem {
     id: root

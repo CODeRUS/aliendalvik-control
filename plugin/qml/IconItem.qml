@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import org.nemomobile.dbus 2.0
 
 Item {
     id: root
@@ -9,7 +10,7 @@ Item {
     property alias icon: image.source
     property bool active: false
     property bool pressed: false
-    property bool highlighted: !window.editMode && (active || pressed)
+    property bool highlighted: !editMode && (active || pressed)
     property bool disabled: false
     property bool hidden: false
 
@@ -18,10 +19,12 @@ Item {
 
     property string settingsPage
 
-    enabled: window.editMode ? !hidden : !disabled
+    enabled: editMode ? !hidden : !disabled
 
     onDoubleClicked: {
-        window.showSettingsPage(settingsPage)
+        if (settingsPage && settingsPage.length > 0) {
+            settingsIface.call("showPage", [settingsPage])
+        }
     }
 
     signal clicked
@@ -72,10 +75,18 @@ Item {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: Theme.paddingMedium
+        anchors.bottomMargin: Theme.paddingMedium
         font.pixelSize: Theme.fontSizeExtraSmall
         color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
         truncationMode: TruncationMode.Fade
         horizontalAlignment: paintedWidth > width ? Text.AlignLeft : Text.AlignHCenter
+    }
+
+    DBusInterface {
+        id: settingsIface
+        bus: DBus.SessionBus
+        service: 'com.jolla.settings'
+        path: '/com/jolla/settings/ui'
+        iface: 'com.jolla.settings.ui'
     }
 }

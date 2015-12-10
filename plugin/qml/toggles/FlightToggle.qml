@@ -2,7 +2,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import MeeGo.Connman 0.2
 import org.nemomobile.keepalive 1.1
-import "../components"
+import org.coderus.powermenu 1.0
 
 ToggleItem {
     id: root

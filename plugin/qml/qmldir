@@ -1,0 +1,8 @@
+module org.coderus.powermenu
+plugin powermenu
+BackgroundIconButton 1.0 BackgroundIconButton.qml
+IconItem 1.0 IconItem.qml
+ToggleItem 1.0 ToggleItem.qml
+ApplicationItem 1.0 ApplicationItem.qml
+ControlRow 1.0 ControlRow.qml
+TogglesArea 1.0 TogglesArea.qml

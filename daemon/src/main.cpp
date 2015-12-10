@@ -60,10 +60,9 @@ int main(int argc, char *argv[])
     app->setApplicationDisplayName("Powermenu 2");
     app->setApplicationName("Powermenu 2");
 
-    QTranslator translator;
-    if (translator.load(QString("powermenu_%1").arg(QLocale::system().name()), "/usr/share/powermenu2/translations", QString(), ".qm")) {
-        app->installTranslator(&translator);
-    }
+    //QTranslator *translator = new QTranslator;
+    //app->installTranslator(translator);
+    //translator->load(QLocale::system(), "powermenu", "_", "/usr/share/powermenu2/translations");
 
     QScopedPointer<DBusListener> dbus(new DBusListener(app.data()));
     QTimer::singleShot(1, dbus.data(), SLOT(startService()));

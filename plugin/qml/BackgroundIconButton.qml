@@ -13,6 +13,9 @@ MouseArea {
     property alias title: label.text
     opacity: enabled ? 1.0 : Theme.highlightBackgroundOpacity
 
+    property alias imageHeight: image.height
+    property alias imageWidth: image.width
+
     Rectangle {
         anchors.fill: parent
         color: highlighted
@@ -59,7 +62,7 @@ MouseArea {
             id: label
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.margins: Theme.paddingMedium
+            anchors.margins: Theme.paddingSmall
             font.pixelSize: Theme.fontSizeSmall
             color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
             truncationMode: TruncationMode.Fade

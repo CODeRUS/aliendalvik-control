@@ -9,9 +9,6 @@
 #include <QGuiApplication>
 #include <QtQml>
 
-#include "components/togglesmodel.h"
-#include "components/fileutils.h"
-
 #include <mlite5/MGConfItem>
 #include <QDebug>
 
@@ -20,8 +17,6 @@ DBusListener::DBusListener(QObject *parent) :
 {
     mce = NULL;
     view = NULL;
-    flashlight = NULL;
-    screenshot = NULL;
 }
 
 void DBusListener::startService()
@@ -42,12 +37,6 @@ void DBusListener::startService()
                 ? "registered" : "error!");
 
     qDebug() << "listener started";
-
-    qmlRegisterType<TogglesModel>("org.coderus.powermenu.controls", 1, 0, "TogglesModel");
-    qmlRegisterType<FileUtils>("org.coderus.powermenu.controls", 1, 0, "FileUtils");
-
-    flashlight = new FlashlightControl(this);
-    screenshot = new ScreenshotControl(this);
 
     MGConfItem verConf("/apps/powermenu/version");
     int version = verConf.value(1).toInt();
@@ -268,8 +257,6 @@ void DBusListener::openPowerMenu()
         view->setClearBeforeRendering(true);
 
         view->rootContext()->setContextProperty("view", view);
-        view->rootContext()->setContextProperty("Flashlight", flashlight);
-        view->rootContext()->setContextProperty("Screenshot", screenshot);
 
         view->setSource(QUrl::fromLocalFile("/usr/share/powermenu2/qml/dialog.qml"));
     }
@@ -288,10 +275,10 @@ void DBusListener::powerButtonTrigger(const QString &triggerName)
         openPowerMenu();
     }
     else if (triggerName == "screenshot") {
-        screenshot->save();
+        ScreenshotControl::GetInstance()->save();
     }
     else if (triggerName == "flashlight") {
-        flashlight->toggle();
+        FlashlightControl::GetInstance()->toggle();
     }
     else if (triggerName.startsWith("event")) {
         MGConfItem shortcut(QString("/apps/powermenu/applicationShortcut%1").arg(triggerName.mid(5)));

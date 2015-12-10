@@ -4,7 +4,7 @@ import MeeGo.Connman 0.2
 import com.jolla.connection 1.0
 import org.nemomobile.configuration 1.0
 import org.nemomobile.dbus 2.0
-import "../components"
+import org.coderus.powermenu 1.0
 
 ToggleItem {
     id: root

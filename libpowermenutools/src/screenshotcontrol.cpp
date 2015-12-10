@@ -14,6 +14,15 @@ ScreenshotControl::ScreenshotControl(QObject *parent) : QObject(parent)
                                QDBusConnection::sessionBus(), this);
 }
 
+ScreenshotControl *ScreenshotControl::GetInstance(QObject *parent)
+{
+    static ScreenshotControl* lsSingleton = NULL;
+    if (!lsSingleton) {
+        lsSingleton = new ScreenshotControl(parent);
+    }
+    return lsSingleton;
+}
+
 bool ScreenshotControl::busy()
 {
     return _busy;

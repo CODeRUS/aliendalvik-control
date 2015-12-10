@@ -31,7 +31,7 @@ void TogglesModel::update()
     QStringList temp;
     QList<QVariantMap> tempModel;
 
-    QDir dir("/usr/share/powermenu2/qml/toggles", "*.qml");
+    QDir dir("/usr/lib/qt5/qml/org/coderus/powermenu/toggles", "*.qml");
     foreach (const QString &toggle, dir.entryList()) {
         QString path = QString("toggles/%1").arg(toggle);
 
@@ -52,7 +52,7 @@ void TogglesModel::update()
             QString path = entry.fileName();
 
             QVariantMap item;
-            item["source"] = QString("components/ApplicationItem.qml");
+            item["source"] = QString("ApplicationItem.qml");
             item["name"] = entry.name();
             item["icon"] = getIconPath(entry.icon());
             item["path"] = path;
@@ -115,7 +115,7 @@ void TogglesModel::shortcutsChanged()
                 QString path = entry.fileName();
 
                 QVariantMap item;
-                item["source"] = QString("components/ApplicationItem.qml");
+                item["source"] = QString("ApplicationItem.qml");
                 item["name"] = entry.name();
                 item["icon"] = getIconPath(entry.icon());
                 item["path"] = path;

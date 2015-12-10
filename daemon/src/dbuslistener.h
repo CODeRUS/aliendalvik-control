@@ -6,8 +6,8 @@
 #include <QtDBus>
 #include <QQuickView>
 
-#include "components/flashlightcontrol.h"
-#include "components/screenshotcontrol.h"
+#include "../libpowermenutools/src/flashlightcontrol.h"
+#include "../libpowermenutools/src/screenshotcontrol.h"
 
 #define MCE_SERVICE "com.nokia.mce"
 
@@ -116,9 +116,6 @@ private:
 
     QQuickView *view;
     QDBusInterface *mce;
-
-    FlashlightControl *flashlight;
-    ScreenshotControl *screenshot;
 
 private slots:
     void powerButtonTrigger(const QString &triggerName);

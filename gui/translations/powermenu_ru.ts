@@ -7,17 +7,17 @@
         <translation>О Powermenu 2</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/AboutPage.qml" line="236"/>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="241"/>
         <source>Activate product</source>
         <translation>Активировать продукт</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/AboutPage.qml" line="248"/>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="253"/>
         <source>Enter your PayPal e-mail</source>
         <translation>Введите вашу эл. почту PayPal</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/AboutPage.qml" line="249"/>
+        <location filename="gui/qmls/pages/AboutPage.qml" line="254"/>
         <source>PayPal e-mail</source>
         <translation>Электронная почта PayPal</translation>
     </message>
@@ -25,7 +25,7 @@
 <context>
     <name>BluetoothToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/BluetoothToggle.qml" line="11"/>
+        <location filename="plugin/qml/toggles/BluetoothToggle.qml" line="11"/>
         <source>Bluetooth</source>
         <translation>Bluetooth</translation>
     </message>
@@ -141,201 +141,234 @@
         <translation>Скриншот</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="127"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="87"/>
         <source>No action</source>
         <translation>Нет действия</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="138"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="145"/>
         <source>Restore to defaults</source>
         <translation>Восстановить по-умолчанию</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="149"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="156"/>
         <source>Configuration</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="153"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="160"/>
         <source>Powerkey configurations</source>
         <translation>Настройки кнопки включения</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="159"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="166"/>
         <source>Short press (display on)</source>
         <translation>Короткое нажатие (экран включен)</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="179"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="186"/>
         <source>Short press (display off)</source>
         <translation>Короткое нажатие (экран отключен)</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="199"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="206"/>
         <source>Long press (display on)</source>
         <translation>Долгое нажатие (экран включен)</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="219"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="226"/>
         <source>Long press (display off)</source>
         <translation>Долгое нажатие (экран отключен)</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="239"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="246"/>
         <source>Double press (display on)</source>
         <translation>Двойное нажатие (экран включен)</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="259"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="266"/>
         <source>Double press (display off)</source>
         <translation>Двойное нажатие (экран отключен)</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="277"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="284"/>
         <source>Timings configurations</source>
         <translation>Настройка задержек</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="282"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="289"/>
         <source>Longpress delay</source>
         <translation>Задержка долгого нажатия</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="287"/>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="298"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="294"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="305"/>
         <source>%1ms.</source>
         <translation>%1мс.</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="293"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="300"/>
         <source>Doublepress delay</source>
         <translation>Задержка двойного нажатия</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="303"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="310"/>
         <source>Actions configurations</source>
         <translation>Настройка действий</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="309"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="316"/>
         <source>Action 1</source>
         <translation>Действие 1</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="315"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="322"/>
         <source>event1</source>
         <comment>Application 1</comment>
         <translation>Приложение 1</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="333"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="340"/>
         <source>Application 1</source>
         <translation>Приложение 1</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="345"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="352"/>
         <source>Action 2</source>
         <translation>Действие 2</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="351"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="358"/>
         <source>event2</source>
         <comment>Application 2</comment>
         <translation>Приложение 2</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="369"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="376"/>
         <source>Application 2</source>
         <translation>Приложение 2</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="381"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="388"/>
         <source>Action 3</source>
         <translation>Действие 3</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="387"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="394"/>
         <source>event3</source>
         <comment>Application 3</comment>
         <translation>Приложение 3</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="405"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="412"/>
         <source>Application 3</source>
         <translation>Приложение 3</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="417"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="424"/>
         <source>Action 4</source>
         <translation>Действие 4</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="423"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="430"/>
         <source>event4</source>
         <comment>Application 4</comment>
         <translation>Приложение 4</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="441"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="448"/>
         <source>Application 4</source>
         <translation>Приложение 4</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="453"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="460"/>
         <source>Action 5</source>
         <translation>Действие 5</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="459"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="466"/>
         <source>event5</source>
         <comment>Application 5</comment>
         <translation>Приложение 5</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="477"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="484"/>
         <source>Application 5</source>
         <translation>Приложение 5</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="489"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="496"/>
         <source>Action 6</source>
         <translation>Действие 6</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="495"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="502"/>
         <source>event6</source>
         <comment>Application 6</comment>
         <translation>Приложение 6</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="513"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="520"/>
         <source>Application 6</source>
         <translation>Приложение 6</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="523"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="530"/>
         <source>Extra stuff</source>
         <translation>Дополнительно</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="528"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="535"/>
         <source>Show hidden shortcuts</source>
         <translation>Показывать скрытые ярлыки</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="529"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="536"/>
         <source>Inside settings selector only</source>
         <translation>Только для настроек ярлыков</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="534"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="541"/>
         <source>Yes</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="540"/>
+        <location filename="gui/qmls/pages/ConfigurationPage.qml" line="547"/>
         <source>No</source>
         <translation>Нет</translation>
+    </message>
+</context>
+<context>
+    <name>ControlRow</name>
+    <message>
+        <location filename="plugin/qml/ControlRow.qml" line="18"/>
+        <source>Reboot device</source>
+        <translation>Перезагрузка устройства</translation>
+    </message>
+    <message>
+        <location filename="plugin/qml/ControlRow.qml" line="36"/>
+        <source>Shutdown device</source>
+        <translation>Выключение устройства</translation>
+    </message>
+    <message>
+        <location filename="plugin/qml/ControlRow.qml" line="57"/>
+        <source>Shutdown</source>
+        <translation>Выключение</translation>
+    </message>
+    <message>
+        <location filename="plugin/qml/ControlRow.qml" line="65"/>
+        <source>Reboot</source>
+        <translation>Перезагрузка</translation>
+    </message>
+    <message>
+        <location filename="plugin/qml/ControlRow.qml" line="74"/>
+        <source>Edit mode</source>
+        <translation>Редактирование</translation>
+    </message>
+    <message>
+        <location filename="plugin/qml/ControlRow.qml" line="74"/>
+        <source>Lock</source>
+        <translation>Блокировка</translation>
     </message>
 </context>
 <context>
@@ -353,7 +386,7 @@ Powermenu
 <context>
     <name>FlashlightToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/FlashlightToggle.qml" line="9"/>
+        <location filename="plugin/qml/toggles/FlashlightToggle.qml" line="9"/>
         <source>Flashlight</source>
         <translation>Фонарик</translation>
     </message>
@@ -361,7 +394,7 @@ Powermenu
 <context>
     <name>FlightToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/FlightToggle.qml" line="11"/>
+        <location filename="plugin/qml/toggles/FlightToggle.qml" line="11"/>
         <source>Flight mode</source>
         <translation>Автон. режим</translation>
     </message>
@@ -369,7 +402,7 @@ Powermenu
 <context>
     <name>LocationToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/LocationToggle.qml" line="11"/>
+        <location filename="plugin/qml/toggles/LocationToggle.qml" line="11"/>
         <source>Location</source>
         <translation>Местонахождение</translation>
     </message>
@@ -420,7 +453,7 @@ Powermenu
 <context>
     <name>MobilenetworkToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/MobilenetworkToggle.qml" line="11"/>
+        <location filename="plugin/qml/toggles/MobilenetworkToggle.qml" line="11"/>
         <source>Mobile network</source>
         <translation>Мобильная сеть</translation>
     </message>
@@ -428,17 +461,17 @@ Powermenu
 <context>
     <name>OrientationlockToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/OrientationlockToggle.qml" line="14"/>
+        <location filename="plugin/qml/toggles/OrientationlockToggle.qml" line="14"/>
         <source>Portrait</source>
         <translation>Портрет</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/OrientationlockToggle.qml" line="17"/>
+        <location filename="plugin/qml/toggles/OrientationlockToggle.qml" line="17"/>
         <source>Landscape</source>
         <translation>Ландшафт</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/OrientationlockToggle.qml" line="20"/>
+        <location filename="plugin/qml/toggles/OrientationlockToggle.qml" line="20"/>
         <source>Dynamic</source>
         <translation>Динамически</translation>
     </message>
@@ -446,37 +479,37 @@ Powermenu
 <context>
     <name>RadiomodeToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="10"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="9"/>
         <source>Radio mode</source>
         <translation>Режим сети</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="25"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="24"/>
         <source>Any</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="26"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="25"/>
         <source>4G</source>
         <translation>4G</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="27"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="26"/>
         <source>4G+3G</source>
         <translation>4G+3G</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="28"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="27"/>
         <source>3G</source>
         <translation>3G</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="29"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="28"/>
         <source>3G+2G</source>
         <translation>3G+2G</translation>
     </message>
     <message>
-        <location filename="daemon/qmls/toggles/RadiomodeToggle.qml" line="30"/>
+        <location filename="plugin/qml/toggles/RadiomodeToggle.qml" line="29"/>
         <source>2G</source>
         <translation>2G</translation>
     </message>
@@ -484,7 +517,7 @@ Powermenu
 <context>
     <name>ScreenshotToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/ScreenshotToggle.qml" line="9"/>
+        <location filename="plugin/qml/toggles/ScreenshotToggle.qml" line="9"/>
         <source>Screenshot</source>
         <translation>Скриншот</translation>
     </message>
@@ -510,7 +543,7 @@ Powermenu
 <context>
     <name>TetheringToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/TetheringToggle.qml" line="12"/>
+        <location filename="plugin/qml/toggles/TetheringToggle.qml" line="12"/>
         <source>Tethering</source>
         <translation>Точка доступа</translation>
     </message>
@@ -541,7 +574,7 @@ Powermenu
 <context>
     <name>VibrationToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/VibrationToggle.qml" line="10"/>
+        <location filename="plugin/qml/toggles/VibrationToggle.qml" line="10"/>
         <source>Vibration</source>
         <translation>Вибрация</translation>
     </message>
@@ -549,42 +582,9 @@ Powermenu
 <context>
     <name>WifinetworkToggle</name>
     <message>
-        <location filename="daemon/qmls/toggles/WifinetworkToggle.qml" line="14"/>
+        <location filename="plugin/qml/toggles/WifinetworkToggle.qml" line="14"/>
         <source>Wireless</source>
         <translation>Wi-Fi</translation>
-    </message>
-</context>
-<context>
-    <name>dialog</name>
-    <message>
-        <location filename="daemon/qmls/dialog.qml" line="44"/>
-        <source>Reboot device</source>
-        <translation>Перезагрузка устройства</translation>
-    </message>
-    <message>
-        <location filename="daemon/qmls/dialog.qml" line="62"/>
-        <source>Shutdown device</source>
-        <translation>Выключение устройства</translation>
-    </message>
-    <message>
-        <location filename="daemon/qmls/dialog.qml" line="307"/>
-        <source>Shutdown</source>
-        <translation>Выключение</translation>
-    </message>
-    <message>
-        <location filename="daemon/qmls/dialog.qml" line="315"/>
-        <source>Reboot</source>
-        <translation>Перезагрузка</translation>
-    </message>
-    <message>
-        <location filename="daemon/qmls/dialog.qml" line="324"/>
-        <source>Edit mode</source>
-        <translation>Редактирование</translation>
-    </message>
-    <message>
-        <location filename="daemon/qmls/dialog.qml" line="324"/>
-        <source>Lock</source>
-        <translation>Заблокировать</translation>
     </message>
 </context>
 </TS>

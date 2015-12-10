@@ -56,11 +56,6 @@ int main(int argc, char *argv[])
     app->setApplicationName("Powermenu2 settings");
     app->setApplicationVersion(QString(APP_VERSION));
 
-    QTranslator translator;
-    if (translator.load(QString("powermenu_%1").arg(QLocale::system().name()), "/usr/share/powermenu2/translations", QString(), ".qm")) {
-        app->installTranslator(&translator);
-    }
-
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->setTitle("Powermenu2 settings");
     view->engine()->addImportPath("/usr/share/powermenu2/qml");
