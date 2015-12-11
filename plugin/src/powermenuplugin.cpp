@@ -6,6 +6,7 @@
 #include "../libpowermenutools/src/flashlightcontrol.h"
 
 #include <qqml.h>
+#include <QtQml>
 
 static QObject *screenshot_singleton_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
 {

@@ -24,10 +24,12 @@ INSTALLS = target systemd dbus qmls quickactions
 
 SOURCES += \
     src/dbuslistener.cpp \
-    src/main.cpp
+    src/main.cpp \
+    src/screenshotanimation.cpp
 
 HEADERS += \
-    src/dbuslistener.h
+    src/dbuslistener.h \
+    src/screenshotanimation.h
 
 DISTFILES += \
     qmls/dialog.qml \

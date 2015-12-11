@@ -18,6 +18,7 @@ Item {
     property alias labelItem: label
 
     property string settingsPage
+    property bool hideAfterClick: false
 
     enabled: editMode ? !hidden : !disabled
 

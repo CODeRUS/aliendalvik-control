@@ -56,14 +56,14 @@ MainWindow {
             property: "y"
             from: -testItem2.height
             to: 0
-            duration: Math.max(testItem2.height, 0)
+            duration: Math.max(testItem2.height, 0) / 2
         }
         NumberAnimation {
             target: testItem1
             property: "y"
             from: -testItem1.height
             to: testItem2.height
-            duration: Math.max(testItem1.height, 0)
+            duration: Math.max(testItem1.height, 0) / 2
         }
     }
 
@@ -74,14 +74,14 @@ MainWindow {
             property: "y"
             from: testItem2.height
             to: -testItem1.height
-            duration: Math.max(testItem1.height, 0)
+            duration: Math.max(testItem1.height, 0) / 2
         }
         NumberAnimation {
             target: testItem2
             property: "y"
             from: 0
             to: -testItem2.height
-            duration: Math.max(testItem2.height, 0)
+            duration: Math.max(testItem2.height, 0) / 2
         }
         ScriptAction {
             script: {
@@ -107,6 +107,7 @@ MainWindow {
             width: parent.width - sideMargin
             height: window.contentItem.height - testItem2.height - Theme.horizontalPageMargin * 4
             editMode: controlRow1.editMode
+            onHideWithCare: window.hideWithCare()
         }
     }
 

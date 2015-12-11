@@ -9,6 +9,8 @@
 #include "../libpowermenutools/src/flashlightcontrol.h"
 #include "../libpowermenutools/src/screenshotcontrol.h"
 
+#include "screenshotanimation.h"
+
 #define MCE_SERVICE "com.nokia.mce"
 
 # define MCE_GCONF_POWERKEY_PATH       "/system/osso/dsm/powerkey"
@@ -107,6 +109,8 @@ public:
 
     Q_SCRIPTABLE void openPowerMenu();
 
+    Q_SCRIPTABLE void showScreenshot(const QString &path);
+
 public slots:
     void startService();
 
@@ -116,6 +120,8 @@ private:
 
     QQuickView *view;
     QDBusInterface *mce;
+
+    ScreenshotAnimation *anim;
 
 private slots:
     void powerButtonTrigger(const QString &triggerName);

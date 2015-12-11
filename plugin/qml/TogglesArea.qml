@@ -16,6 +16,7 @@ GridView {
     cellWidth: Theme.itemSizeExtraLarge
     cellHeight: Theme.itemSizeLarge
     property bool editMode: false
+    signal hideWithCare
 
     add: Transition {
         SequentialAnimation {
@@ -102,8 +103,8 @@ GridView {
                     interval: 200
                     onTriggered: {
                         loaderDelegate.item.clicked()
-                        if (model.icon && model.icon.length >= 0) {
-                            window.disappearAnimation()
+                        if (loaderDelegate.item.hideAfterClick) {
+                            grid.hideWithCare()
                         }
                     }
                 }

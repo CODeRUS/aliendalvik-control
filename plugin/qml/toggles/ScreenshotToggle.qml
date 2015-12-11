@@ -9,9 +9,9 @@ ToggleItem {
     name: qsTr("Screenshot")
     icon: "image://theme/icon-m-device-download"
     disabled: Screenshot.busy
+    hideAfterClick: true
 
     onClicked: {
-        window.hideWithCare()
         Screenshot.save(800)
     }
 }

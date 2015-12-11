@@ -5,10 +5,10 @@ IconItem {
     icon: sourceModel.icon
     name: sourceModel.name
     settingsPage: "applications/%1".arg(sourceModel.path.substr(sourceModel.path.lastIndexOf("/") + 1))
+    hideAfterClick: true
 
     onClicked: {
         launcher.launchApplication()
-        //window.disappearAnimation()
     }
 
     LauncherItem {

@@ -17,6 +17,7 @@ DBusListener::DBusListener(QObject *parent) :
 {
     mce = NULL;
     view = NULL;
+    anim = new ScreenshotAnimation(this);
 }
 
 void DBusListener::startService()
@@ -266,6 +267,11 @@ void DBusListener::openPowerMenu()
     native->setWindowProperty(view->handle(), QLatin1String("CATEGORY"), "notification");
 
     view->showFullScreen();
+}
+
+void DBusListener::showScreenshot(const QString &path)
+{
+    anim->showScreenshot(path);
 }
 
 void DBusListener::powerButtonTrigger(const QString &triggerName)

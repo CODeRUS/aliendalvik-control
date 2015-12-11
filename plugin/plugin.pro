@@ -48,3 +48,6 @@ OTHER_FILES += \
     qml/toggles/VibrationToggle.qml \
     qml/toggles/WifinetworkToggle.qml
 
+DISTFILES += \
+    qml/toggles/UsbmodeToggle.qml
+

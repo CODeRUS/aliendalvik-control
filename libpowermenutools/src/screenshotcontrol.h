@@ -2,9 +2,6 @@
 #define SCREENSHOTCONTROL_H
 
 #include <QObject>
-#include <QQuickView>
-#include <QtQml>
-#include <qpa/qplatformnativeinterface.h>
 
 #include <QtDBus>
 
@@ -20,15 +17,11 @@ public:
     bool busy();
 
     Q_INVOKABLE void save(int delay = 0);
-    Q_INVOKABLE void deleteView(QQuickView *view);
 
 private slots:
     void doCapture();
 
     void onCaptureFinished(QDBusPendingCallWatcher *call);
-
-    void onViewDestroyed();
-    void onViewClosing(QQuickCloseEvent *);
 
 private:
     QDBusInterface *iface;

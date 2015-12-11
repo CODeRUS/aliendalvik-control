@@ -18,10 +18,7 @@ qmls.path = /usr/share/powermenu2/qml
 images.files = images
 images.path = /usr/share/powermenu2
 
-translations.files = \
-    translations/powermenu.qm \
-    translations/powermenu_ru.qm \
-    translations/powermenu_sv.qm
+translations.files = translations/*.qm
 translations.path = /usr/share/powermenu2/translations
 
 INSTALLS = target desktops icons qmls images translations
