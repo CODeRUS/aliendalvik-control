@@ -8,11 +8,12 @@ Row {
     height: btn1.height
     property int itemWidth
     property bool editMode: false
+    property bool powermenu: true
     property Item remorse
 
     function remorseRestart() {
         if (!remorse) {
-            remorse = remorseComponent.createObject(controlRow1.parent)
+            remorse = remorseComponent.createObject(controlRow1)
         }
 
         remorse.execute(qsTr("Reboot device"),
@@ -30,7 +31,7 @@ Row {
 
     function remorseShutdown() {
         if (!remorse) {
-            remorse = remorseComponent.createObject(controlRow1.parent)
+            remorse = remorseComponent.createObject(controlRow1)
         }
 
         remorse.execute(qsTr("Shutdown device"),
@@ -57,6 +58,7 @@ Row {
         title: qsTr("Shutdown")
         enabled: !editMode
         onClicked: remorseShutdown()
+        visible: powermenu
     }
 
     BackgroundIconButton {
@@ -66,6 +68,13 @@ Row {
         enabled: !editMode
         onClicked: remorseRestart()
         onPressAndHold: restartHomescreen()
+        visible: powermenu
+    }
+
+    Item {
+        width: itemWidth
+        height: 1
+        visible: !powermenu
     }
 
     BackgroundIconButton {
@@ -139,6 +148,7 @@ Row {
             id: remorsePopup
             y: 0
             height: controlRow1.height
+            width: controlRow1.width
             _seconds: 0
 
             Rectangle {

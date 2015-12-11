@@ -24,7 +24,7 @@ Page {
                 font.pixelSize: Theme.fontSizeMedium
                 x: Theme.paddingLarge
                 width: parent.width - Theme.paddingLarge * 2
-                horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignLeft
                 wrapMode: Text.WordWrap
             }
         }
