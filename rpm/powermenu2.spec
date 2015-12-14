@@ -5,7 +5,7 @@ Name:       powermenu2
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    PowerMenu 2
-Version:    1.0.3
+Version:    1.0.4
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -19,6 +19,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
+BuildRequires:  pkgconfig(mlite5)
 
 Summary: fancy menu and configuration for power key actions
 

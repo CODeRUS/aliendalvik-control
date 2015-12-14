@@ -117,6 +117,7 @@ MainWindow {
         height: controlRow1.height
         y: -testItem2.height
         color: Theme.highlightDimmerColor
+        property int __silica_page
 
         ControlRow {
             id: controlRow1
