@@ -10,6 +10,8 @@ Row {
     property bool editMode: false
     property bool powermenu: true
     property Item remorse
+    property alias closeVisible: btnClose.visible
+    signal closeClicked
 
     function remorseRestart() {
         if (!remorse) {
@@ -71,10 +73,15 @@ Row {
         visible: powermenu
     }
 
-    Item {
+    BackgroundIconButton {
+        id: btnClose
         width: itemWidth
-        height: 1
-        visible: !powermenu
+        iconSource: "image://theme/graphic-close-app"
+        title: qsTr("Close")
+        enabled: !editMode
+        imageHeight: btn1.imageHeight
+        imageWidth: btn1.imageWidth
+        onClicked: controlRow1.closeClicked()
     }
 
     BackgroundIconButton {

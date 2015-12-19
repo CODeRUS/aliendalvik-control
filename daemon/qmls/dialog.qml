@@ -121,6 +121,7 @@ MainWindow {
 
         ControlRow {
             id: controlRow1
+            anchors.horizontalCenter: parent.horizontalCenter
             itemWidth: testItem2.width / 3
         }
     }

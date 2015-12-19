@@ -5,7 +5,7 @@ Name:       powermenu2
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    PowerMenu 2
-Version:    1.0.4
+Version:    1.0.5
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
