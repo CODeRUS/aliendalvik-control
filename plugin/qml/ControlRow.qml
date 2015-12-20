@@ -79,6 +79,7 @@ Row {
         iconSource: "image://theme/graphic-close-app"
         title: qsTr("Close")
         enabled: !editMode
+        visible: false
         imageHeight: btn1.imageHeight
         imageWidth: btn1.imageWidth
         onClicked: controlRow1.closeClicked()
