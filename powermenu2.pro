@@ -4,6 +4,7 @@ SUBDIRS = \
     plugin \
     daemon \
     gui \
+    patch \
     $${NULL}
 
 plugin.depends = libpowermenutools

@@ -1,0 +1,131 @@
+diff --git a/PowerKeyMenu.qml b/PowerKeyMenu.qml
+index c9a663e..08f55e4 100644
+--- a/usr/share/lipstick-jolla-home-qt5/powerkey/PowerKeyMenu.qml
++++ b/usr/share/lipstick-jolla-home-qt5/powerkey/PowerKeyMenu.qml
+@@ -9,6 +9,7 @@ import org.nemomobile.dbus 2.0
+ import com.jolla.lipstick 0.1
+ import org.freedesktop.contextkit 1.0
+ import org.nemomobile.notifications 1.0 as SystemNotifications
++import org.coderus.powermenu 1.0
+ 
+ SilicaListView {
+     id: powerMenu
+@@ -78,79 +79,58 @@ SilicaListView {
+         category: "x-jolla.ambience.preview"
+     }
+ 
++    Connections {
++        target: Lipstick.compositor.powerKeyLayer.edgeFilter
++        onGestureCanceled: {
++            if (Lipstick.compositor.powerKeyLayer.edgeFilter.progress > 0) {
++                Lipstick.compositor.setDisplayOff()
++            }
++        }
++    }
++
+     header: Item {
+         id: headerItem
+ 
+         width: powerMenu.width
+-        height: powerMenu.itemHeight
++        height: column.height
+         z: powerMenu.count+1
++        property int __silica_page
+ 
+-        clip: powerTransition.running
+-
+-        states: [
+-            State {
+-               name: "no-power"
+-               when: Lipstick.compositor.powerKeyLayer.active && !shutdownButton.visible
+-            }, State {
+-                name: "power"
+-                when: shutdownButton.visible
+-                PropertyChanges {
+-                    target: lockButton
+-                    offset: -lockButton.height
+-                }
+-            }
+-        ]
+-        transitions: Transition {
+-            id: powerTransition
+-            from: "no-power"
+-            to: "power"
+-            NumberAnimation {
+-                target: lockButton
+-                property: "offset"
+-                duration: 400
+-                easing.type: Easing.InOutQuad
+-            }
+-        }
++        onHeightChanged: powerMenu.contentY = 0 - headerItem.height
+ 
+         Wallpaper {
+-            anchors.fill: shutdownButton
++            anchors.fill: column
+             horizontalOffset: powerMenu.x
+         }
+ 
+-        PowerButton {
+-            id: shutdownButton
+-
+-            width: powerMenu.width
+-            height: powerMenu.itemHeight
+-
+-            offset: lockButton.offset + height
+-
+-            clip: powerTransition.running
+-            visible: Lipstick.compositor.powerKeyPressed
+-
+-            onClicked: dsmeDbus.call("req_shutdown", [])
+-
+-            iconSource: "image://theme/graphic-power-off"
+-
+-            opacity: Math.max(0.0, Math.min(1.0,
+-                        (powerMenu.exposure - headerItem.y + powerMenu.contentY)
+-                        / headerItem.height))
+-        }
+-
+-        PowerButton {
+-            id: lockButton
+-
+-            width: powerMenu.width
+-            height: powerMenu.itemHeight
+-
+-            clip: powerTransition.running
+-            visible: !shutdownButton.visible || powerTransition.running
+-
+-            onClicked: Lipstick.compositor.setDisplayOff()
++        Column {
++            id: column
++            width: parent.width
++
++            ControlRow {
++                id: controlRow1
++                itemWidth: headerItem.width / 3
++                powermenu: Lipstick.compositor.powerKeyPressed
++                closeVisible: !powermenu && !Desktop.settings.close_from_top && Lipstick.compositor.appLayer.window
++                anchors.horizontalCenter: parent.horizontalCenter
++                onCloseClicked: {
++                    Lipstick.compositor.appLayer._closeDismissedWindow = true
++                    Lipstick.compositor.appLayer.close()
++                    Lipstick.compositor.powerKeyLayer.hide()
++                }
++            }
+ 
+-            iconSource: "image://theme/graphic-display-blank"
++            TogglesArea {
++                id: togglesArea
++                height: togglesArea.contentHeight
++                width: headerItem.width - sideMargin
++                editMode: controlRow1.editMode
++                onHideWithCare: Lipstick.compositor.powerKeyLayer.hide()
+ 
+-            opacity: shutdownButton.opacity
++                Behavior on height {
++                    NumberAnimation { duration: 200 }
++                }
++            }
+         }
+     }
+ 

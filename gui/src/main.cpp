@@ -1,6 +1,8 @@
 #include <QtQuick>
 #include <QGuiApplication>
 #include <QQuickView>
+#include <QLocale>
+#include <QTranslator>
 
 #include <sailfishapp.h>
 
@@ -55,6 +57,10 @@ int main(int argc, char *argv[])
     app->setApplicationDisplayName("Powermenu2 settings");
     app->setApplicationName("Powermenu2 settings");
     app->setApplicationVersion(QString(APP_VERSION));
+
+    QTranslator *translator = new QTranslator;
+    translator->load(QLocale::system(), "powermenu", "_", "/usr/share/powermenu2/translations");
+    app->installTranslator(translator);
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->setTitle("Powermenu2 settings");

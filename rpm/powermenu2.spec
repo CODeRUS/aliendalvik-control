@@ -5,7 +5,7 @@ Name:       powermenu2
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    PowerMenu 2
-Version:    1.0.5
+Version:    1.0.7
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -26,6 +26,18 @@ Summary: fancy menu and configuration for power key actions
 %description
 Powermenu - fancy menu and configuration for power key actions
 
+
+%package -n sailfishos-ambience-powermenu2
+Summary:    Ambience Powermenu2
+Group:      Qt/Qt
+License:    WTFPL
+Requires:   patchmanager
+Requires:   sailfish-version >= 2.0.0
+Requires:   %{name} >= %{version}
+BuildArch:  noarch
+
+%description -n sailfishos-ambience-powermenu2
+Patch replacing ambience switcher top content by Powermenu2
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -89,16 +101,30 @@ fi
 %post
 systemctl-user restart powermenu.service
 
+%pre -n sailfishos-ambience-powermenu2
+if [ -d /var/lib/patchmanager/ausmt/patches/sailfishos-ambience-powermenu2 ]; then
+/usr/sbin/patchmanager -u sailfishos-ambience-powermenu2 || true
+fi
+
+%preun -n sailfishos-ambience-powermenu2
+if [ -d /var/lib/patchmanager/ausmt/patches/sailfishos-ambience-powermenu2 ]; then
+/usr/sbin/patchmanager -u sailfishos-ambience-powermenu2 || true
+fi
+
 %files
-%defattr(-,root,root,-)
+%defattr(-,root,root,644)
 %attr(4755, root, root) %{_bindir}/powermenu2-daemon
 %{_bindir}/powermenu2-gui
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png
 %{_datadir}/powermenu2
-/usr/share/dbus-1/services/org.coderus.powermenu.service
-/usr/lib/libpowermenutools.so
-/usr/lib/qt5/qml/org/coderus/powermenu
-/usr/lib/systemd/user/*.service
-/usr/lib/systemd/user/post-user-session.target.wants/*.service
-/usr/share/lipstick/quickactions/org.coderus.powermenu.conf
+%{_datadir}/dbus-1/services/org.coderus.powermenu.service
+%{_libdir}/libpowermenutools.so
+%{_libdir}/qt5/qml/org/coderus/powermenu
+%{_libdir}/systemd/user/*.service
+%{_libdir}/systemd/user/post-user-session.target.wants/*.service
+%{_datadir}/lipstick/quickactions/org.coderus.powermenu.conf
+
+%files -n sailfishos-ambience-powermenu2
+%defattr(-,root,root,644)
+%{_datadir}/patchmanager/patches/sailfishos-ambience-powermenu2

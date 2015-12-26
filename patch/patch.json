@@ -1,0 +1,8 @@
+{
+    "name": "Ambience Powermenu2",
+    "description": "Patch replacing ambience switcher top content by Powermenu2",
+    "category": "homescreen",
+    "infos": {
+        "maintainer": "coderus"
+    }
+}
