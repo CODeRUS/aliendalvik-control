@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Android open url
+NotShowIn=X-MeeGo;
+MimeType=x-maemo-urischeme/http;x-maemo-urischeme/https;
+X-Maemo-Service=org.coderus.aliendalvikcontrol
+X-Maemo-Object-Path=/
+X-Maemo-Method=org.coderus.aliendalvikcontrol.uriActivitySelector

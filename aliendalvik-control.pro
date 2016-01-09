@@ -1,15 +1,7 @@
-TARGET = aliendalvik-control
-
-QT += dbus
-
-SOURCES += \
-    src/main.cpp \
-    src/dbusmain.cpp \
-    src/adaptor.cpp
-
-HEADERS += \
-    src/dbusmain.h \
-    src/adaptor.h
+TEMPLATE = subdirs
+SUBDIRS = \
+#    gui \
+    daemon
 
 OTHER_FILES += \
     rpm/aliendalvik-control.spec \

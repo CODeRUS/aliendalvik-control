@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.coderus.aliendalvikcontrol
+Exec=/usr/bin/aliendalvik-control
