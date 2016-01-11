@@ -77,7 +77,7 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
         }
     }
     else {
-        QString activity = interface + "/" + member.replace("_", ".");
+        QString activity = interface + "/" + member.replace("_", ".").replace("UNDRSCRRRR", "_");
         componentActivity(activity, dbusArguments.first().toString());
     }
 
@@ -118,12 +118,12 @@ void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
 
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
 {
-    if (data.isEmpty()) {
-        runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << component);
+    QStringList params;
+    params << "com.android.commands.am.Am" << "start" << "-n" << component;
+    if (!data.isEmpty()) {
+        params << "-a" << "android.intent.action.VIEW" << "-d" << data;
     }
-    else {
-        runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-n" << component << "-d" << data);
-    }
+    runCommand("am.jar", params);
 }
 
 void MimeHandlerAdaptor::runCommand(const QString &jar, const QStringList &params)
@@ -142,7 +142,7 @@ void MimeHandlerAdaptor::runCommand(const QString &jar, const QStringList &param
 void MimeHandlerAdaptor::desktopChanged(const QString &path)
 {
     qDebug() << path;
-    qDebug() << _watcher->files();
+
     QFile desktop(path);
     if (desktop.exists()) {
         if (!_watcher->files().contains(path)) {
@@ -167,7 +167,7 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
                     out << "MimeType=text/html;x-maemo-urischeme/http;x-maemo-urischeme/https;\n";
                     out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
                     out << "X-Maemo-Object-Path=/\n";
-                    out << "X-Maemo-Method=" + package + "." + activity.replace(".", "_");
+                    out << "X-Maemo-Method=" + package + "." + activity.replace("_", "UNDRSCRRRR").replace(".", "_") + "\n";
                 }
             }
             desktop.close();
@@ -186,9 +186,7 @@ void MimeHandlerAdaptor::readApplications(const QString &)
     qDebug() << "working";
     QDir appl(_watchDir);
     foreach (const QString &desktoppath, appl.entryList(QStringList() << "apkd_launcher_*.desktop")) {
-        if (desktoppath == "apkd_launcher_test.desktop") {
-            desktopChanged(_watchDir + desktoppath);
-        }
+        desktopChanged(_watchDir + desktoppath);
     }
 }
 
