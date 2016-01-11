@@ -24,9 +24,6 @@ public:
     bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection);
 
 private:
-    QString headerXml() const;
-    QString footerXml() const;
-
     void sendKeyevent(int code);
     void sendInput(const QString &text);
     void broadcastIntent(const QString &intent);
@@ -40,11 +37,10 @@ private:
 
     QString _watchDir;
     QFileSystemWatcher *_watcher;
-    QString _xml;
-    QHash<QString, QString> _componentHash;
 
 private slots:
-    void handlersChanged(const QString &);
+    void readApplications(const QString &);
+    void desktopChanged(const QString &path);
 
 };
 

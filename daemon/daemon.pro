@@ -25,3 +25,8 @@ desktop.files = \
 desktop.path = /usr/share/applications
 
 INSTALLS += desktop
+
+systemd.files = systemd/aliendalvik-control.service
+systemd.path = /usr/lib/systemd/user
+
+INSTALLS += systemd

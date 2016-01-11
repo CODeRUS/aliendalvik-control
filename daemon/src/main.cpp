@@ -2,6 +2,7 @@
 #include <QScopedPointer>
 #include <QTimer>
 #include <QDir>
+#include <QFile>
 #include <QDebug>
 
 #include <sys/types.h>
@@ -13,6 +14,25 @@ int main(int argc, char *argv[])
 {
     ::setgid(0);
     ::setuid(0);
+
+    if (argc > 1 && strcmp(argv[1], "restore") == 0) {
+        QString appsDir("/usr/share/applications/");
+        QDir appl(appsDir);
+        foreach (const QString &desktoppath, appl.entryList(QStringList() << "apkd_launcher_*.desktop")) {
+            QString path = appsDir + desktoppath;
+            QFile desktop(path);
+            if (desktop.open(QFile::ReadWrite | QFile::Text)) {
+                QString content = QString::fromUtf8(desktop.readAll());
+                if (content.contains("MimeType")) {
+                    int off0 = content.indexOf("MimeType");
+                    desktop.resize(off0);
+                }
+                desktop.close();
+            }
+        }
+        return 0;
+    }
+
     ::chroot("/opt/alien");
     ::chdir("/");
 

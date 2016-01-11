@@ -1,0 +1,12 @@
+[Unit]
+Description=Aliendalvik Control
+Requires=lipstick.service
+After=lipstick.service
+
+[Service]
+Type=dbus
+ExecStart=/usr/bin/aliendalvik-control
+BusName=org.coderus.aliendalvikcontrol
+
+[Install]
+WantedBy=post-user-session.target

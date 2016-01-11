@@ -6,13 +6,12 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
     , _watcher(new QFileSystemWatcher(this))
 {
-    _watchDir = QString("/home/nemo/.config/aliendalvikcontrol/mimehandlers/");
+    _watchDir = QString("/usr/share/applications/");
     _watcher->addPath(_watchDir);
 
-    _xml = QString("") + headerXml() + footerXml();
-
-    QObject::connect(_watcher, SIGNAL(directoryChanged(QString)), this, SLOT(handlersChanged(QString)));
-    handlersChanged(_watchDir);
+    QObject::connect(_watcher, SIGNAL(fileChanged(QString)), this, SLOT(desktopChanged(QString)));
+    QObject::connect(_watcher, SIGNAL(directoryChanged(QString)), this, SLOT(readApplications(QString)));
+    readApplications(_watchDir);
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -20,56 +19,6 @@ MimeHandlerAdaptor::~MimeHandlerAdaptor()
 }
 
 QString MimeHandlerAdaptor::introspect(const QString &) const
-{
-    return _xml;
-}
-
-bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnection &connection)
-{
-    const QVariantList dbusArguments = message.arguments();
-
-    QString member = message.member();
-    QString interface = message.interface();
-
-    qDebug() << interface << member << dbusArguments;
-
-    if (interface == QLatin1String("org.freedesktop.DBus.Introspectable")) {
-        return false;
-    }
-    if (member.startsWith("open")) {
-        QString component = member.mid(4);
-        if (_componentHash.contains(component)) {
-            qDebug() << component << _componentHash[component];
-            componentActivity(_componentHash[component], dbusArguments.first().toString());
-        }
-    }
-    else {
-        if (member == "sendKeyevent") {
-            sendKeyevent(dbusArguments.first().toInt());
-        }
-        else if (member == "sendInput") {
-            sendInput(dbusArguments.first().toString());
-        }
-        else if (member == "broadcastIntent") {
-            broadcastIntent(dbusArguments.first().toString());
-        }
-        else if (member == "startIntent") {
-            startIntent(dbusArguments.first().toString());
-        }
-        else if (member == "uriActivity") {
-            uriActivity(dbusArguments.first().toString());
-        }
-        else if (member == "uriActivitySelector") {
-            uriActivitySelector(dbusArguments.first().toString());
-        }
-    }
-
-    QDBusMessage reply = message.createReply(QVariantList());
-    connection.call(reply, QDBus::NoBlock);
-    return true;
-}
-
-QString MimeHandlerAdaptor::headerXml() const
 {
     QString xml;
     xml  = "  <interface name=\"org.coderus.aliendalvikcontrol\">\n";
@@ -91,16 +40,51 @@ QString MimeHandlerAdaptor::headerXml() const
     xml += "    <method name=\"uriActivitySelector\">\n";
     xml += "      <arg name=\"uri\" type=\"s\" direction=\"in\"/>\n";
     xml += "    </method>\n";
-    return xml;
-}
-
-QString MimeHandlerAdaptor::footerXml() const
-{
-    QString xml;
     xml += "  </interface>\n";
     return xml;
 }
 
+bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnection &connection)
+{
+    const QVariantList dbusArguments = message.arguments();
+
+    QString member = message.member();
+    QString interface = message.interface();
+
+    qDebug() << interface << member << dbusArguments;
+
+    if (interface == QLatin1String("org.freedesktop.DBus.Introspectable")) {
+        return false;
+    }
+    else if (interface == "org.coderus.aliendalvikcontrol" || interface == "") {
+        if (member == "sendKeyevent") {
+            sendKeyevent(dbusArguments.first().toInt());
+        }
+        else if (member == "sendInput") {
+            sendInput(dbusArguments.first().toString());
+        }
+        else if (member == "broadcastIntent") {
+            broadcastIntent(dbusArguments.first().toString());
+        }
+        else if (member == "startIntent") {
+            startIntent(dbusArguments.first().toString());
+        }
+        else if (member == "uriActivity") {
+            uriActivity(dbusArguments.first().toString());
+        }
+        else if (member == "uriActivitySelector") {
+            uriActivitySelector(dbusArguments.first().toString());
+        }
+    }
+    else {
+        QString activity = interface + "/" + member.replace("_", ".");
+        componentActivity(activity, dbusArguments.first().toString());
+    }
+
+    QDBusMessage reply = message.createReply(QVariantList());
+    connection.call(reply, QDBus::NoBlock);
+    return true;
+}
 
 void MimeHandlerAdaptor::sendKeyevent(int code)
 {
@@ -134,7 +118,12 @@ void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
 
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
 {
-    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-n" << component << "-d" << data);
+    if (data.isEmpty()) {
+        runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << component);
+    }
+    else {
+        runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-n" << component << "-d" << data);
+    }
 }
 
 void MimeHandlerAdaptor::runCommand(const QString &jar, const QStringList &params)
@@ -150,54 +139,56 @@ void MimeHandlerAdaptor::runCommand(const QString &jar, const QStringList &param
     QProcess::startDetached(program, arguments);
 }
 
-void MimeHandlerAdaptor::handlersChanged(const QString &)
+void MimeHandlerAdaptor::desktopChanged(const QString &path)
 {
-    qDebug() << "working";
-    _componentHash.clear();
-    _xml = headerXml();
-    QString applications("/usr/share/applications/");
-    QString dprefix("url-handler-");
-    QDir appl(applications);
-    foreach (const QString &desktoppath, appl.entryList()) {
-        QFile desktop(applications + desktoppath);
-        if (desktoppath.startsWith(dprefix) && desktop.exists()) {
-            desktop.remove();
+    qDebug() << path;
+    qDebug() << _watcher->files();
+    QFile desktop(path);
+    if (desktop.exists()) {
+        if (!_watcher->files().contains(path)) {
+            qDebug() << "new desktop" << path;
+            _watcher->addPath(path);
         }
-    }
-    QDir dir(_watchDir);
-    foreach (const QString &handlerpath, dir.entryList()) {
-        QFile handler(_watchDir + handlerpath);
-        if (handler.exists() && handler.open(QFile::ReadOnly)) {
-            QTextStream in(&handler);
-            if (!in.atEnd()) {
-                QString component = in.readLine();
-                qDebug() << "Adding" << handlerpath << component << "method to dbus";
-                _xml += QString("    <method name=\"open%1\">\n").arg(handlerpath);
-                _xml += "      <arg name=\"uri\" type=\"s\" direction=\"in\"/>\n";
-                _xml += "    </method>\n";
-                _componentHash[handlerpath] = component;
-                QFile desktop(applications + dprefix + handlerpath + ".desktop");
-                if (desktop.open(QFile::WriteOnly | QFile::Truncate)) {
-                    qDebug() << "Creating" << desktop.fileName();
+
+        if (desktop.open(QFile::ReadWrite | QFile::Text)) {
+            QString content = QString::fromUtf8(desktop.readAll());
+            if (!content.contains("MimeType")) {
+                int off0 = content.indexOf("Exec=apkd-launcher ");
+                if (off0 > 0) {
+                    int off1 = content.indexOf(" ", off0 + 20) + 1;
+                    int off2 = content.indexOf("\n", off1) - 1;
+                    QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
+                    QString package = data[0];
+                    QString activity = data[1];
+                    qDebug() << path << package << activity;
                     QTextStream out(&desktop);
-                    out << "[Desktop Entry]\n";
-                    out << "Type=Application\n";
-                    out << "Name=Android " + handlerpath + "\n";
-                    out << "Exec=\n";
+                    desktop.seek(desktop.size());
+                    out << "\n";
                     out << "MimeType=text/html;x-maemo-urischeme/http;x-maemo-urischeme/https;\n";
                     out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
                     out << "X-Maemo-Object-Path=/\n";
-                    out << "X-Maemo-Method=org.coderus.aliendalvikcontrol.open" + handlerpath + "\n";
-                    if (!in.atEnd()) {
-                        QString hidden = in.readLine();
-                        out << "NoDisplay=" + hidden + "\n";
-                    }
-                    desktop.close();
+                    out << "X-Maemo-Method=" + package + "." + activity.replace(".", "_");
                 }
             }
-            handler.close();
+            desktop.close();
         }
     }
-    _xml += footerXml();
+    else {
+        if (_watcher->files().contains(path)) {
+            qDebug() << "deleted desktop" << path;
+            _watcher->removePath(path);
+        }
+    }
+}
+
+void MimeHandlerAdaptor::readApplications(const QString &)
+{
+    qDebug() << "working";
+    QDir appl(_watchDir);
+    foreach (const QString &desktoppath, appl.entryList(QStringList() << "apkd_launcher_*.desktop")) {
+        if (desktoppath == "apkd_launcher_test.desktop") {
+            desktopChanged(_watchDir + desktoppath);
+        }
+    }
 }
 
