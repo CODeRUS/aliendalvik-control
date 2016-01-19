@@ -5,7 +5,7 @@ Name:       aliendalvik-control
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Aliendalvik control
-Version:    1.0.0
+Version:    1.0.1
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -37,18 +37,21 @@ rm -rf %{buildroot}
 %qmake5_install
 
 %pre
+systemctl-user stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
-killall aliendalvik-control
+killall aliendalvik-control ||:
 fi
+/usr/bin/aliendalvik-control restore ||:
 
 %post
-systemctl-user restart aliendalvik-control
+systemctl-user restart aliendalvik-control ||:
 
 %preun
-/usr/bin/aliendalvik-control restore
+systemctl-user stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
-killall aliendalvik-control
+killall aliendalvik-control ||:
 fi
+/usr/bin/aliendalvik-control restore ||:
 
 %files
 %defattr(-,root,root,-)

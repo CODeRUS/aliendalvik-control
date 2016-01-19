@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
             QFile desktop(path);
             if (desktop.open(QFile::ReadWrite | QFile::Text)) {
                 QString content = QString::fromUtf8(desktop.readAll());
-                if (content.contains("MimeType")) {
-                    int off0 = content.indexOf("MimeType");
-                    desktop.resize(off0);
+                if (content.contains("MimeType=")) {
+                    int off0 = content.indexOf("MimeType=");
+                    desktop.resize(off0 - 1);
                 }
                 desktop.close();
             }

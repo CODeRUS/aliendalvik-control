@@ -77,7 +77,7 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
         }
     }
     else {
-        QString activity = interface + "/" + member.replace("_", ".").replace("UNDRSCRRRR", "_");
+        QString activity = interface + "/" + QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
         componentActivity(activity, dbusArguments.first().toString());
     }
 
@@ -160,14 +160,18 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
                     QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
                     QString package = data[0];
                     QString activity = data[1];
+                    activity = QString::fromLatin1(activity.toLatin1().toPercentEncoding(QByteArray(), QByteArray("-._~")).replace("%", "_"));
                     qDebug() << path << package << activity;
                     QTextStream out(&desktop);
-                    desktop.seek(desktop.size());
-                    out << "\n";
+                    desktop.seek(desktop.size() - 1);
+                    QString sym = out.read(1);
+                    if (sym != "\n") {
+                        out << "\n";
+                    }
                     out << "MimeType=text/html;x-maemo-urischeme/http;x-maemo-urischeme/https;\n";
                     out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
                     out << "X-Maemo-Object-Path=/\n";
-                    out << "X-Maemo-Method=" + package + "." + activity.replace("_", "UNDRSCRRRR").replace(".", "_") + "\n";
+                    out << "X-Maemo-Method=" + package + "." + activity + "\n";
                 }
             }
             desktop.close();
