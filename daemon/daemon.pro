@@ -30,3 +30,18 @@ systemd.files = systemd/aliendalvik-control.service
 systemd.path = /usr/lib/systemd/user
 
 INSTALLS += systemd
+
+settingsjson.files = settings/aliendalvikcontrol.json
+settingsjson.path = /usr/share/jolla-settings/entries
+
+INSTALLS += settingsjson
+
+settingsqml.files = settings/main.qml
+settingsqml.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
+
+INSTALLS += settingsqml
+
+settingspng.files = settings/icon-m-aliendalvikcontrol.png
+settingspng.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
+
+INSTALLS += settingspng

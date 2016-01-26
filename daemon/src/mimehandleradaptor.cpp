@@ -44,6 +44,13 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    </method>\n";
     xml += "    <method name=\"showNavBar\">\n";
     xml += "    </method>\n";
+    xml += "    <method name=\"shareFile\">\n";
+    xml += "      <arg name=\"filename\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"mimetype\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"shareText\">\n";
+    xml += "      <arg name=\"text\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
     xml += "  </interface>\n";
     return xml;
 }
@@ -61,32 +68,44 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
         return false;
     }
     else if (interface == "org.coderus.aliendalvikcontrol" || interface == "") {
-        if (member == "sendKeyevent") {
-            sendKeyevent(dbusArguments.first().toInt());
+        if (dbusArguments.size() == 0) {
+            if (member == "hideNavBar") {
+                hideNavBar();
+            }
+            else if (member == "showNavBar") {
+                showNavBar();
+            }
         }
-        else if (member == "sendInput") {
-            sendInput(dbusArguments.first().toString());
+        else if (dbusArguments.size() == 1) {
+            if (member == "sendKeyevent") {
+                sendKeyevent(dbusArguments.first().toInt());
+            }
+            else if (member == "sendInput") {
+                sendInput(dbusArguments.first().toString());
+            }
+            else if (member == "broadcastIntent") {
+                broadcastIntent(dbusArguments.first().toString());
+            }
+            else if (member == "startIntent") {
+                startIntent(dbusArguments.first().toString());
+            }
+            else if (member == "uriActivity") {
+                uriActivity(dbusArguments.first().toString());
+            }
+            else if (member == "uriActivitySelector") {
+                uriActivitySelector(dbusArguments.first().toString());
+            }
+            else if (member == "shareText") {
+                shareText(dbusArguments.first().toString());
+            }
         }
-        else if (member == "broadcastIntent") {
-            broadcastIntent(dbusArguments.first().toString());
-        }
-        else if (member == "startIntent") {
-            startIntent(dbusArguments.first().toString());
-        }
-        else if (member == "uriActivity") {
-            uriActivity(dbusArguments.first().toString());
-        }
-        else if (member == "uriActivitySelector") {
-            uriActivitySelector(dbusArguments.first().toString());
-        }
-        else if (member == "hideNavBar") {
-            hideNavBar();
-        }
-        else if (member == "showNavBar") {
-            showNavBar();
+        else if (dbusArguments.size() == 2) {
+            if (member == "shareFile") {
+                shareFile(dbusArguments);
+            }
         }
     }
-    else {
+    else if (dbusArguments.size() == 1) {
         QString activity = interface + "/" + QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
         componentActivity(activity, dbusArguments.first().toString());
     }
@@ -134,6 +153,28 @@ void MimeHandlerAdaptor::hideNavBar()
 void MimeHandlerAdaptor::showNavBar()
 {
     appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
+}
+
+void MimeHandlerAdaptor::shareFile(const QVariantList &args)
+{
+    QStringList params;
+    params << "com.android.commands.am.Am";
+    params << "start" << "-a" << "android.intent.action.SEND" << "-t";
+    params << args[1].toString();
+    params << "--eu" << "android.intent.extra.STREAM";
+    params << args[0].toString();
+    appProcess("am.jar", QStringList() << params);
+}
+
+void MimeHandlerAdaptor::shareText(const QString &text)
+{
+    QStringList params;
+    params << "com.android.commands.am.Am";
+    params << "start" << "-a" << "android.intent.action.SEND" << "-t";
+    params << "text/*";
+    params << "--es" << "android.intent.extra.TEXT";
+    params << text;
+    appProcess("am.jar", QStringList() << params);
 }
 
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)

@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QTextStream>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -22,11 +23,21 @@ int main(int argc, char *argv[])
             QString path = appsDir + desktoppath;
             QFile desktop(path);
             if (desktop.open(QFile::ReadWrite | QFile::Text)) {
-                QString content = QString::fromUtf8(desktop.readAll());
-                if (content.contains("MimeType=")) {
-                    int off0 = content.indexOf("MimeType=");
-                    desktop.resize(off0 - 1);
+                QString data;
+                QTextStream stream(&desktop);
+                while (!stream.atEnd()) {
+                    QString line = stream.readLine();
+                    if (!line.startsWith("MimeType") &&
+                            !line.startsWith("X-Maemo-Method") &&
+                            !line.startsWith("X-Maemo-Object") &&
+                            !line.startsWith("X-Maemo-Service")) {
+                        data.append(line);
+                        data.append("\n");
+                    }
                 }
+                desktop.seek(0);
+                desktop.resize(0);
+                stream << data;
                 desktop.close();
             }
         }

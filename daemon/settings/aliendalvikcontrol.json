@@ -1,0 +1,15 @@
+{
+    "translation_catalog": "settings-system",
+    "entries": [
+        {
+            "path": "system_settings/look_and_feel/aliendalvikcontrol",
+            "title": "Aliendalvik Control",
+            "type": "page",
+            "icon": "/usr/share/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvikcontrol.png",
+            "order": 1000,
+            "params": {
+                "source": "/usr/share/jolla-settings/pages/aliendalvikcontrol/main.qml"
+            }
+        }
+    ]
+}

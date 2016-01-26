@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-#    gui \
-    daemon
+    daemon \
+    shareui
 
 OTHER_FILES += \
     rpm/aliendalvik-control.spec \

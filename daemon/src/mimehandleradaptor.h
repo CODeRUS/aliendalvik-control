@@ -32,6 +32,8 @@ private:
     void uriActivitySelector(const QString &uri);
     void hideNavBar();
     void showNavBar();
+    void shareFile(const QVariantList &args);
+    void shareText(const QString &text);
 
     void componentActivity(const QString &component, const QString &data);
 
