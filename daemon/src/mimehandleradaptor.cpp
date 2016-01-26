@@ -40,6 +40,10 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    <method name=\"uriActivitySelector\">\n";
     xml += "      <arg name=\"uri\" type=\"s\" direction=\"in\"/>\n";
     xml += "    </method>\n";
+    xml += "    <method name=\"hideNavBar\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"showNavBar\">\n";
+    xml += "    </method>\n";
     xml += "  </interface>\n";
     return xml;
 }
@@ -75,6 +79,12 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
         else if (member == "uriActivitySelector") {
             uriActivitySelector(dbusArguments.first().toString());
         }
+        else if (member == "hideNavBar") {
+            hideNavBar();
+        }
+        else if (member == "showNavBar") {
+            showNavBar();
+        }
     }
     else {
         QString activity = interface + "/" + QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
@@ -88,32 +98,42 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
 
 void MimeHandlerAdaptor::sendKeyevent(int code)
 {
-    runCommand("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code));
+    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code));
 }
 
 void MimeHandlerAdaptor::sendInput(const QString &text)
 {
-    runCommand("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
+    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
 }
 
 void MimeHandlerAdaptor::broadcastIntent(const QString &intent)
 {
-    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
 }
 
 void MimeHandlerAdaptor::startIntent(const QString &intent)
 {
-    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.split(" "));
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.split(" "));
 }
 
 void MimeHandlerAdaptor::uriActivity(const QString &uri)
 {
-    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri);
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri);
 }
 
 void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
 {
-    runCommand("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri);
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri);
+}
+
+void MimeHandlerAdaptor::hideNavBar()
+{
+    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
+}
+
+void MimeHandlerAdaptor::showNavBar()
+{
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
 }
 
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
@@ -123,10 +143,10 @@ void MimeHandlerAdaptor::componentActivity(const QString &component, const QStri
     if (!data.isEmpty()) {
         params << "-a" << "android.intent.action.VIEW" << "-d" << data;
     }
-    runCommand("am.jar", params);
+    appProcess("am.jar", params);
 }
 
-void MimeHandlerAdaptor::runCommand(const QString &jar, const QStringList &params)
+void MimeHandlerAdaptor::appProcess(const QString &jar, const QStringList &params)
 {
     qputenv("CLASSPATH", QString("/system/framework/%1").arg(jar).toUtf8());
 
@@ -137,6 +157,13 @@ void MimeHandlerAdaptor::runCommand(const QString &jar, const QStringList &param
     qDebug() << "Executing" << program << arguments;
 
     QProcess::startDetached(program, arguments);
+}
+
+void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &params)
+{
+    qDebug() << "Executing" << program << params;
+
+    QProcess::startDetached(program, params);
 }
 
 void MimeHandlerAdaptor::desktopChanged(const QString &path)

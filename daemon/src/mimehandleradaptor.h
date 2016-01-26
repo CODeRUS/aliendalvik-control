@@ -30,10 +30,13 @@ private:
     void startIntent(const QString &intent);
     void uriActivity(const QString &uri);
     void uriActivitySelector(const QString &uri);
+    void hideNavBar();
+    void showNavBar();
 
     void componentActivity(const QString &component, const QString &data);
 
-    void runCommand(const QString &jar, const QStringList &params);
+    void appProcess(const QString &jar, const QStringList &params);
+    void runCommand(const QString &program, const QStringList &params);
 
     QString _watchDir;
     QFileSystemWatcher *_watcher;
