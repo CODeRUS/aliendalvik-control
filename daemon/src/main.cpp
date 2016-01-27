@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
             if (desktop.open(QFile::ReadWrite | QFile::Text)) {
                 QString data;
                 QTextStream stream(&desktop);
+                stream.setCodec("UTF-8");
                 while (!stream.atEnd()) {
                     QString line = stream.readLine();
                     if (!line.startsWith("MimeType") &&

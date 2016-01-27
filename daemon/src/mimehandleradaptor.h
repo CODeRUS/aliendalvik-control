@@ -35,6 +35,8 @@ private:
     void shareFile(const QVariantList &args);
     void shareText(const QString &text);
 
+    QString getFocusedApp();
+
     void componentActivity(const QString &component, const QString &data);
 
     void appProcess(const QString &jar, const QStringList &params);
@@ -43,9 +45,13 @@ private:
     QString _watchDir;
     QFileSystemWatcher *_watcher;
 
+    bool _isTopmostAndroid;
+
 private slots:
     void readApplications(const QString &);
     void desktopChanged(const QString &path);
+
+    void topmostIdChanged(int pId);
 
 };
 

@@ -12,6 +12,9 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     QObject::connect(_watcher, SIGNAL(fileChanged(QString)), this, SLOT(desktopChanged(QString)));
     QObject::connect(_watcher, SIGNAL(directoryChanged(QString)), this, SLOT(readApplications(QString)));
     readApplications(_watchDir);
+
+    _isTopmostAndroid = false;
+    QDBusConnection::systemBus().connect("", "", "org.nemomobile.compositor", "privateTopmostWindowProcessIdChanged", this, SLOT(topmostIdChanged(int)));
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -51,6 +54,12 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    <method name=\"shareText\">\n";
     xml += "      <arg name=\"text\" type=\"s\" direction=\"in\"/>\n";
     xml += "    </method>\n";
+    xml += "    <method name=\"getFocusedApp\">\n";
+    xml += "      <arg name=\"package\" type=\"s\" direction=\"out\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"isTopmostAndroid\">\n";
+    xml += "      <arg name=\"value\" type=\"b\" direction=\"out\"/>\n";
+    xml += "    </method>\n";
     xml += "  </interface>\n";
     return xml;
 }
@@ -64,6 +73,8 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
 
     qDebug() << interface << member << dbusArguments;
 
+    QVariantList output;
+
     if (interface == QLatin1String("org.freedesktop.DBus.Introspectable")) {
         return false;
     }
@@ -74,6 +85,12 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
             }
             else if (member == "showNavBar") {
                 showNavBar();
+            }
+            else if (member == "getFocusedApp") {
+                output << getFocusedApp();
+            }
+            else if (member == "isTopmostAndroid") {
+                output << _isTopmostAndroid;
             }
         }
         else if (dbusArguments.size() == 1) {
@@ -110,7 +127,7 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
         componentActivity(activity, dbusArguments.first().toString());
     }
 
-    QDBusMessage reply = message.createReply(QVariantList());
+    QDBusMessage reply = message.createReply(output);
     connection.call(reply, QDBus::NoBlock);
     return true;
 }
@@ -175,6 +192,29 @@ void MimeHandlerAdaptor::shareText(const QString &text)
     params << "--es" << "android.intent.extra.TEXT";
     params << text;
     appProcess("am.jar", QStringList() << params);
+}
+
+QString MimeHandlerAdaptor::getFocusedApp()
+{
+    QProcess *proc = new QProcess(this);
+    proc->start("/system/bin/dumpsys", QStringList() << "window" << "windows");
+    proc->waitForFinished(5000);
+    if (proc->state() == QProcess::Running) {
+        proc->close();
+        proc->deleteLater();
+        return QString();
+    }
+    QString output = QString::fromUtf8(proc->readAll());
+    int pos1 = output.indexOf("mCurrentFocus");
+    int pos2 = output.indexOf("\n", pos1);
+    output = output.mid(pos1, pos2 - pos1);
+    if (output.indexOf(" ") > 0) {
+        output = output.split(" ")[1];
+        output = output.split("/")[0];
+        return output;
+    }
+
+    return QString();
 }
 
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
@@ -251,6 +291,19 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
             _watcher->removePath(path);
         }
     }
+}
+
+void MimeHandlerAdaptor::topmostIdChanged(int pId)
+{
+    QProcess *proc = new QProcess(this);
+    proc->start("/bin/ps", QStringList() << "-p" << QString::number(pId) << "-o" << "comm=");
+    proc->waitForFinished(1000);
+    if (proc->state() != QProcess::NotRunning) {
+        _isTopmostAndroid = false;
+        return;
+    }
+    QByteArray out = proc->readAll().trimmed();
+    _isTopmostAndroid = (out == "system_server");
 }
 
 void MimeHandlerAdaptor::readApplications(const QString &)
