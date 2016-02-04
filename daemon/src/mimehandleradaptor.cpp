@@ -220,8 +220,12 @@ QString MimeHandlerAdaptor::getFocusedApp()
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
 {
     QStringList params;
-    params << "com.android.commands.am.Am" << "start" << "-n" << component << "-a" << "android.intent.action.VIEW";
-    if (!data.isEmpty()) {
+    params << "com.android.commands.am.Am" << "start" << "-n" << component << "-a";
+    if (data.isEmpty()) {
+        params << "android.intent.action.MAIN";
+    }
+    else {
+        params << "android.intent.action.VIEW";
         params << "-d" << data;
     }
     appProcess("am.jar", params);
