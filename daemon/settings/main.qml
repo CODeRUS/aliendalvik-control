@@ -12,6 +12,18 @@ Page {
         service: "org.coderus.aliendalvikcontrol"
         path: "/"
         iface: "org.coderus.aliendalvikcontrol"
+
+        signalsEnabled: true
+
+        function imeAvailable(imeList) {
+            imeRepeater.model = imeList
+        }
+    }
+
+    onStatusChanged: {
+        if (status == PageStatus.Activating) {
+            dbus.call("getImeList", [])
+        }
     }
 
     SilicaFlickable {
@@ -40,6 +52,18 @@ Page {
             }
 
             SectionHeader {
+                text: "Downloads"
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Open"
+                onClicked: {
+                    dbus.call("openDownloads", [])
+                }
+            }
+
+            SectionHeader {
                 text: "Navigation bar"
             }
 
@@ -57,6 +81,33 @@ Page {
                 onClicked: {
                     dbus.call("showNavBar", [])
                 }
+            }
+
+            SectionHeader {
+                text: "Input methods"
+            }
+
+            Repeater {
+                id: imeRepeater
+                width: parent.width
+                model: []
+                delegate: Component {
+                    BackgroundItem {
+                        width: parent.width
+                        Label {
+                            anchors.centerIn: parent
+                            width: parent.width - Theme.horizontalPageMargin * 2
+                            text: modelData
+                        }
+                        onClicked: {
+                            dbus.call("setImeMethod", [modelData])
+                        }
+                    }
+                }
+            }
+
+            Item {
+                width: 1; height: Theme.itemSizeSmall
             }
         }
 

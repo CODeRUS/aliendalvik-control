@@ -32,6 +32,9 @@ private:
     void uriActivitySelector(const QString &uri);
     void hideNavBar();
     void showNavBar();
+    void openDownloads();
+    void getImeList();
+    void setImeMethod(const QString &ime);
     void shareFile(const QVariantList &args);
     void shareText(const QString &text);
 
@@ -40,7 +43,11 @@ private:
     void componentActivity(const QString &component, const QString &data);
 
     void appProcess(const QString &jar, const QStringList &params);
+    QString appProcessOutput(const QString &jar, const QStringList &params);
+    QString packageName(const QString &package);
     void runCommand(const QString &program, const QStringList &params);
+
+    void emitSignal(const QString &name, const QList<QVariant> &arguments);
 
     QString _watchDir;
     QFileSystemWatcher *_watcher;

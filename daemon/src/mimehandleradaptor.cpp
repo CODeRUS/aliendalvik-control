@@ -60,6 +60,9 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    <method name=\"isTopmostAndroid\">\n";
     xml += "      <arg name=\"value\" type=\"b\" direction=\"out\"/>\n";
     xml += "    </method>\n";
+    xml += "    <signal name=\"imeAvailable\">";
+    xml += "      <arg type=\"as\" name=\"imeList\" direction=\"out\"/>";
+    xml += "    </signal>";
     xml += "  </interface>\n";
     return xml;
 }
@@ -85,6 +88,12 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
             }
             else if (member == "showNavBar") {
                 showNavBar();
+            }
+            else if (member == "openDownloads") {
+                openDownloads();
+            }
+            else if (member == "getImeList") {
+                getImeList();
             }
             else if (member == "getFocusedApp") {
                 output << getFocusedApp();
@@ -114,6 +123,9 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
             }
             else if (member == "shareText") {
                 shareText(dbusArguments.first().toString());
+            }
+            else if (member == "setImeMethod") {
+                setImeMethod(dbusArguments.first().toString());
             }
         }
         else if (dbusArguments.size() == 2) {
@@ -170,6 +182,31 @@ void MimeHandlerAdaptor::hideNavBar()
 void MimeHandlerAdaptor::showNavBar()
 {
     appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
+}
+
+void MimeHandlerAdaptor::openDownloads()
+{
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW_DOWNLOADS");
+}
+
+void MimeHandlerAdaptor::getImeList()
+{
+    QString output = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list");
+
+    QStringList outputLines = output.split("\n");
+    QStringList imeList;
+    foreach (const QString &line, outputLines) {
+        if (!line.startsWith(" ") && line.length() > 0) {
+            QString package = line.split(":").first();
+            imeList << package;
+        }
+    }
+    emitSignal("imeAvailable", QVariantList() << imeList);
+}
+
+void MimeHandlerAdaptor::setImeMethod(const QString &ime)
+{
+    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime);
 }
 
 void MimeHandlerAdaptor::shareFile(const QVariantList &args)
@@ -244,11 +281,61 @@ void MimeHandlerAdaptor::appProcess(const QString &jar, const QStringList &param
     QProcess::startDetached(program, arguments);
 }
 
+QString MimeHandlerAdaptor::appProcessOutput(const QString &jar, const QStringList &params)
+{
+    qputenv("CLASSPATH", QString("/system/framework/%1").arg(jar).toUtf8());
+
+    QString program = "/system/bin/app_process";
+    QStringList arguments;
+    arguments << "/system/bin" << params;
+
+    qDebug() << "Executing" << program << arguments;
+
+    QProcess *process = new QProcess(this);
+    process->start(program, arguments);
+    process->waitForFinished(5000);
+    if (process->state() == QProcess::Running) {
+        process->close();
+        process->deleteLater();
+        return QString();
+    }
+    QString output = QString::fromUtf8(process->readAll());
+    return output;
+}
+
+QString MimeHandlerAdaptor::packageName(const QString &package)
+{
+    QProcess *proc = new QProcess(this);
+    proc->start("/system/bin/dumpsys", QStringList() << "package" << package);
+    proc->waitForFinished(5000);
+    if (proc->state() == QProcess::Running) {
+        proc->close();
+        proc->deleteLater();
+        return QString();
+    }
+    QString output = QString::fromUtf8(proc->readAll());
+    return output;
+}
+
 void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &params)
 {
     qDebug() << "Executing" << program << params;
 
     QProcess::startDetached(program, params);
+}
+
+void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arguments)
+{
+    QDBusMessage signal = QDBusMessage::createSignal("/", "org.coderus.aliendalvikcontrol", name);
+    QDBusConnection conn = QDBusConnection::sessionBus();
+
+    if (!arguments.isEmpty()) {
+        signal.setArguments(arguments);
+    }
+
+    if (!conn.send(signal)) {
+        qWarning() << conn.lastError().message();
+    }
 }
 
 void MimeHandlerAdaptor::desktopChanged(const QString &path)
