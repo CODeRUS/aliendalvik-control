@@ -11,6 +11,7 @@
 #include <QProcess>
 #include <QDBusMessage>
 #include <QDBusConnection>
+#include <QDBusInterface>
 
 class MimeHandlerAdaptor : public QDBusVirtualObject
 {
@@ -23,29 +24,37 @@ public:
     QString introspect(const QString &) const;
     bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection);
 
+private slots:
+    QVariant sendKeyevent(const QVariant &code);
+    QVariant sendInput(const QVariant &text);
+    QVariant broadcastIntent(const QVariant &intent);
+    QVariant startIntent(const QVariant &intent);
+    QVariant uriActivity(const QVariant &uri);
+    QVariant uriActivitySelector(const QVariant &uri);
+    QVariant hideNavBar();
+    QVariant showNavBar();
+    QVariant openDownloads(const QVariant & = QVariant());
+    QVariant getImeList();
+    QVariant triggerImeMethod(const QVariant &ime, const QVariant &enable);
+    QVariant setImeMethod(const QVariant &ime);
+    QVariant shareFile(const QVariant &filename, const QVariant &mimetype);
+    QVariant shareText(const QVariant &text);
+    QVariant getFocusedApp();
+    QVariant isTopmostAndroid();
+    QVariant getSettings(const QVariant &nspace, const QVariant &key);
+    QVariant putSettings(const QVariant &nspace, const QVariant &key, const QVariant &value);
+    QVariant getprop(const QVariant &key);
+    QVariant setprop(const QVariant &key, const QVariant &value);
+    QVariant quit();
+
 private:
-    void sendKeyevent(int code);
-    void sendInput(const QString &text);
-    void broadcastIntent(const QString &intent);
-    void startIntent(const QString &intent);
-    void uriActivity(const QString &uri);
-    void uriActivitySelector(const QString &uri);
-    void hideNavBar();
-    void showNavBar();
-    void openDownloads();
-    void getImeList();
-    void setImeMethod(const QString &ime);
-    void shareFile(const QVariantList &args);
-    void shareText(const QString &text);
-
-    QString getFocusedApp();
-
     void componentActivity(const QString &component, const QString &data);
 
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);
     QString packageName(const QString &package);
     void runCommand(const QString &program, const QStringList &params);
+    QString runCommandOutput(const QString &program, const QStringList &params);
 
     void emitSignal(const QString &name, const QList<QVariant> &arguments);
 
@@ -53,6 +62,8 @@ private:
     QFileSystemWatcher *_watcher;
 
     bool _isTopmostAndroid;
+
+    QDBusInterface *apkdIface;
 
 private slots:
     void readApplications(const QString &);

@@ -1,6 +1,10 @@
 #include "mimehandleradaptor.h"
 
 #include <QDebug>
+#include <QCoreApplication>
+#include <QDBusReply>
+#include <QMetaObject>
+#include <QTimer>
 
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
@@ -15,6 +19,8 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
 
     _isTopmostAndroid = false;
     QDBusConnection::systemBus().connect("", "", "org.nemomobile.compositor", "privateTopmostWindowProcessIdChanged", this, SLOT(topmostIdChanged(int)));
+
+    apkdIface = new QDBusInterface("com.jolla.apkd", "/com/jolla/apkd", "com.jolla.apkd", QDBusConnection::systemBus(), this);
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -60,9 +66,40 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    <method name=\"isTopmostAndroid\">\n";
     xml += "      <arg name=\"value\" type=\"b\" direction=\"out\"/>\n";
     xml += "    </method>\n";
+    xml += "    <method name=\"openDownloads\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"getImeList\">\n";
+    xml += "    </method>\n";
     xml += "    <signal name=\"imeAvailable\">";
-    xml += "      <arg type=\"as\" name=\"imeList\" direction=\"out\"/>";
+    xml += "      <arg name=\"imeList\" type=\"a{sb}\" direction=\"out\"/>";
     xml += "    </signal>";
+    xml += "    <method name=\"setImeMethod\">\n";
+    xml += "      <arg name=\"ime\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"triggerImeMethod\">\n";
+    xml += "      <arg name=\"ime\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"enable\" type=\"b\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"getSettings\">\n";
+    xml += "      <arg name=\"namespace\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"value\" type=\"s\" direction=\"out\"/>";
+    xml += "    </method>\n";
+    xml += "    <method name=\"putSettings\">\n";
+    xml += "      <arg name=\"namespace\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"value\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"getprop\">\n";
+    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"value\" type=\"s\" direction=\"out\"/>";
+    xml += "    </method>\n";
+    xml += "    <method name=\"setprop\">\n";
+    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"value\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"quit\">\n";
+    xml += "    </method>\n";
     xml += "  </interface>\n";
     return xml;
 }
@@ -76,62 +113,35 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
 
     qDebug() << interface << member << dbusArguments;
 
-    QVariantList output;
+    QVariant output;
 
     if (interface == QLatin1String("org.freedesktop.DBus.Introspectable")) {
         return false;
     }
     else if (interface == "org.coderus.aliendalvikcontrol" || interface == "") {
+        QDBusReply<bool> apkdReply = apkdIface->call("isRunning");
+        if (apkdReply.isValid() && !apkdReply.value()) {
+            apkdIface->call("controlService", QVariant::fromValue(true));
+        }
+
         if (dbusArguments.size() == 0) {
-            if (member == "hideNavBar") {
-                hideNavBar();
-            }
-            else if (member == "showNavBar") {
-                showNavBar();
-            }
-            else if (member == "openDownloads") {
-                openDownloads();
-            }
-            else if (member == "getImeList") {
-                getImeList();
-            }
-            else if (member == "getFocusedApp") {
-                output << getFocusedApp();
-            }
-            else if (member == "isTopmostAndroid") {
-                output << _isTopmostAndroid;
-            }
-        }
-        else if (dbusArguments.size() == 1) {
-            if (member == "sendKeyevent") {
-                sendKeyevent(dbusArguments.first().toInt());
-            }
-            else if (member == "sendInput") {
-                sendInput(dbusArguments.first().toString());
-            }
-            else if (member == "broadcastIntent") {
-                broadcastIntent(dbusArguments.first().toString());
-            }
-            else if (member == "startIntent") {
-                startIntent(dbusArguments.first().toString());
-            }
-            else if (member == "uriActivity") {
-                uriActivity(dbusArguments.first().toString());
-            }
-            else if (member == "uriActivitySelector") {
-                uriActivitySelector(dbusArguments.first().toString());
-            }
-            else if (member == "shareText") {
-                shareText(dbusArguments.first().toString());
-            }
-            else if (member == "setImeMethod") {
-                setImeMethod(dbusArguments.first().toString());
-            }
-        }
-        else if (dbusArguments.size() == 2) {
-            if (member == "shareFile") {
-                shareFile(dbusArguments);
-            }
+            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, output));
+        } else if (dbusArguments.size() == 1) {
+            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, output),
+                                      Q_ARG(QVariant, dbusArguments[0]));
+        } else if (dbusArguments.size() == 2) {
+            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, output),
+                                      Q_ARG(QVariant, dbusArguments[0]),
+                                      Q_ARG(QVariant, dbusArguments[1]));
+        } else if (dbusArguments.size() == 3) {
+            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, output),
+                                      Q_ARG(QVariant, dbusArguments[0]),
+                                      Q_ARG(QVariant, dbusArguments[1]),
+                                      Q_ARG(QVariant, dbusArguments[2]));
         }
     }
     else if (dbusArguments.size() == 1) {
@@ -139,99 +149,130 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
         componentActivity(activity, dbusArguments.first().toString());
     }
 
-    QDBusMessage reply = message.createReply(output);
+    QVariantList dbusReply;
+    if (!output.isNull()) {
+        dbusReply << output;
+    }
+    QDBusMessage reply = message.createReply(dbusReply);
     connection.call(reply, QDBus::NoBlock);
     return true;
 }
 
-void MimeHandlerAdaptor::sendKeyevent(int code)
+QVariant MimeHandlerAdaptor::sendKeyevent(const QVariant &code)
 {
-    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code));
+    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code.toInt()));
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::sendInput(const QString &text)
+QVariant MimeHandlerAdaptor::sendInput(const QVariant &text)
 {
-    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
+    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text.toString());
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::broadcastIntent(const QString &intent)
+QVariant MimeHandlerAdaptor::broadcastIntent(const QVariant &intent)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent.toString());
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::startIntent(const QString &intent)
+QVariant MimeHandlerAdaptor::startIntent(const QVariant &intent)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.split(" "));
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.toString().split(" "));
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::uriActivity(const QString &uri)
+QVariant MimeHandlerAdaptor::uriActivity(const QVariant &uri)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri);
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
+QVariant MimeHandlerAdaptor::uriActivitySelector(const QVariant &uri)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri);
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri.toString());
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::hideNavBar()
+QVariant MimeHandlerAdaptor::hideNavBar()
 {
     runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::showNavBar()
+QVariant MimeHandlerAdaptor::showNavBar()
 {
     appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::openDownloads()
+QVariant MimeHandlerAdaptor::openDownloads(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW_DOWNLOADS");
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW_DOWNLOADS" << "--activity-multiple-task" << "-f" << "268435456");
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::getImeList()
+QVariant MimeHandlerAdaptor::getImeList()
 {
-    QString output = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list");
+    QString fullOutput = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list" << "-s" << "-a");
+    QStringList fullOutputLines = fullOutput.trimmed().split("\n");
+    qDebug() << fullOutput.trimmed();
 
-    QStringList outputLines = output.split("\n");
-    QStringList imeList;
-    foreach (const QString &line, outputLines) {
-        if (!line.startsWith(" ") && line.length() > 0) {
-            QString package = line.split(":").first();
-            imeList << package;
-        }
+    QString enabledOutput = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list" << "-s");
+    QStringList enabledOutputLines = enabledOutput.trimmed().split("\n");
+    qDebug() << enabledOutput.trimmed();
+
+    QVariantList imeList;
+    foreach (const QString & imeName, fullOutputLines) {
+        QVariantMap imeMethod;
+        imeMethod["name"] = imeName;
+        imeMethod["enabled"] = enabledOutputLines.contains(imeName);
+        imeList.append(imeMethod);
     }
-    emitSignal("imeAvailable", QVariantList() << imeList);
+    QVariantList args;
+    args.append(QVariant::fromValue(imeList));
+
+    emitSignal("imeAvailable", args);
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::setImeMethod(const QString &ime)
+QVariant MimeHandlerAdaptor::triggerImeMethod(const QVariant &ime, const QVariant &enable)
 {
-    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime);
+    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << (enable.toBool() ? "enable" : "disable") << ime.toString());
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::shareFile(const QVariantList &args)
+QVariant MimeHandlerAdaptor::setImeMethod(const QVariant &ime)
+{
+    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime.toString());
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant &mimetype)
 {
     QStringList params;
     params << "com.android.commands.am.Am";
     params << "start" << "-a" << "android.intent.action.SEND" << "-t";
-    params << args[1].toString();
+    params << mimetype.toString();
     params << "--eu" << "android.intent.extra.STREAM";
-    params << args[0].toString();
+    params << filename.toString();
     appProcess("am.jar", QStringList() << params);
+    return QVariant();
 }
 
-void MimeHandlerAdaptor::shareText(const QString &text)
+QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
 {
     QStringList params;
     params << "com.android.commands.am.Am";
     params << "start" << "-a" << "android.intent.action.SEND" << "-t";
     params << "text/*";
     params << "--es" << "android.intent.extra.TEXT";
-    params << text;
+    params << text.toString();
     appProcess("am.jar", QStringList() << params);
+    return QVariant();
 }
 
-QString MimeHandlerAdaptor::getFocusedApp()
+QVariant MimeHandlerAdaptor::getFocusedApp()
 {
     QProcess *proc = new QProcess(this);
     proc->start("/system/bin/dumpsys", QStringList() << "window" << "windows");
@@ -252,6 +293,41 @@ QString MimeHandlerAdaptor::getFocusedApp()
     }
 
     return QString();
+}
+
+QVariant MimeHandlerAdaptor::isTopmostAndroid()
+{
+    return _isTopmostAndroid;
+}
+
+QVariant MimeHandlerAdaptor::getSettings(const QVariant &nspace, const QVariant &key)
+{
+    QString value = appProcessOutput("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "get" << nspace.toString() << key.toString());
+    return value.trimmed();
+}
+
+QVariant MimeHandlerAdaptor::putSettings(const QVariant &nspace, const QVariant &key, const QVariant &value)
+{
+    appProcess("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "put" << nspace.toString() << key.toString() << value.toString());
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::getprop(const QVariant &key)
+{
+    QString value = runCommandOutput("/system/bin/getprop", QStringList() << key.toString());
+    return value.trimmed();
+}
+
+QVariant MimeHandlerAdaptor::setprop(const QVariant &key, const QVariant &value)
+{
+    runCommand("/system/bin/setprop", QStringList() << key.toString() << value.toString());
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::quit()
+{
+    QTimer::singleShot(10, qApp, SLOT(quit()));
+    return QVariant();
 }
 
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
@@ -322,6 +398,20 @@ void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &p
     qDebug() << "Executing" << program << params;
 
     QProcess::startDetached(program, params);
+}
+
+QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStringList &params)
+{
+    QProcess *process = new QProcess(this);
+    process->start(program, params);
+    process->waitForFinished(5000);
+    if (process->state() == QProcess::Running) {
+        process->close();
+        process->deleteLater();
+        return QString();
+    }
+    QString output = QString::fromUtf8(process->readAll());
+    return output;
 }
 
 void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arguments)

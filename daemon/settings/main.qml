@@ -28,10 +28,11 @@ Page {
 
     SilicaFlickable {
         id: flick
-
         anchors.fill: parent
+        contentHeight: content.height
 
         Column {
+            id: content
             width: parent.width
             spacing: Theme.paddingMedium
 
@@ -47,7 +48,7 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "HTTP"
                 onClicked: {
-                    dbus.call("uriActivitySelector", ["https://openrepos.net"])
+                    dbus.call("uriActivitySelector", ["http://openrepos.net"])
                 }
             }
 
@@ -67,19 +68,87 @@ Page {
                 text: "Navigation bar"
             }
 
-            Button {
+            Row {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Hide"
-                onClicked: {
-                    dbus.call("hideNavBar", [])
+                spacing: Theme.paddingMedium
+                height: Theme.itemSizeExtraSmall
+
+                Button {
+                    text: "Hide"
+                    onClicked: {
+                        dbus.call("hideNavBar", [])
+                    }
+                }
+
+                Button {
+                    text: "Show"
+                    onClicked: {
+                        dbus.call("showNavBar", [])
+                    }
                 }
             }
 
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "Show"
+            SectionHeader {
+                text: "Android settings"
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: "Touch sounds"
+                checked: false
+                enabled: false
                 onClicked: {
-                    dbus.call("showNavBar", [])
+                    dbus.typedCall("putSettings", [{"type": "s", "value": "system"},
+                                                   {"type": "s", "value": "sound_effects_enabled"},
+                                                   {"type": "s", "value": checked ? "1" : "0"}])
+                }
+                Component.onCompleted: {
+                    dbus.typedCall("getSettings", [{"type": "s", "value": "system"},
+                                                   {"type": "s", "value": "sound_effects_enabled"}],
+                                   function(value) {
+                                       checked = value == 1
+                                       enabled = true
+                                   })
+                }
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: "Allow mock location"
+                checked: false
+                enabled: false
+                onClicked: {
+                    dbus.typedCall("putSettings", [{"type": "s", "value": "secure"},
+                                                   {"type": "s", "value": "mock_location"},
+                                                   {"type": "s", "value": checked ? "1" : "0"}])
+                }
+                Component.onCompleted: {
+                    dbus.typedCall("getSettings", [{"type": "s", "value": "secure"},
+                                                   {"type": "s", "value": "mock_location"}],
+                                   function(value) {
+                                       checked = value == 1
+                                       enabled = true
+                                   })
+                }
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: "Allow install non-market apps"
+                checked: false
+                enabled: false
+                onClicked: {
+                    dbus.typedCall("putSettings", [{"type": "s", "value": "global"},
+                                                   {"type": "s", "value": "install_non_market_apps"},
+                                                   {"type": "s", "value": checked ? "1" : "0"}])
+                }
+                Component.onCompleted: {
+                    dbus.typedCall("getSettings", [{"type": "s", "value": "global"},
+                                                   {"type": "s", "value": "install_non_market_apps"}],
+                                   function(value) {
+                                       checked = value == 1
+                                       enabled = true
+                                   })
                 }
             }
 
@@ -92,15 +161,35 @@ Page {
                 width: parent.width
                 model: []
                 delegate: Component {
-                    BackgroundItem {
+                    ListItem {
+                        property bool imeEnabled: modelData.enabled
+                        highlighted: down || imeEnabled
+                        showMenuOnPressAndHold: imeEnabled
                         width: parent.width
+                        menu: contextMenu
+                        contentHeight: imeLabel.height
+                        Component {
+                            id: contextMenu
+                            ContextMenu {
+                                MenuItem {
+                                    text: "Select"
+                                    onClicked: {
+                                        dbus.call("setImeMethod", [modelData.name])
+                                    }
+                                }
+                            }
+                        }
                         Label {
-                            anchors.centerIn: parent
+                            id: imeLabel
+                            x: Theme.horizontalPageMargin
                             width: parent.width - Theme.horizontalPageMargin * 2
-                            text: modelData
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: modelData.name
                         }
                         onClicked: {
-                            dbus.call("setImeMethod", [modelData])
+                            dbus.call("triggerImeMethod", [modelData.name, !imeEnabled])
+                            imeEnabled = !imeEnabled
+                            dbus.call("getImeList", [])
                         }
                     }
                 }

@@ -6,9 +6,7 @@ After=lipstick.service
 [Service]
 Type=dbus
 ExecStart=/usr/bin/aliendalvik-control
+ExecStop=/bin/dbus-send --type=method_call --dest=org.coderus.aliendalvikcontrol / org.coderus.aliendalvikcontrol.quit
 BusName=org.coderus.aliendalvikcontrol
-Restart=always
+Restart=on-failure
 RestartSec=15
-
-[Install]
-WantedBy=post-user-session.target

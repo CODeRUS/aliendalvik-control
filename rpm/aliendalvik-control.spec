@@ -5,7 +5,7 @@ Name:       aliendalvik-control
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Aliendalvik control
-Version:    1.0.6
+Version:    1.0.8
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -57,14 +57,21 @@ fi
 /usr/bin/aliendalvik-control restore ||:
 
 %files
-%defattr(-,root,root,-)
 %attr(4755, root, root) %{_bindir}/aliendalvik-control
+%defattr(644,root,root,-)
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
 %{_libdir}/systemd/user/aliendalvik-control.service
 %{_datadir}/applications/android-open-url.desktop
 %{_datadir}/applications/android-open-url-selector.desktop
+#%{_datadir}/applications/aliendalvik-downloads.desktop
 %{_datadir}/jolla-settings/entries/aliendalvikcontrol.json
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/main.qml
+%{_datadir}/jolla-settings/pages/aliendalvikcontrol/NavbarToggle.qml
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvikcontrol.png
+%{_datadir}/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png
 %{_libdir}/nemo-transferengine/plugins/libaliendalvikshareplugin.so
 %{_datadir}/nemo-transferengine/plugins/AliendalvikShare.qml
+#%{_datadir}/icons/hicolor/86x86/apps/aliendalvik-downloads.png
+#%{_datadir}/icons/hicolor/108x108/apps/aliendalvik-downloads.png
+#%{_datadir}/icons/hicolor/128x128/apps/aliendalvik-downloads.png
+#%{_datadir}/icons/hicolor/256x256/apps/aliendalvik-downloads.png

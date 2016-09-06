@@ -1,3 +1,5 @@
 [D-BUS Service]
 Name=org.coderus.aliendalvikcontrol
-Exec=/usr/bin/aliendalvik-control
+Interface=org.coderus.aliendalvikcontrol
+Exec=/bin/false
+SystemdService=aliendalvik-control.service
