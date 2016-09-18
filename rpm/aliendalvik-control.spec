@@ -5,7 +5,7 @@ Name:       aliendalvik-control
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Aliendalvik control
-Version:    1.0.8
+Version:    1.0.9
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -45,6 +45,7 @@ if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
+/usr/bin/update-desktop-database ||:
 
 %post
 systemctl-user restart aliendalvik-control ||:
@@ -55,6 +56,7 @@ if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
+/usr/bin/update-desktop-database ||:
 
 %files
 %attr(4755, root, root) %{_bindir}/aliendalvik-control

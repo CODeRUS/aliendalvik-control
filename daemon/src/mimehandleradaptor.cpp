@@ -457,7 +457,6 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
                     if (sym != "\n") {
                         out << "\n";
                     }
-                    out << "MimeType=text/html;x-maemo-urischeme/http;x-maemo-urischeme/https;\n";
                     out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
                     out << "X-Maemo-Object-Path=/\n";
                     out << "X-Maemo-Method=" + package + "." + activity + "\n";
