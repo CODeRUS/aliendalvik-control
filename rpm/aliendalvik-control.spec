@@ -5,7 +5,7 @@ Name:       aliendalvik-control
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Aliendalvik control
-Version:    1.0.9
+Version:    1.1.0
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -16,6 +16,7 @@ Requires:   aliendalvik
 Requires:   sailfish-version >= 2.0.0
 Conflicts:  android-shareui
 Obsoletes:  android-shareui
+Requires:   nemo-transferengine-qt5 >= 0.3.1
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)

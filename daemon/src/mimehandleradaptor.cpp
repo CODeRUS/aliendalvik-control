@@ -441,7 +441,7 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
 
         if (desktop.open(QFile::ReadWrite | QFile::Text)) {
             QString content = QString::fromUtf8(desktop.readAll());
-            if (!content.contains("MimeType")) {
+            if (!content.contains("X-Maemo-Service")) {
                 int off0 = content.indexOf("Exec=apkd-launcher ");
                 if (off0 > 0) {
                     int off1 = content.indexOf(" ", off0 + 20) + 1;
