@@ -53,14 +53,46 @@ Page {
             }
 
             SectionHeader {
-                text: "Downloads"
+                text: "Launch"
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Open"
+                text: "Downloads"
                 onClicked: {
                     dbus.call("openDownloads", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Settings"
+                onClicked: {
+                    dbus.call("openSettings", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Contacts"
+                onClicked: {
+                    dbus.call("openContacts", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Gallery"
+                onClicked: {
+                    dbus.call("openGallery", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Camera"
+                onClicked: {
+                    dbus.call("openCamera", [])
                 }
             }
 

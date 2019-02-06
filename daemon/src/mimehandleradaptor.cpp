@@ -10,17 +10,24 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
     , _watcher(new QFileSystemWatcher(this))
 {
-    _watchDir = QString("/usr/share/applications/");
+    _watchDir = QStringLiteral("/usr/share/applications/");
     _watcher->addPath(_watchDir);
 
-    QObject::connect(_watcher, SIGNAL(fileChanged(QString)), this, SLOT(desktopChanged(QString)));
-    QObject::connect(_watcher, SIGNAL(directoryChanged(QString)), this, SLOT(readApplications(QString)));
+    QObject::connect(_watcher, &QFileSystemWatcher::fileChanged, this, &MimeHandlerAdaptor::desktopChanged);
+    QObject::connect(_watcher, &QFileSystemWatcher::directoryChanged, this, &MimeHandlerAdaptor::readApplications);
     readApplications(_watchDir);
 
     _isTopmostAndroid = false;
-    QDBusConnection::systemBus().connect("", "", "org.nemomobile.compositor", "privateTopmostWindowProcessIdChanged", this, SLOT(topmostIdChanged(int)));
+    QDBusConnection::systemBus().connect(QString(),
+                                         QString(),
+                                         QStringLiteral("org.nemomobile.compositor"),
+                                         QStringLiteral("privateTopmostWindowProcessIdChanged"),
+                                         this, SLOT(topmostIdChanged(int)));
 
-    apkdIface = new QDBusInterface("com.jolla.apkd", "/com/jolla/apkd", "com.jolla.apkd", QDBusConnection::systemBus(), this);
+    apkdIface = new QDBusInterface(QStringLiteral("com.jolla.apkd"),
+                                   QStringLiteral("/com/jolla/apkd"),
+                                   QStringLiteral("com.jolla.apkd"),
+                                   QDBusConnection::systemBus(), this);
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -67,6 +74,14 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "      <arg name=\"value\" type=\"b\" direction=\"out\"/>\n";
     xml += "    </method>\n";
     xml += "    <method name=\"openDownloads\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"openSettings\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"openContacts\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"openCamera\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"openGallery\">\n";
     xml += "    </method>\n";
     xml += "    <method name=\"getImeList\">\n";
     xml += "    </method>\n";
@@ -118,11 +133,11 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
     if (interface == QLatin1String("org.freedesktop.DBus.Introspectable")) {
         return false;
     }
-    else if (interface == "org.coderus.aliendalvikcontrol" || interface == "") {
-        QDBusReply<bool> apkdReply = apkdIface->call("isRunning");
-        if (apkdReply.isValid() && !apkdReply.value()) {
-            apkdIface->call("controlService", QVariant::fromValue(true));
-        }
+    else if (interface == QLatin1String("org.coderus.aliendalvikcontrol") || interface.isEmpty()) {
+//        QDBusReply<bool> apkdReply = apkdIface->call(QStringLiteral("isRunning"));
+//        if (apkdReply.isValid() && !apkdReply.value()) {
+            apkdIface->call(QStringLiteral("controlService"), QVariant::fromValue(true));
+//        }
 
         if (dbusArguments.size() == 0) {
             QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
@@ -196,19 +211,45 @@ QVariant MimeHandlerAdaptor::uriActivitySelector(const QVariant &uri)
 
 QVariant MimeHandlerAdaptor::hideNavBar()
 {
-    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
+    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,-144");
+//    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::showNavBar()
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
+    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,0");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openDownloads(const QVariant &)
 {
     appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW_DOWNLOADS" << "--activity-multiple-task" << "-f" << "268435456");
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::openSettings(const QVariant &)
+{
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::openContacts(const QVariant &)
+{
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::openCamera(const QVariant &)
+{
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::openGallery(const QVariant &)
+{
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
     return QVariant();
 }
 
@@ -348,27 +389,29 @@ void MimeHandlerAdaptor::appProcess(const QString &jar, const QStringList &param
 {
     qputenv("CLASSPATH", QString("/system/framework/%1").arg(jar).toUtf8());
 
+    QString lxc = "/usr/bin/lxc-attach";
     QString program = "/system/bin/app_process";
     QStringList arguments;
-    arguments << "/system/bin" << params;
+    arguments << "-n" << "aliendalvik" << "--" << program << "/system/bin" << params;
 
-    qDebug() << "Executing" << program << arguments;
+    qDebug() << "Executing" << lxc << arguments;
 
-    QProcess::startDetached(program, arguments);
+    QProcess::startDetached(lxc, arguments);
 }
 
 QString MimeHandlerAdaptor::appProcessOutput(const QString &jar, const QStringList &params)
 {
     qputenv("CLASSPATH", QString("/system/framework/%1").arg(jar).toUtf8());
 
+    QString lxc = "/usr/bin/lxc-attach";
     QString program = "/system/bin/app_process";
     QStringList arguments;
-    arguments << "/system/bin" << params;
+    arguments << "-n" << "aliendalvik" << "--" << program << "/system/bin" << params;
 
-    qDebug() << "Executing" << program << arguments;
+    qDebug() << "Executing" << lxc << arguments;
 
     QProcess *process = new QProcess(this);
-    process->start(program, arguments);
+    process->start(lxc, arguments);
     process->waitForFinished(5000);
     if (process->state() == QProcess::Running) {
         process->close();
@@ -397,13 +440,18 @@ void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &p
 {
     qDebug() << "Executing" << program << params;
 
-    QProcess::startDetached(program, params);
+    QString lxc = "/usr/bin/lxc-attach";
+    QStringList arguments;
+    arguments << "-n" << "aliendalvik" << "--" << program << params;
+    QProcess::startDetached(lxc, arguments);
 }
 
 QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStringList &params)
 {
     QProcess *process = new QProcess(this);
-    process->start(program, params);
+    QString lxc = "/usr/bin/lxc-attach";QStringList arguments;
+    arguments << "-n" << "aliendalvik" << "--" << program << params;
+    process->start(lxc, arguments);
     process->waitForFinished(5000);
     if (process->state() == QProcess::Running) {
         process->close();

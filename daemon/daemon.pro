@@ -54,3 +54,5 @@ INSTALLS += settingspng
 #icons.files = hicolor
 #icons.path = /usr/share/icons
 #INSTALLS += icons
+
+INCLUDEPATH += /usr/include

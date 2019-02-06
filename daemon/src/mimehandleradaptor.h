@@ -34,6 +34,10 @@ private slots:
     QVariant hideNavBar();
     QVariant showNavBar();
     QVariant openDownloads(const QVariant & = QVariant());
+    QVariant openSettings(const QVariant & = QVariant());
+    QVariant openContacts(const QVariant & = QVariant());
+    QVariant openCamera(const QVariant & = QVariant());
+    QVariant openGallery(const QVariant & = QVariant());
     QVariant getImeList();
     QVariant triggerImeMethod(const QVariant &ime, const QVariant &enable);
     QVariant setImeMethod(const QVariant &ime);
