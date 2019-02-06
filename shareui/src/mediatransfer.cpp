@@ -61,7 +61,7 @@ void MediaTransfer::start()
         QString content = mediaItem()->value(MediaItem::ContentData).toString();
 
         if (mimeType == "text/vcard") {
-            QFile tmp(QString("/tmp/%1.vcf").arg(QDateTime::currentMSecsSinceEpoch()));
+            QFile tmp(QString("/home/nemo/%1.vcf").arg(QDateTime::currentMSecsSinceEpoch()));
             if (tmp.open(QFile::WriteOnly)) {
                 tmp.write(content.toUtf8());
                 tmp.close();

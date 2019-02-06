@@ -5,15 +5,14 @@ Name:       aliendalvik-control
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Aliendalvik control
-Version:    1.1.0
+Version:    8.1.1
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   aliendalvik
-Requires:   sailfish-version >= 2.0.0
+Requires:   aliendalvik >= 8.1.0
 Conflicts:  android-shareui
 Obsoletes:  android-shareui
 Requires:   nemo-transferengine-qt5 >= 0.3.1

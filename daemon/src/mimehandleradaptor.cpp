@@ -225,7 +225,7 @@ QVariant MimeHandlerAdaptor::showNavBar()
 
 QVariant MimeHandlerAdaptor::openDownloads(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW_DOWNLOADS" << "--activity-multiple-task" << "-f" << "268435456");
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
     return QVariant();
 }
 
@@ -291,18 +291,39 @@ QVariant MimeHandlerAdaptor::setImeMethod(const QVariant &ime)
 
 QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant &mimetype)
 {
+    QString containerPath = QStringLiteral("/storage/emulated/0/nemo/");
+    if (filename.toString().startsWith(QStringLiteral("file:///home/nemo/"))) {
+        containerPath.append(filename.toString().mid(18));
+    } else {
+        return QVariant();
+    }
+
+    openDownloads();
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(2000);
+    loop.exec();
+
     QStringList params;
     params << "com.android.commands.am.Am";
     params << "start" << "-a" << "android.intent.action.SEND" << "-t";
     params << mimetype.toString();
     params << "--eu" << "android.intent.extra.STREAM";
-    params << filename.toString();
+    params << containerPath;
     appProcess("am.jar", QStringList() << params);
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
 {
+    openDownloads();
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(2000);
+    loop.exec();
+
     QStringList params;
     params << "com.android.commands.am.Am";
     params << "start" << "-a" << "android.intent.action.SEND" << "-t";
