@@ -1,11 +1,10 @@
-Name:       aliendalvik-control
-
-%{!?qtc_qmake:%define qtc_qmake %qmake}
+%define theme sailfish-default
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
-%{?qtc_builddir:%define _builddir %qtc_builddir}
+
+Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    8.1.1
+Version:    8.1.2
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -22,6 +21,7 @@ BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 BuildRequires:  pkgconfig(nemotransferengine-qt5)
+BuildRequires:  sailfish-svg2png >= 0.1.5
 
 %description
 D-Bus daemon for sending commands to aliendalvik
@@ -65,15 +65,15 @@ fi
 %{_libdir}/systemd/user/aliendalvik-control.service
 %{_datadir}/applications/android-open-url.desktop
 %{_datadir}/applications/android-open-url-selector.desktop
-#%{_datadir}/applications/aliendalvik-downloads.desktop
 %{_datadir}/jolla-settings/entries/aliendalvikcontrol.json
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/main.qml
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/NavbarToggle.qml
-%{_datadir}/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvikcontrol.png
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png
 %{_libdir}/nemo-transferengine/plugins/libaliendalvikshareplugin.so
 %{_datadir}/nemo-transferengine/plugins/AliendalvikShare.qml
-#%{_datadir}/icons/hicolor/86x86/apps/aliendalvik-downloads.png
-#%{_datadir}/icons/hicolor/108x108/apps/aliendalvik-downloads.png
-#%{_datadir}/icons/hicolor/128x128/apps/aliendalvik-downloads.png
-#%{_datadir}/icons/hicolor/256x256/apps/aliendalvik-downloads.png
+%{_datadir}/themes/%{theme}/meegotouch/z1.0/icons/*.png
+%{_datadir}/themes/%{theme}/meegotouch/z1.25/icons/*.png
+%{_datadir}/themes/%{theme}/meegotouch/z1.5/icons/*.png
+%{_datadir}/themes/%{theme}/meegotouch/z1.5-large/icons/*.png
+%{_datadir}/themes/%{theme}/meegotouch/z1.75/icons/*.png
+%{_datadir}/themes/%{theme}/meegotouch/z2.0/icons/*.png

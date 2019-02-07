@@ -20,7 +20,6 @@ dbus.path = /usr/share/dbus-1/services
 INSTALLS += dbus
 
 desktop.files = \
-#    desktop/aliendalvik-downloads.desktop \
     desktop/android-open-url.desktop \
     desktop/android-open-url-selector.desktop
 desktop.path = /usr/share/applications
@@ -45,14 +44,10 @@ settingsqml.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
 INSTALLS += settingsqml
 
 settingspng.files = \
-    settings/icon-m-aliendalvikcontrol.png \
     settings/icon-m-aliendalvik-back.png
 settingspng.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
 
 INSTALLS += settingspng
 
-#icons.files = hicolor
-#icons.path = /usr/share/icons
-#INSTALLS += icons
-
 INCLUDEPATH += /usr/include
+INCLUDEPATH += /usr/include/gbinder
