@@ -6,6 +6,9 @@
 #include <QMetaObject>
 #include <QTimer>
 
+#define BINDER_SERVICE "alien"
+#define BINDER_IFACE "alien.applications.IAlienService"
+
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
     , _watcher(new QFileSystemWatcher(this))
@@ -28,10 +31,13 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                    QStringLiteral("/com/jolla/apkd"),
                                    QStringLiteral("com.jolla.apkd"),
                                    QDBusConnection::systemBus(), this);
+
+    binderConnect();
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
 {
+    binderDisconnect();
 }
 
 QString MimeHandlerAdaptor::introspect(const QString &) const
@@ -136,7 +142,7 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
     else if (interface == QLatin1String("org.coderus.aliendalvikcontrol") || interface.isEmpty()) {
 //        QDBusReply<bool> apkdReply = apkdIface->call(QStringLiteral("isRunning"));
 //        if (apkdReply.isValid() && !apkdReply.value()) {
-            apkdIface->call(QStringLiteral("controlService"), QVariant::fromValue(true));
+//            apkdIface->call(QStringLiteral("controlService"), QVariant::fromValue(true));
 //        }
 
         if (dbusArguments.size() == 0) {
@@ -225,31 +231,36 @@ QVariant MimeHandlerAdaptor::showNavBar()
 
 QVariant MimeHandlerAdaptor::openDownloads(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
+    launchApp("com.android.documentsui");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openSettings(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
+    launchApp("com.android.settings");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openContacts(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
+    launchApp("com.android.contacts");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openCamera(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
+    launchApp("com.android.camera2");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openGallery(const QVariant &)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
+    launchApp("com.android.gallery3d");
     return QVariant();
 }
 
@@ -298,20 +309,86 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         return QVariant();
     }
 
-    openDownloads();
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(2000);
-    loop.exec();
+//    openDownloads();
+//    QEventLoop loop;
+//    QTimer timer;
+//    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+//    timer.start(2000);
+//    loop.exec();
 
-    QStringList params;
-    params << "com.android.commands.am.Am";
-    params << "start" << "-a" << "android.intent.action.SEND" << "-t";
-    params << mimetype.toString();
-    params << "--eu" << "android.intent.extra.STREAM";
-    params << containerPath;
-    appProcess("am.jar", QStringList() << params);
+//    QStringList params;
+//    params << "com.android.commands.am.Am";
+//    params << "start" << "-a" << "android.intent.action.SEND" << "-t";
+//    params << mimetype.toString();
+//    params << "--eu" << "android.intent.extra.STREAM";
+//    params << containerPath;
+//    appProcess("am.jar", QStringList() << params);
+
+
+    QString action = QStringLiteral("android.intent.action.SEND");
+    QString packageName;// = QStringLiteral("android");
+    QString componentPackage;// = QStringLiteral("android");
+    QString componentClass;// = QStringLiteral("com.android.internal.app.ResolverActivity");
+
+    QStringList categories;
+    int flags = 0x4008000;
+
+    int contentUserHint = -2;
+
+    if (!m_client) {
+        qWarning() << Q_FUNC_INFO << "Can't get client!";
+        return QVariant();
+    }
+    qDebug() << Q_FUNC_INFO << action << containerPath << mimetype.toString() << packageName << componentPackage << componentClass << categories << contentUserHint;
+
+    GBinderLocalRequest* req = gbinder_client_new_request(m_client);
+    GBinderWriter writer;
+    int status = 0;
+
+    gbinder_local_request_init_writer(req, &writer);
+
+    gbinder_writer_append_local_object(&writer, NULL);
+    gbinder_writer_append_string16(&writer, "");
+
+    gbinder_writer_append_int32(&writer, 1);
+
+    // intent data begin
+    gbinder_writer_append_string16_utf16(&writer, action.utf16(), action.length());
+    gbinder_writer_append_int32(&writer, 1);
+    gbinder_writer_append_string16_utf16(&writer, containerPath.utf16(), containerPath.length());
+    gbinder_writer_append_string16_utf16(&writer, mimetype.toString().utf16(), mimetype.toString().length());
+    gbinder_writer_append_int32(&writer, flags);
+    gbinder_writer_append_string16_utf16(&writer, packageName.utf16(), packageName.length());
+    gbinder_writer_append_string16_utf16(&writer, componentPackage.utf16(), componentPackage.length());
+    gbinder_writer_append_string16_utf16(&writer, componentClass.utf16(), componentClass.length());
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, categories.length());
+    for (const QString &category : categories) {
+        gbinder_writer_append_string16_utf16(&writer, category.utf16(), category.length());
+    }
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, contentUserHint);
+    gbinder_writer_append_int32(&writer, -1); // extras todo
+    // intent data end
+
+    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_local_object(&writer, NULL);
+    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+
+    GBinderRemoteReply *reply = gbinder_client_transact_sync_reply(m_client,
+                                                                   GBINDER_FIRST_CALL_TRANSACTION, // START_ACTIVITY_TRANSACTION
+                                                                   req,
+                                                                   &status);
+    qDebug() << Q_FUNC_INFO << "Call status:" << status;
+
+    gbinder_local_request_unref(req);
+    gbinder_remote_reply_unref(reply);
+
     return QVariant();
 }
 
@@ -392,8 +469,51 @@ QVariant MimeHandlerAdaptor::quit()
     return QVariant();
 }
 
+void MimeHandlerAdaptor::launchApp(const QString &packageName)
+{
+//    QDBusMessage msg = QDBusMessage::createMethodCall(QStringLiteral("com.jolla.apkd"),
+//                                                      QStringLiteral("/com/jolla/apkd"),
+//                                                      QStringLiteral("com.jolla.apkd"),
+//                                                      QStringLiteral("launchApp"));
+//    msg.setArguments({packageName});
+//    QDBusConnection::systemBus().call(msg);
+
+    if (!m_client) {
+        qWarning() << Q_FUNC_INFO << "No client!";
+        return;
+    }
+
+    GBinderLocalRequest* req = gbinder_client_new_request(m_client);
+
+    GBinderWriter writer;
+    gbinder_local_request_init_writer(req, &writer);
+
+    gbinder_writer_append_string16_utf16(&writer, packageName.utf16(),
+                    packageName.length());
+
+    int status = 0;
+    GBinderRemoteReply *reply = gbinder_client_transact_sync_reply(m_client,
+                                                                   GBINDER_FIRST_CALL_TRANSACTION,
+                                                                   req,
+                                                                   &status);
+
+    qDebug() << Q_FUNC_INFO << "Call status:" << status;
+
+    gbinder_local_request_unref(req);
+    gbinder_remote_reply_unref(reply);
+}
+
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
 {
+    QString package = component.left(component.indexOf("/"));
+    launchApp(package);
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(1000);
+    loop.exec();
+
     QStringList params;
     params << "com.android.commands.am.Am" << "start" << "-n" << component << "-a";
     if (data.isEmpty()) {
@@ -470,7 +590,8 @@ void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &p
 QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStringList &params)
 {
     QProcess *process = new QProcess(this);
-    QString lxc = "/usr/bin/lxc-attach";QStringList arguments;
+    QString lxc = "/usr/bin/lxc-attach";
+    QStringList arguments;
     arguments << "-n" << "aliendalvik" << "--" << program << params;
     process->start(lxc, arguments);
     process->waitForFinished(5000);
@@ -481,6 +602,104 @@ QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStri
     }
     QString output = QString::fromUtf8(process->readAll());
     return output;
+}
+
+void MimeHandlerAdaptor::binderConnect()
+{
+    if (!m_serviceManager) {
+        qDebug() << Q_FUNC_INFO << "Creating service manager";
+        m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
+    }
+
+    if (!m_serviceManager) {
+        qWarning() << Q_FUNC_INFO << "Can't create service manager!";
+    }
+
+
+    qDebug() << Q_FUNC_INFO << "Add registration handler";
+    m_registrationHandler = gbinder_servicemanager_add_registration_handler(m_serviceManager,
+                                                                            BINDER_SERVICE,
+                                                                            &MimeHandlerAdaptor::registrationHandler,
+                                                                            this);
+
+}
+
+void MimeHandlerAdaptor::binderDisconnect()
+{
+    qDebug() << Q_FUNC_INFO << "Binder disconnect";
+
+    if (m_client) {
+        qDebug() << Q_FUNC_INFO << "Removing client";
+        gbinder_client_unref(m_client);
+        m_client = nullptr;
+    }
+
+    if (m_deathHandler && m_remote) {
+        gbinder_remote_object_remove_handler(m_remote, m_deathHandler);
+        m_deathHandler = 0;
+    }
+
+    if (m_remote) {
+        qDebug() << Q_FUNC_INFO << "Removing remote";
+        gbinder_remote_object_unref(m_remote);
+        m_remote = nullptr;
+    }
+
+    if (m_registrationHandler && m_serviceManager) {
+        gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
+        m_registrationHandler = 0;
+    }
+
+    if (m_serviceManager) {
+        gbinder_servicemanager_unref(m_serviceManager);
+        m_serviceManager = nullptr;
+    }
+}
+
+void MimeHandlerAdaptor::registrationHandler(GBinderServiceManager *sm, const char *name, void *user_data)
+{
+    qDebug() << Q_FUNC_INFO << "Service registered" << sm << name << user_data;
+    MimeHandlerAdaptor* instance = static_cast<MimeHandlerAdaptor *>(user_data);
+    instance->registerManager();
+}
+
+void MimeHandlerAdaptor::registerManager()
+{
+    qDebug() << Q_FUNC_INFO << "Register manager";
+
+    int status;
+    m_remote = gbinder_remote_object_ref(
+                gbinder_servicemanager_get_service_sync(m_serviceManager,
+                                                        BINDER_SERVICE,
+                                                        &status));
+
+    qDebug() << Q_FUNC_INFO << "Service status:" << status;
+
+    if (!m_remote) {
+        qWarning() << Q_FUNC_INFO << "No remote!";
+        binderDisconnect();
+        return;
+    }
+
+    m_deathHandler = gbinder_remote_object_add_death_handler(m_remote, &MimeHandlerAdaptor::deathHandler, this);
+
+    m_client = gbinder_client_new(m_remote, BINDER_IFACE);
+
+    if (!m_client) {
+        qWarning() << Q_FUNC_INFO << "No client!";
+        binderDisconnect();
+        return;
+    }
+
+    gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
+    m_registrationHandler = 0;
+}
+
+void MimeHandlerAdaptor::deathHandler(GBinderRemoteObject *obj, void *user_data)
+{
+    qDebug() << Q_FUNC_INFO << "Binder died" << obj << user_data;
+    MimeHandlerAdaptor* instance = static_cast<MimeHandlerAdaptor *>(user_data);
+    instance->binderDisconnect();
 }
 
 void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arguments)

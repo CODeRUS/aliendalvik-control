@@ -13,12 +13,14 @@
 #include <QDBusConnection>
 #include <QDBusInterface>
 
+#include <gbinder.h>
+
 class MimeHandlerAdaptor : public QDBusVirtualObject
 {
     Q_OBJECT
 
 public:
-    MimeHandlerAdaptor(QObject *parent = 0);
+    MimeHandlerAdaptor(QObject *parent = nullptr);
     ~MimeHandlerAdaptor();
 
     QString introspect(const QString &) const;
@@ -52,6 +54,8 @@ private slots:
     QVariant quit();
 
 private:
+    void launchApp(const QString &packageName);
+
     void componentActivity(const QString &component, const QString &data);
 
     void appProcess(const QString &jar, const QStringList &params);
@@ -62,12 +66,27 @@ private:
 
     void emitSignal(const QString &name, const QList<QVariant> &arguments);
 
+    void binderConnect();
+    void binderDisconnect();
+
+    static void registrationHandler(GBinderServiceManager* sm, const char* name, void* user_data);
+    void registerManager();
+
+    static void deathHandler(GBinderRemoteObject *obj, void *user_data);
+
     QString _watchDir;
     QFileSystemWatcher *_watcher;
 
     bool _isTopmostAndroid;
 
     QDBusInterface *apkdIface;
+
+    GBinderRemoteObject *m_remote = nullptr;
+    GBinderServiceManager *m_serviceManager = nullptr;
+    GBinderClient *m_client = nullptr;
+
+    int m_registrationHandler = 0;
+    int m_deathHandler = 0;
 
 private slots:
     void readApplications(const QString &);

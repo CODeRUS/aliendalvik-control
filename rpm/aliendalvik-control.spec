@@ -22,6 +22,7 @@ BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 BuildRequires:  pkgconfig(nemotransferengine-qt5)
 BuildRequires:  sailfish-svg2png >= 0.1.5
+BuildRequires:  pkgconfig(libgbinder)
 
 %description
 D-Bus daemon for sending commands to aliendalvik
