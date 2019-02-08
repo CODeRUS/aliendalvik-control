@@ -6,8 +6,8 @@
 #include <QMetaObject>
 #include <QTimer>
 
-#define BINDER_SERVICE "alien"
-#define BINDER_IFACE "alien.applications.IAlienService"
+#define BINDER_SERVICE "activity"
+#define BINDER_IFACE "android.app.IActivityManager"
 
 #define BUNDLE_MAGIC 0x4C444E42
 
@@ -286,44 +286,111 @@ QVariant MimeHandlerAdaptor::openAppSettings(const QVariant &package)
 
     QString data = QStringLiteral("package:%1").arg(package.toString());
     QString action = QStringLiteral("android.settings.APPLICATION_DETAILS_SETTINGS");
-    QString appPackage;
-    QString componentPackage;
-    QString componentClass;
+    QString appPackage = QStringLiteral("com.android.settings");
+    QString componentPackage = QStringLiteral("com.android.settings");
+    QString componentClass = QStringLiteral(".applications.InstalledAppDetails");
 
     QString type;
 
+    int flags = 0x10008000;
+
+    // IBinder b
     gbinder_writer_append_local_object(&writer, NULL);
-    gbinder_writer_append_string16_utf16(&writer, callingPackage.utf16(), callingPackage.length());
+
+    // String callingPackage
+//    gbinder_writer_append_string16_utf16(&writer, callingPackage.utf16(), callingPackage.length());
+    gbinder_writer_append_int32(&writer, -1);
 //    gbinder_writer_append_string16(&writer, "");
 
-//    gbinder_writer_append_int32(&writer, 1);
+//    gbinder_writer_append_int32(&writer, -1);
+    gbinder_writer_append_int32(&writer, 1);
 
+    // ** INTENT BEGIN **
+
+    // String mAction
     gbinder_writer_append_string16_utf16(&writer, action.utf16(), action.length());
 
+    // Uri.CREATOR.createFromParcel
+    // int type UriString = 1
     gbinder_writer_append_int32(&writer, 1);
+    // UriString
     gbinder_writer_append_string16_utf16(&writer, data.utf16(), data.length());
+//    gbinder_writer_append_string16_len(&writer, data.toLatin1().constData(), data.length());
 
-    gbinder_writer_append_string16_utf16(&writer, type.utf16(), type.length());
-    gbinder_writer_append_int32(&writer, 0);
-    gbinder_writer_append_string16_utf16(&writer, appPackage.utf16(), appPackage.length());
+    // String mType
+    gbinder_writer_append_int32(&writer, -1);
+//    gbinder_writer_append_string16(&writer, "");
+//    gbinder_writer_append_string16_utf16(&writer, type.utf16(), type.length());
 
-    gbinder_writer_append_string16_utf16(&writer, componentPackage.utf16(), componentPackage.length());
-    gbinder_writer_append_string16_utf16(&writer, componentClass.utf16(), componentClass.length());
-    gbinder_writer_append_int32(&writer, 0);
+    // int mFlags
+    gbinder_writer_append_int32(&writer, flags);
+//    gbinder_writer_append_int32(&writer, 0);
+
+    // String mPackage
+    gbinder_writer_append_int32(&writer, -1);
+//    gbinder_writer_append_string16(&writer, "");
+//    gbinder_writer_append_string16_utf16(&writer, appPackage.utf16(), appPackage.length());
+
+    // ComponentName.readFromParcel
+    // String mPackage
+    gbinder_writer_append_int32(&writer, -1);
+//    gbinder_writer_append_string16_len(&writer, "", 0);
+//    gbinder_writer_append_string16_utf16(&writer, componentPackage.utf16(), componentPackage.length());
+    // String mClass
+//    gbinder_writer_append_int32(&writer, -1);
+//    gbinder_writer_append_string16_len(&writer, "", 0);
+//    gbinder_writer_append_string16_utf16(&writer, componentClass.utf16(), componentClass.length());
+
+    // mSourceBounds = Rect.CREATOR.createFromParcel
+    // 0 = pass
     gbinder_writer_append_int32(&writer, 0);
 
+    // int categories length
+    // read String mCategory
     gbinder_writer_append_int32(&writer, 0);
+
+    // mSelector = new Intent
+    // 0 = pass
     gbinder_writer_append_int32(&writer, 0);
+
+    // mClipData = new ClipData
+    // 0 = pass
+    gbinder_writer_append_int32(&writer, 0);
+
+    // int mContentUserHint
+    // -2 = current user
     gbinder_writer_append_int32(&writer, -2);
 
+    // mExtras = in.readBundle
+    // -1 = pass
     gbinder_writer_append_int32(&writer, -1);
 
-    gbinder_writer_append_string16(&writer, "");
+    // ** INTENT END **
+
+    // String resolvedType
+    gbinder_writer_append_int32(&writer, -1);
+//    gbinder_writer_append_string16(&writer, "");
+
+    // IBinder resultTo
     gbinder_writer_append_local_object(&writer, NULL);
-    gbinder_writer_append_string16(&writer, "");
+
+    // String resultWho
+    gbinder_writer_append_int32(&writer, -1);
+//    gbinder_writer_append_string16(&writer, "");
+
+    // int requestCode
     gbinder_writer_append_int32(&writer, 0);
+
+    // int startFlags
+//    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, flags);
+
+    // ProfilerInfo.CREATOR.createFromParcel
+    // 0 = pass
     gbinder_writer_append_int32(&writer, 0);
-    gbinder_writer_append_int32(&writer, 0);
+
+    // Bundle.CREATOR.createFromParcel
+    // 0 = pass
     gbinder_writer_append_int32(&writer, 0);
 
     int status = 0;
