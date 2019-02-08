@@ -15,6 +15,29 @@
 
 #include <gbinder.h>
 
+struct Intent
+{
+    QString action;
+    QString data;
+    QString type;
+
+    int flags = 0;
+
+    QString package;
+    QString classPackage;
+    QString className;
+
+    int sourceBounds = 0;
+
+    QStringList categories;
+
+    int selector = 0;
+    int clipData = 0;
+    int contentUserHint = -2;
+
+    QVariantHash extras;
+};
+
 class MimeHandlerAdaptor : public QDBusVirtualObject
 {
     Q_OBJECT
@@ -40,6 +63,8 @@ private slots:
     QVariant openContacts(const QVariant & = QVariant());
     QVariant openCamera(const QVariant & = QVariant());
     QVariant openGallery(const QVariant & = QVariant());
+    QVariant openAppSettings(const QVariant &package);
+    QVariant launchApp(const QVariant &packageName);
     QVariant getImeList();
     QVariant triggerImeMethod(const QVariant &ime, const QVariant &enable);
     QVariant setImeMethod(const QVariant &ime);
@@ -54,7 +79,9 @@ private slots:
     QVariant quit();
 
 private:
-    void launchApp(const QString &packageName);
+    void sendIntent(const Intent &intent);
+
+    void launchPackage(const QString &packageName);
 
     void componentActivity(const QString &component, const QString &data);
 

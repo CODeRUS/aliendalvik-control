@@ -9,6 +9,8 @@
 #define BINDER_SERVICE "alien"
 #define BINDER_IFACE "alien.applications.IAlienService"
 
+#define BUNDLE_MAGIC 0x4C444E42
+
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
     , _watcher(new QFileSystemWatcher(this))
@@ -88,6 +90,12 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    <method name=\"openCamera\">\n";
     xml += "    </method>\n";
     xml += "    <method name=\"openGallery\">\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"openAppSettings\">\n";
+    xml += "      <arg name=\"package\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"launchApp\">\n";
+    xml += "      <arg name=\"package\" type=\"s\" direction=\"in\"/>\n";
     xml += "    </method>\n";
     xml += "    <method name=\"getImeList\">\n";
     xml += "    </method>\n";
@@ -205,7 +213,11 @@ QVariant MimeHandlerAdaptor::startIntent(const QVariant &intent)
 
 QVariant MimeHandlerAdaptor::uriActivity(const QVariant &uri)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
+    Intent intent;
+    intent.action = QStringLiteral("androird.intent.action.VIEW");
+    intent.data = uri.toString();
+    sendIntent(intent);
     return QVariant();
 }
 
@@ -232,35 +244,115 @@ QVariant MimeHandlerAdaptor::showNavBar()
 QVariant MimeHandlerAdaptor::openDownloads(const QVariant &)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
-    launchApp("com.android.documentsui");
+    launchPackage("com.android.documentsui");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openSettings(const QVariant &)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
-    launchApp("com.android.settings");
+    launchPackage("com.android.settings");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openContacts(const QVariant &)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
-    launchApp("com.android.contacts");
+    launchPackage("com.android.contacts");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openCamera(const QVariant &)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
-    launchApp("com.android.camera2");
+    launchPackage("com.android.camera2");
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::openGallery(const QVariant &)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
-    launchApp("com.android.gallery3d");
+    launchPackage("com.android.gallery3d");
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::openAppSettings(const QVariant &package)
+{
+    GBinderLocalRequest* req = gbinder_client_new_request(m_client);
+    GBinderWriter writer;
+    gbinder_local_request_init_writer(req, &writer);
+
+    QString callingPackage = QStringLiteral("com.android.settings");
+
+    QString data = QStringLiteral("package:%1").arg(package.toString());
+    QString action = QStringLiteral("android.settings.APPLICATION_DETAILS_SETTINGS");
+    QString appPackage;
+    QString componentPackage;
+    QString componentClass;
+
+    QString type;
+
+    gbinder_writer_append_local_object(&writer, NULL);
+    gbinder_writer_append_string16_utf16(&writer, callingPackage.utf16(), callingPackage.length());
+//    gbinder_writer_append_string16(&writer, "");
+
+//    gbinder_writer_append_int32(&writer, 1);
+
+    gbinder_writer_append_string16_utf16(&writer, action.utf16(), action.length());
+
+    gbinder_writer_append_int32(&writer, 1);
+    gbinder_writer_append_string16_utf16(&writer, data.utf16(), data.length());
+
+    gbinder_writer_append_string16_utf16(&writer, type.utf16(), type.length());
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_string16_utf16(&writer, appPackage.utf16(), appPackage.length());
+
+    gbinder_writer_append_string16_utf16(&writer, componentPackage.utf16(), componentPackage.length());
+    gbinder_writer_append_string16_utf16(&writer, componentClass.utf16(), componentClass.length());
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, -2);
+
+    gbinder_writer_append_int32(&writer, -1);
+
+    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_local_object(&writer, NULL);
+    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+
+    int status = 0;
+    GBinderRemoteReply *reply = gbinder_client_transact_sync_reply(m_client,
+                                                                   3,
+                                                                   req,
+                                                                   &status);
+    qDebug() << Q_FUNC_INFO << "Call status:" << status;
+
+    gbinder_local_request_unref(req);
+    gbinder_remote_reply_unref(reply);
+
+
+
+//    Intent intent;
+//    intent.action = QStringLiteral("android.settings.APPLICATION_DETAILS_SETTINGS");
+//    intent.data = QStringLiteral("package:%1").arg(package.toString());
+////    intent.type = QStringLiteral("*/*");
+////    intent.flags = 0x10000000;
+//    intent.package = QStringLiteral("com.android.settings");
+//    intent.classPackage = QStringLiteral("com.android.settings");
+//    intent.className = QStringLiteral(".applications.InstalledAppDetails");
+//    sendIntent(intent);
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::launchApp(const QVariant &packageName)
+{
+    launchPackage(packageName.toString());
     return QVariant();
 }
 
@@ -302,7 +394,7 @@ QVariant MimeHandlerAdaptor::setImeMethod(const QVariant &ime)
 
 QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant &mimetype)
 {
-    QString containerPath = QStringLiteral("/storage/emulated/0/nemo/");
+    QString containerPath = QStringLiteral("file:///storage/emulated/0/nemo/");
     if (filename.toString().startsWith(QStringLiteral("file:///home/nemo/"))) {
         containerPath.append(filename.toString().mid(18));
     } else {
@@ -331,7 +423,7 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     QString componentClass;// = QStringLiteral("com.android.internal.app.ResolverActivity");
 
     QStringList categories;
-    int flags = 0x4008000;
+    int flags = 0x0;
 
     int contentUserHint = -2;
 
@@ -350,7 +442,7 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     gbinder_writer_append_local_object(&writer, NULL);
     gbinder_writer_append_string16(&writer, "");
 
-    gbinder_writer_append_int32(&writer, 1);
+//    gbinder_writer_append_int32(&writer, 1);
 
     // intent data begin
     gbinder_writer_append_string16_utf16(&writer, action.utf16(), action.length());
@@ -381,7 +473,7 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     gbinder_writer_append_int32(&writer, 0);
 
     GBinderRemoteReply *reply = gbinder_client_transact_sync_reply(m_client,
-                                                                   GBINDER_FIRST_CALL_TRANSACTION, // START_ACTIVITY_TRANSACTION
+                                                                   GBINDER_FIRST_CALL_TRANSACTION + 2, // START_ACTIVITY_TRANSACTION
                                                                    req,
                                                                    &status);
     qDebug() << Q_FUNC_INFO << "Call status:" << status;
@@ -469,7 +561,128 @@ QVariant MimeHandlerAdaptor::quit()
     return QVariant();
 }
 
-void MimeHandlerAdaptor::launchApp(const QString &packageName)
+void MimeHandlerAdaptor::sendIntent(const Intent &intent)
+{
+    if (!m_client) {
+        qWarning() << Q_FUNC_INFO << "Can't get client!";
+        return;
+    }
+
+    qDebug() << Q_FUNC_INFO
+             << intent.action
+             << intent.data
+             << intent.type
+             << intent.package
+             << intent.className
+             << intent.categories
+             << intent.contentUserHint;
+
+    GBinderLocalRequest* req = gbinder_client_new_request(m_client);
+    GBinderWriter writer;
+    int status = 0;
+
+    gbinder_local_request_init_writer(req, &writer);
+
+    gbinder_writer_append_local_object(&writer, NULL);
+    gbinder_writer_append_string16(&writer, "");
+
+//    gbinder_writer_append_int32(&writer, 1);
+
+    // intent data begin
+    gbinder_writer_append_string16_utf16(&writer, intent.action.utf16(), intent.action.length());
+
+    gbinder_writer_append_int32(&writer, 1);
+    gbinder_writer_append_string16_utf16(&writer, intent.data.utf16(), intent.data.length());
+
+    gbinder_writer_append_string16_utf16(&writer, intent.type.utf16(), intent.type.length());
+    gbinder_writer_append_int32(&writer, intent.flags);
+    gbinder_writer_append_string16_utf16(&writer, intent.package.utf16(), intent.package.length());
+//    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_string16_utf16(&writer, intent.classPackage.utf16(), intent.classPackage.length());
+    gbinder_writer_append_string16_utf16(&writer, intent.className.utf16(), intent.className.length());
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+//    gbinder_writer_append_int32(&writer, intent.categories.length());
+//    for (const QString &category : intent.categories) {
+//        gbinder_writer_append_string16_utf16(&writer, category.utf16(), category.length());
+//    }
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, -2);
+
+    if (intent.extras.isEmpty()) {
+        gbinder_writer_append_int32(&writer, -1);
+    } else {
+        gsize offset = gbinder_writer_bytes_written(&writer);
+        gbinder_writer_append_int32(&writer, 1);
+        gbinder_writer_append_int32(&writer, BUNDLE_MAGIC);
+        gsize start = gbinder_writer_bytes_written(&writer);
+        gbinder_writer_append_int32(&writer, intent.extras.count());
+        QHash<QString, QVariant>::const_iterator it = intent.extras.begin();
+        while (it != intent.extras.end()) {
+          gbinder_writer_append_string16_utf16(&writer, it.key().utf16(), it.key().length());
+//          if (it.value().isNull()) {
+//            gbinder_writer_append_int32(out, (int)VAL_NULL);
+//          }
+//          else {
+            switch (it.value().type()) {
+            case QMetaType::QString:
+              gbinder_writer_append_int32(&writer, 0);
+              gbinder_writer_append_string16_utf16(&writer, it.value().toString().utf16(), it.value().toString().length());
+              break;
+            case QMetaType::Int:
+            case QMetaType::UInt:
+              gbinder_writer_append_int32(&writer, 1);
+              gbinder_writer_append_int32(&writer, it.value().toInt());
+              break;
+            case QMetaType::LongLong:
+            case QMetaType::ULongLong:
+              gbinder_writer_append_int32(&writer, 6);
+              gbinder_writer_append_int64(&writer, it.value().toLongLong());
+              break;
+            case QMetaType::Bool:
+              gbinder_writer_append_int32(&writer, 9);
+              gbinder_writer_append_bool(&writer, it.value().toBool());
+              break;
+            case QMetaType::Double:
+              gbinder_writer_append_int32(&writer, 8);
+              gbinder_writer_append_double(&writer, it.value().toDouble());
+              break;
+            default:
+              qCritical("Unsupported extra type! %s", QMetaType::typeName(it.value().type()));
+            }
+//          }
+          ++it;
+        }
+        gsize end = gbinder_writer_bytes_written(&writer);
+        gsize len = end - start;
+        if (len > G_MAXINT32) {
+          qCritical("Bundle too long for signed int32! %d", len);
+          return;
+        }
+        gbinder_writer_overwrite_int32(&writer, offset, len);
+    }
+    // intent data end
+
+    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_local_object(&writer, NULL);
+    gbinder_writer_append_string16(&writer, "");
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+    gbinder_writer_append_int32(&writer, 0);
+
+    GBinderRemoteReply *reply = gbinder_client_transact_sync_reply(m_client,
+                                                                   3, //GBINDER_FIRST_CALL_TRANSACTION + 13, // START_ACTIVITY_TRANSACTION
+                                                                   req,
+                                                                   &status);
+    qDebug() << Q_FUNC_INFO << "Call status:" << status;
+
+    gbinder_local_request_unref(req);
+    gbinder_remote_reply_unref(reply);
+}
+
+void MimeHandlerAdaptor::launchPackage(const QString &packageName)
 {
 //    QDBusMessage msg = QDBusMessage::createMethodCall(QStringLiteral("com.jolla.apkd"),
 //                                                      QStringLiteral("/com/jolla/apkd"),
@@ -506,7 +719,7 @@ void MimeHandlerAdaptor::launchApp(const QString &packageName)
 void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
 {
     QString package = component.left(component.indexOf("/"));
-    launchApp(package);
+    launchPackage(package);
 
     QEventLoop loop;
     QTimer timer;
