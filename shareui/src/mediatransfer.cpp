@@ -66,7 +66,7 @@ void MediaTransfer::start()
                 tmp.write(content.toUtf8());
                 tmp.close();
 
-                shareFile("file://" + tmp.fileName(), mimeType);
+                shareFile(tmp.fileName(), mimeType);
             }
         }
         else if (mimeType == "text/x-url") {
@@ -80,6 +80,6 @@ void MediaTransfer::start()
         QMimeDatabase db;
         QMimeType mimeType = db.mimeTypeForFile(url.toString());
 
-        shareFile(url.toString(), mimeType.name());
+        shareFile(url.toString(QUrl::PreferLocalFile), mimeType.name());
     }
 }

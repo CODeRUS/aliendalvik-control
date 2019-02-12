@@ -10,11 +10,15 @@ PKGCONFIG += libgbinder
 SOURCES += \
     src/main.cpp \
     src/dbusmain.cpp \
-    src/mimehandleradaptor.cpp
+    src/mimehandleradaptor.cpp \
+    src/binderinterfaceabstract.cpp \
+    src/activitymanager.cpp
 
 HEADERS += \
     src/dbusmain.h \
-    src/mimehandleradaptor.h
+    src/mimehandleradaptor.h \
+    src/binderinterfaceabstract.h \
+    src/activitymanager.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/services

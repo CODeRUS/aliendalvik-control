@@ -15,28 +15,7 @@
 
 #include <gbinder.h>
 
-struct Intent
-{
-    QString action;
-    QString data;
-    QString type;
-
-    int flags = 0;
-
-    QString package;
-    QString classPackage;
-    QString className;
-
-    int sourceBounds = 0;
-
-    QStringList categories;
-
-    int selector = 0;
-    int clipData = 0;
-    int contentUserHint = -2;
-
-    QVariantHash extras;
-};
+#include "activitymanager.h"
 
 class MimeHandlerAdaptor : public QDBusVirtualObject
 {
@@ -65,6 +44,7 @@ private slots:
     QVariant openGallery(const QVariant & = QVariant());
     QVariant openAppSettings(const QVariant &package);
     QVariant launchApp(const QVariant &packageName);
+    QVariant forceStop(const QVariant &packageName);
     QVariant getImeList();
     QVariant triggerImeMethod(const QVariant &ime, const QVariant &enable);
     QVariant setImeMethod(const QVariant &ime);
@@ -79,8 +59,6 @@ private slots:
     QVariant quit();
 
 private:
-    void sendIntent(const Intent &intent);
-
     void launchPackage(const QString &packageName);
 
     void componentActivity(const QString &component, const QString &data);
@@ -107,6 +85,8 @@ private:
     bool _isTopmostAndroid;
 
     QDBusInterface *apkdIface;
+
+    ActivityManager *m_am = nullptr;
 
     GBinderRemoteObject *m_remote = nullptr;
     GBinderServiceManager *m_serviceManager = nullptr;
