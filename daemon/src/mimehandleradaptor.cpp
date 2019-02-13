@@ -1,5 +1,7 @@
 #include "mimehandleradaptor.h"
 
+#include "activitymanager.h"
+
 #include <QDebug>
 #include <QCoreApplication>
 #include <QDBusReply>
@@ -7,15 +9,9 @@
 #include <QTimer>
 #include <QUrl>
 
-#define BINDER_SERVICE "activity"
-#define BINDER_IFACE "android.app.IActivityManager"
-
-#define BUNDLE_MAGIC 0x4C444E42
-
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
     , _watcher(new QFileSystemWatcher(this))
-    , m_am(new ActivityManager(this))
 {
     _watchDir = QStringLiteral("/usr/share/applications/");
     _watcher->addPath(_watchDir);
@@ -36,12 +32,11 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                    QStringLiteral("com.jolla.apkd"),
                                    QDBusConnection::systemBus(), this);
 
-//    binderConnect();
+    ActivityManager::GetInstance();
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
 {
-//    binderDisconnect();
 }
 
 QString MimeHandlerAdaptor::introspect(const QString &) const
@@ -285,9 +280,9 @@ QVariant MimeHandlerAdaptor::openAppSettings(const QVariant &package)
     intent.action = QStringLiteral("android.settings.APPLICATION_DETAILS_SETTINGS");
     intent.data = QStringLiteral("package:%1").arg(package.toString());
 
-    qDebug() << Q_FUNC_INFO << "startActivity" << m_am;
+    qDebug() << Q_FUNC_INFO << "startActivity" << ActivityManager::GetInstance();
 
-    m_am->startActivity(intent);
+    ActivityManager::startActivity(intent);
     return QVariant();
 }
 
@@ -299,7 +294,7 @@ QVariant MimeHandlerAdaptor::launchApp(const QVariant &packageName)
 
 QVariant MimeHandlerAdaptor::forceStop(const QVariant &packageName)
 {
-    m_am->forceStopPackage(packageName.toString());
+    ActivityManager::forceStopPackage(packageName.toString());
     return QVariant();
 }
 
@@ -350,7 +345,8 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         return QVariant();
     }
 
-    openDownloads();
+    forceStop(QStringLiteral("com.android.documentsui"));
+    launchPackage(QStringLiteral("com.android.documentsui"));
 
     QEventLoop loop;
     QTimer timer;
@@ -363,30 +359,39 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = mimetype.toString();
+    intent.classPackage = QStringLiteral("android");
+    intent.className = QStringLiteral("com.android.internal.app.ResolverActivity");
     intent.extras = {
-        {"android.intent.extra.STREAM",  QUrl::fromLocalFile(containerPath)}
+        {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)}
     };
-    m_am->startActivity(intent);
+    ActivityManager::startActivity(intent);
 
     return QVariant();
 }
 
 QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
 {
-    openDownloads();
+    forceStop(QStringLiteral("com.android.documentsui"));
+    launchPackage(QStringLiteral("com.android.documentsui"));
+
     QEventLoop loop;
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(3000);
+    timer.start(2000);
     loop.exec();
 
-    QStringList params;
-    params << "com.android.commands.am.Am";
-    params << "start" << "-a" << "android.intent.action.SEND" << "-t";
-    params << "text/*";
-    params << "--es" << "android.intent.extra.TEXT";
-    params << text.toString();
-    appProcess("am.jar", QStringList() << params);
+    qDebug() << Q_FUNC_INFO << text;
+
+    Intent intent;
+    intent.action = QStringLiteral("android.intent.action.SEND");
+    intent.type = QStringLiteral("text/*");
+    intent.classPackage = QStringLiteral("android");
+    intent.className = QStringLiteral("com.android.internal.app.ResolverActivity");
+    intent.extras = {
+        {"android.intent.extra.TEXT", text.toString()}
+    };
+    ActivityManager::startActivity(intent);
+
     return QVariant();
 }
 
@@ -475,7 +480,7 @@ void MimeHandlerAdaptor::componentActivity(const QString &component, const QStri
     intent.action = QStringLiteral("android.intent.action.VIEW");
     intent.package = package;
     intent.data = data;
-    m_am->startActivity(intent);
+    ActivityManager::startActivity(intent);
 }
 
 void MimeHandlerAdaptor::appProcess(const QString &jar, const QStringList &params)
@@ -554,104 +559,6 @@ QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStri
     }
     QString output = QString::fromUtf8(process->readAll());
     return output;
-}
-
-void MimeHandlerAdaptor::binderConnect()
-{
-    if (!m_serviceManager) {
-        qDebug() << Q_FUNC_INFO << "Creating service manager";
-        m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
-    }
-
-    if (!m_serviceManager) {
-        qWarning() << Q_FUNC_INFO << "Can't create service manager!";
-    }
-
-
-    qDebug() << Q_FUNC_INFO << "Add registration handler";
-    m_registrationHandler = gbinder_servicemanager_add_registration_handler(m_serviceManager,
-                                                                            BINDER_SERVICE,
-                                                                            &MimeHandlerAdaptor::registrationHandler,
-                                                                            this);
-
-}
-
-void MimeHandlerAdaptor::binderDisconnect()
-{
-    qDebug() << Q_FUNC_INFO << "Binder disconnect";
-
-    if (m_client) {
-        qDebug() << Q_FUNC_INFO << "Removing client";
-        gbinder_client_unref(m_client);
-        m_client = nullptr;
-    }
-
-    if (m_deathHandler && m_remote) {
-        gbinder_remote_object_remove_handler(m_remote, m_deathHandler);
-        m_deathHandler = 0;
-    }
-
-    if (m_remote) {
-        qDebug() << Q_FUNC_INFO << "Removing remote";
-        gbinder_remote_object_unref(m_remote);
-        m_remote = nullptr;
-    }
-
-    if (m_registrationHandler && m_serviceManager) {
-        gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
-        m_registrationHandler = 0;
-    }
-
-    if (m_serviceManager) {
-        gbinder_servicemanager_unref(m_serviceManager);
-        m_serviceManager = nullptr;
-    }
-}
-
-void MimeHandlerAdaptor::registrationHandler(GBinderServiceManager *sm, const char *name, void *user_data)
-{
-    qDebug() << Q_FUNC_INFO << "Service registered" << sm << name << user_data;
-    MimeHandlerAdaptor* instance = static_cast<MimeHandlerAdaptor *>(user_data);
-    instance->registerManager();
-}
-
-void MimeHandlerAdaptor::registerManager()
-{
-    qDebug() << Q_FUNC_INFO << "Register manager";
-
-    int status;
-    m_remote = gbinder_remote_object_ref(
-                gbinder_servicemanager_get_service_sync(m_serviceManager,
-                                                        BINDER_SERVICE,
-                                                        &status));
-
-    qDebug() << Q_FUNC_INFO << "Service status:" << status;
-
-    if (!m_remote) {
-        qWarning() << Q_FUNC_INFO << "No remote!";
-        binderDisconnect();
-        return;
-    }
-
-    m_deathHandler = gbinder_remote_object_add_death_handler(m_remote, &MimeHandlerAdaptor::deathHandler, this);
-
-    m_client = gbinder_client_new(m_remote, BINDER_IFACE);
-
-    if (!m_client) {
-        qWarning() << Q_FUNC_INFO << "No client!";
-        binderDisconnect();
-        return;
-    }
-
-    gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
-    m_registrationHandler = 0;
-}
-
-void MimeHandlerAdaptor::deathHandler(GBinderRemoteObject *obj, void *user_data)
-{
-    qDebug() << Q_FUNC_INFO << "Binder died" << obj << user_data;
-    MimeHandlerAdaptor* instance = static_cast<MimeHandlerAdaptor *>(user_data);
-    instance->binderDisconnect();
 }
 
 void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arguments)

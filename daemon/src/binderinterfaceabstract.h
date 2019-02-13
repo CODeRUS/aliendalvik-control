@@ -5,6 +5,10 @@
 
 #include <gbinder.h>
 
+enum {
+    StringUri_TYPE_ID = 1
+};
+
 // Keep in sync with frameworks/base/core/java/android/os/Parcel.java.
 enum {
     VAL_NULL = -1,

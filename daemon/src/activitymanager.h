@@ -6,8 +6,8 @@
 #include <QVariantHash>
 
 enum {
-    START_ACTIVITY_TRANSACTION = GBINDER_FIRST_CALL_TRANSACTION + 2,
-    FORCE_STOP_PACKAGE_TRANSACTION = GBINDER_FIRST_CALL_TRANSACTION + 70,
+    TRANSACTION_startActivity = 3,
+    TRANSACTION_forceStopPackage = 72,
 };
 
 enum {
@@ -43,9 +43,12 @@ class ActivityManager : public BinderInterfaceAbstract
     Q_OBJECT
 public:
     explicit ActivityManager(QObject *parent = nullptr);
+    virtual ~ActivityManager();
 
-    void startActivity(Intent intent);
-    void forceStopPackage(const QString &package);
+    static ActivityManager *GetInstance();
+
+    static void startActivity(Intent intent);
+    static void forceStopPackage(const QString &package);
 
 };
 

@@ -13,10 +13,6 @@
 #include <QDBusConnection>
 #include <QDBusInterface>
 
-#include <gbinder.h>
-
-#include "activitymanager.h"
-
 class MimeHandlerAdaptor : public QDBusVirtualObject
 {
     Q_OBJECT
@@ -71,29 +67,12 @@ private:
 
     void emitSignal(const QString &name, const QList<QVariant> &arguments);
 
-    void binderConnect();
-    void binderDisconnect();
-
-    static void registrationHandler(GBinderServiceManager* sm, const char* name, void* user_data);
-    void registerManager();
-
-    static void deathHandler(GBinderRemoteObject *obj, void *user_data);
-
     QString _watchDir;
     QFileSystemWatcher *_watcher;
 
     bool _isTopmostAndroid;
 
     QDBusInterface *apkdIface;
-
-    ActivityManager *m_am = nullptr;
-
-    GBinderRemoteObject *m_remote = nullptr;
-    GBinderServiceManager *m_serviceManager = nullptr;
-    GBinderClient *m_client = nullptr;
-
-    int m_registrationHandler = 0;
-    int m_deathHandler = 0;
 
 private slots:
     void readApplications(const QString &);

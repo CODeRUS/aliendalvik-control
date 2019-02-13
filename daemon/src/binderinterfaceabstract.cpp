@@ -216,6 +216,13 @@ void Parcel::writeValue(const QVariant &value)
     switch (value.type()) {
     case QMetaType::QUrl:
         writeInt(static_cast<int>(VAL_PARCELABLE));
+        // writeParcelableCreator
+        writeString(QStringLiteral("android.net.Uri"));
+        writeInt(static_cast<int>(StringUri_TYPE_ID));
+        writeString(value.toString());
+        break;
+    case QMetaType::QString:
+        writeInt(static_cast<int>(VAL_STRING));
         writeString(value.toString());
         break;
     default:
