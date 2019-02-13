@@ -79,6 +79,7 @@ private slots:
     void desktopChanged(const QString &path);
 
     void topmostIdChanged(int pId);
+    void aliendalvikChanged(const QString &interface, const QVariantMap &properties, const QStringList &invalidated);
 
 };
 

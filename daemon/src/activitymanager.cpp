@@ -45,9 +45,9 @@ void ActivityManager::startActivity(Intent intent)
     parcel->writeInt(1); // const value
     intent.writeToParcel(parcel);
     parcel->writeString(QString()); // resolvedType
-    parcel->writeString(QString()); // callingPackage
+    parcel->writeStrongBinder(NULL); // resultTo
     parcel->writeString(QString()); // resultWho
-    parcel->writeInt(0); // requestCode
+    parcel->writeInt(-1); // requestCode
     parcel->writeInt(0); // startFlags
     parcel->writeInt(0); // profilerInfo disable
     parcel->writeInt(0); // options disable
@@ -74,6 +74,11 @@ void ActivityManager::forceStopPackage(const QString &package)
     manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
     qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
     delete parcel;
+}
+
+void ActivityManager::registrationCompleted()
+{
+    qCDebug(amInterface) << Q_FUNC_INFO;
 }
 
 void Intent::writeToParcel(Parcel *parcel)

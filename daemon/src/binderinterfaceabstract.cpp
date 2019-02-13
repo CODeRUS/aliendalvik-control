@@ -1,7 +1,9 @@
 #include "binderinterfaceabstract.h"
 
 #include <QDebug>
+#include <QEventLoop>
 #include <QLoggingCategory>
+#include <QTimer>
 
 Q_LOGGING_CATEGORY(binderinterface, "binder.interface", QtDebugMsg)
 
@@ -37,6 +39,16 @@ Parcel *BinderInterfaceAbstract::createTransaction()
     qCDebug(binderinterface) << Q_FUNC_INFO;
 
     if (!m_client) {
+        binderConnect();
+
+        QEventLoop loop;
+        QTimer timer;
+        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        timer.start(2000);
+        loop.exec();
+    }
+
+    if (!m_client) {
         qCCritical(binderinterface) << Q_FUNC_INFO << "No client!";
         return nullptr;
     }
@@ -51,6 +63,22 @@ void BinderInterfaceAbstract::sendTransaction(int code, Parcel *parcel, int *sta
             (m_client, code, parcel->request(), status);
 
     gbinder_remote_reply_unref(reply);
+}
+
+GBinderServiceManager *BinderInterfaceAbstract::manager()
+{
+    return m_serviceManager;
+}
+
+void BinderInterfaceAbstract::reconnect()
+{
+    qCDebug(binderinterface) << Q_FUNC_INFO;
+
+    if (m_client) {
+        return;
+    }
+
+    binderConnect();
 }
 
 void BinderInterfaceAbstract::binderConnect()
@@ -144,6 +172,8 @@ void BinderInterfaceAbstract::registerManager()
 
     gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
     m_registrationHandler = 0;
+
+    registrationCompleted();
 }
 
 Parcel::Parcel(GBinderLocalRequest *request)

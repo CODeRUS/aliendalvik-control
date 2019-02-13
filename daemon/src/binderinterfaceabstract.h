@@ -70,6 +70,14 @@ public:
     Parcel *createTransaction();
     void sendTransaction(int code, Parcel *parcel, int *status);
 
+    GBinderServiceManager *manager();
+
+public slots:
+    void reconnect();
+
+protected:
+    virtual void registrationCompleted() = 0;
+
 private:
     void binderConnect();
     void binderDisconnect();

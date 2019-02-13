@@ -50,6 +50,9 @@ public:
     static void startActivity(Intent intent);
     static void forceStopPackage(const QString &package);
 
+protected:
+    void registrationCompleted() override;
+
 };
 
 #endif // ACTIVITYMANAGER_H

@@ -27,6 +27,12 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                          QStringLiteral("privateTopmostWindowProcessIdChanged"),
                                          this, SLOT(topmostIdChanged(int)));
 
+    QDBusConnection::systemBus().connect(QString(),
+                                         QStringLiteral("/org/freedesktop/systemd1/unit/aliendalvik_2eservice"),
+                                         QStringLiteral("org.freedesktop.DBus.Properties"),
+                                         QStringLiteral("PropertiesChanged"),
+                                         this, SLOT(aliendalvikChanged(QString, QVariantMap, QStringList)));
+
     apkdIface = new QDBusInterface(QStringLiteral("com.jolla.apkd"),
                                    QStringLiteral("/com/jolla/apkd"),
                                    QStringLiteral("com.jolla.apkd"),
@@ -631,6 +637,14 @@ void MimeHandlerAdaptor::topmostIdChanged(int pId)
     }
     QByteArray out = proc->readAll().trimmed();
     _isTopmostAndroid = (out == "system_server");
+}
+
+void MimeHandlerAdaptor::aliendalvikChanged(const QString &interface, const QVariantMap &properties, const QStringList &invalidated)
+{
+    qDebug() << Q_FUNC_INFO << interface << properties << invalidated;
+    if (properties.value(QStringLiteral("ActiveState")).toString() == QLatin1String("active")) {
+        ActivityManager::GetInstance()->reconnect();
+    }
 }
 
 void MimeHandlerAdaptor::readApplications(const QString &)
