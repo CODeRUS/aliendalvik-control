@@ -43,19 +43,34 @@ class Parcel
 {
 public:
     Parcel(GBinderLocalRequest *request);
+    Parcel(GBinderRemoteReply *reply);
     ~Parcel();
 
     void writeStrongBinder(GBinderLocalObject *value);
+    void writeStrongBinder(GBinderRemoteObject *value);
     void writeString(const QString &value);
     void writeInt(int value);
     void writeBundle(const QVariantHash &value);
     void writeValue(const QVariant &value);
 
+    int readInt() const;
+    QString readString() const;
+    void readBundle() const;
+    qlonglong readLong() const;
+    bool readBoolean() const;
+    double readDouble() const;
+    QStringList readStringList() const;
+    QHash<int, QVariant> readSparseArray() const;
+    QVariant readValue() const;
+    float readFloat() const;
+
     GBinderLocalRequest *request();
 
 private:
-    GBinderLocalRequest *m_request;
-    GBinderWriter *m_writer;
+    GBinderLocalRequest *m_request = nullptr;
+    GBinderRemoteReply *m_reply = nullptr;
+    GBinderWriter *m_writer = nullptr;
+    GBinderReader *m_reader = nullptr;
 };
 
 class BinderInterfaceAbstract : public QObject
@@ -68,9 +83,18 @@ public:
     virtual ~BinderInterfaceAbstract();
 
     Parcel *createTransaction();
-    void sendTransaction(int code, Parcel *parcel, int *status);
+    Parcel *sendTransaction(int code, Parcel *parcel, int *status);
 
     GBinderServiceManager *manager();
+    GBinderLocalObject *localHandler();
+
+    static GBinderLocalReply* onTransact(
+            GBinderLocalObject *obj,
+            GBinderRemoteRequest *req,
+            guint code,
+            guint flags,
+            int *status,
+            void *user_data);
 
 public slots:
     void reconnect();
@@ -91,11 +115,13 @@ private:
     const char *m_interfaceName;
 
     GBinderRemoteObject *m_remote = nullptr;
+    GBinderLocalObject *m_local = nullptr;
     GBinderServiceManager *m_serviceManager = nullptr;
     GBinderClient *m_client = nullptr;
 
     int m_registrationHandler = 0;
     int m_deathHandler = 0;
+    int m_localHandler = 0;
 };
 
 #endif // BINDERINTERFACEABSTRACT_H

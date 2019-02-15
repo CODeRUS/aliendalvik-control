@@ -1,4 +1,5 @@
 #include "activitymanager.h"
+#include "intent.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -40,19 +41,20 @@ void ActivityManager::startActivity(Intent intent)
         return;
     }
 
-    parcel->writeStrongBinder(NULL);
+    parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // IBinder b; ApplicationThreadNative.asInterface(b);
     parcel->writeString(QString()); // callingPackage
     parcel->writeInt(1); // const value
     intent.writeToParcel(parcel);
     parcel->writeString(QString()); // resolvedType
-    parcel->writeStrongBinder(NULL); // resultTo
+    parcel->writeStrongBinder(static_cast<GBinderRemoteObject*>(NULL)); // resultTo
     parcel->writeString(QString()); // resultWho
     parcel->writeInt(-1); // requestCode
     parcel->writeInt(0); // startFlags
     parcel->writeInt(0); // profilerInfo disable
     parcel->writeInt(0); // options disable
     int status = 0;
-    manager->sendTransaction(TRANSACTION_startActivity, parcel, &status);
+    Parcel *out = manager->sendTransaction(TRANSACTION_startActivity, parcel, &status);
+    delete out;
     qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
     delete parcel;
 }
@@ -71,7 +73,8 @@ void ActivityManager::forceStopPackage(const QString &package)
     parcel->writeString(package);
     parcel->writeInt(USER_OWNER);
     int status = 0;
-    manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
+    Parcel *out = manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
+    delete out;
     qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
     delete parcel;
 }
@@ -79,49 +82,4 @@ void ActivityManager::forceStopPackage(const QString &package)
 void ActivityManager::registrationCompleted()
 {
     qCDebug(amInterface) << Q_FUNC_INFO;
-}
-
-void Intent::writeToParcel(Parcel *parcel)
-{
-    if (!parcel) {
-        qCCritical(amInterface) << Q_FUNC_INFO << "Null Parcel!";
-        return;
-    }
-
-    parcel->writeString(action);
-
-    // Uri.writeToParcel
-    if (data.isNull()) {
-        parcel->writeInt(0); // NULL_TYPE_ID
-    } else {
-        parcel->writeInt(1); // TYPE_ID UriString = 1
-        parcel->writeString(data);
-    }
-
-    parcel->writeString(type);
-
-    parcel->writeInt(flags);
-
-    parcel->writeString(package);
-
-    // ComponentName.writeToParcel
-    if (classPackage.isEmpty() && className.isEmpty()) {
-        parcel->writeString(QString());
-    } else {
-        parcel->writeString(classPackage);
-        parcel->writeString(className);
-    }
-
-    parcel->writeInt(0); // mSourceBounds disable
-    parcel->writeInt(0); // mCategories disable
-    parcel->writeInt(0); // mSelector disable
-    parcel->writeInt(0); // mClipData disable
-
-    parcel->writeInt(contentUserHint);
-
-    if (extras.isEmpty()) {
-        parcel->writeInt(-1);
-    } else {
-        parcel->writeBundle(extras);
-    }
 }

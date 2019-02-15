@@ -12,13 +12,31 @@ SOURCES += \
     src/dbusmain.cpp \
     src/mimehandleradaptor.cpp \
     src/binderinterfaceabstract.cpp \
-    src/activitymanager.cpp
+    src/activitymanager.cpp \
+    src/packagemanager.cpp \
+    src/intent.cpp \
+    src/resolveinfo.cpp \
+    src/activityinfo.cpp \
+    src/componentinfo.cpp \
+    src/packageiteminfo.cpp \
+    src/applicationinfo.cpp \
+    src/windowlayout.cpp \
+    src/intentfilter.cpp
 
 HEADERS += \
     src/dbusmain.h \
     src/mimehandleradaptor.h \
     src/binderinterfaceabstract.h \
-    src/activitymanager.h
+    src/activitymanager.h \
+    src/packagemanager.h \
+    src/intent.h \
+    src/resolveinfo.h \
+    src/activityinfo.h \
+    src/componentinfo.h \
+    src/packageiteminfo.h \
+    src/applicationinfo.h \
+    src/windowlayout.h \
+    src/intentfilter.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/services

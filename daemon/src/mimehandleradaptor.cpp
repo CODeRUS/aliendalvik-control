@@ -1,6 +1,8 @@
 #include "mimehandleradaptor.h"
 
 #include "activitymanager.h"
+#include "packagemanager.h"
+#include "intent.h"
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -39,6 +41,7 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                    QDBusConnection::systemBus(), this);
 
     ActivityManager::GetInstance();
+    PackageManager::GetInstance();
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -219,7 +222,11 @@ QVariant MimeHandlerAdaptor::startIntent(const QVariant &intent)
 
 QVariant MimeHandlerAdaptor::uriActivity(const QVariant &uri)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
+//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
+    Intent intent;
+    intent.action = QStringLiteral("android.intent.action.VIEW");
+    intent.data = uri.toString();
+    ActivityManager::startActivity(intent);
     return QVariant();
 }
 
@@ -351,26 +358,28 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         return QVariant();
     }
 
-    forceStop(QStringLiteral("com.android.documentsui"));
-    launchPackage(QStringLiteral("com.android.documentsui"));
+//    forceStop(QStringLiteral("com.android.documentsui"));
+//    launchPackage(QStringLiteral("com.android.documentsui"));
 
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(2000);
-    loop.exec();
+//    QEventLoop loop;
+//    QTimer timer;
+//    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+//    timer.start(2000);
+//    loop.exec();
 
     qDebug() << Q_FUNC_INFO << containerPath;
 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = mimetype.toString();
-    intent.classPackage = QStringLiteral("android");
-    intent.className = QStringLiteral("com.android.internal.app.ResolverActivity");
+//    intent.classPackage = QStringLiteral("android");
+//    intent.className = QStringLiteral("com.android.internal.app.ResolverActivity");
     intent.extras = {
         {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)}
     };
-    ActivityManager::startActivity(intent);
+//    ActivityManager::startActivity(intent);
+
+    PackageManager::queryIntentActivities(intent);
 
     return QVariant();
 }
@@ -639,9 +648,8 @@ void MimeHandlerAdaptor::topmostIdChanged(int pId)
     _isTopmostAndroid = (out == "system_server");
 }
 
-void MimeHandlerAdaptor::aliendalvikChanged(const QString &interface, const QVariantMap &properties, const QStringList &invalidated)
+void MimeHandlerAdaptor::aliendalvikChanged(const QString &, const QVariantMap &properties, const QStringList &)
 {
-    qDebug() << Q_FUNC_INFO << interface << properties << invalidated;
     if (properties.value(QStringLiteral("ActiveState")).toString() == QLatin1String("active")) {
         ActivityManager::GetInstance()->reconnect();
     }

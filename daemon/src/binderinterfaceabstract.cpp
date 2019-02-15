@@ -57,17 +57,31 @@ Parcel *BinderInterfaceAbstract::createTransaction()
     return new Parcel(req);
 }
 
-void BinderInterfaceAbstract::sendTransaction(int code, Parcel *parcel, int *status)
+Parcel *BinderInterfaceAbstract::sendTransaction(int code, Parcel *parcel, int *status)
 {
     GBinderRemoteReply *reply = gbinder_client_transact_sync_reply
             (m_client, code, parcel->request(), status);
 
-    gbinder_remote_reply_unref(reply);
+    return new Parcel(reply);
 }
 
 GBinderServiceManager *BinderInterfaceAbstract::manager()
 {
     return m_serviceManager;
+}
+
+GBinderLocalObject *BinderInterfaceAbstract::localHandler()
+{
+    return m_local;
+}
+
+GBinderLocalReply *BinderInterfaceAbstract::onTransact(GBinderLocalObject *obj, GBinderRemoteRequest *req, guint code, guint flags, int *status, void *user_data)
+{
+    const char *iface = gbinder_remote_request_interface(req);
+    qCDebug(binderinterface) << Q_FUNC_INFO << iface << obj << req << code << flags << status << user_data;
+    GBinderLocalReply *reply = NULL;
+    *status = GBINDER_STATUS_OK;
+    return reply;
 }
 
 void BinderInterfaceAbstract::reconnect()
@@ -125,6 +139,18 @@ void BinderInterfaceAbstract::binderDisconnect()
         m_remote = nullptr;
     }
 
+    if (m_localHandler) {
+        qCDebug(binderinterface) << Q_FUNC_INFO << "Removing local handler";
+        gbinder_servicemanager_cancel(m_serviceManager, m_localHandler);
+        m_localHandler = 0;
+    }
+
+    if (m_local) {
+        qCDebug(binderinterface) << Q_FUNC_INFO << "Removing local";
+        gbinder_local_object_drop(m_local);
+        m_local = nullptr;
+    }
+
     if (m_registrationHandler && m_serviceManager) {
         qCDebug(binderinterface) << Q_FUNC_INFO << "Removing registration handler";
         gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
@@ -173,6 +199,17 @@ void BinderInterfaceAbstract::registerManager()
     gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
     m_registrationHandler = 0;
 
+//    m_local = gbinder_servicemanager_new_local_object(m_serviceManager,
+//                                                      "android.app.IApplicationThread",
+//                                                      BinderInterfaceAbstract::onTransact,
+//                                                      this);
+
+//    m_localHandler = gbinder_servicemanager_add_service_sync(m_serviceManager,
+//                                            "activity",
+//                                            m_local);
+
+//    qCDebug(binderinterface) << Q_FUNC_INFO << "Local handler created:" /*<< m_localHandler*/ << m_local;
+
     registrationCompleted();
 }
 
@@ -180,16 +217,31 @@ Parcel::Parcel(GBinderLocalRequest *request)
     : m_request(request)
     , m_writer(new GBinderWriter)
 {
-    qCDebug(binderinterface) << Q_FUNC_INFO << this << m_request;
+    qCDebug(binderinterface) << Q_FUNC_INFO << this << m_request << m_writer;
 
     gbinder_local_request_init_writer(m_request, m_writer);
+}
+
+Parcel::Parcel(GBinderRemoteReply *reply)
+    : m_reply(reply)
+    , m_reader(new GBinderReader)
+{
+    qCDebug(binderinterface) << Q_FUNC_INFO << this << m_reply << m_reader;
+
+    gbinder_remote_reply_init_reader(m_reply, m_reader);
 }
 
 Parcel::~Parcel()
 {
     qCDebug(binderinterface) << Q_FUNC_INFO << this << m_request;
 
-    gbinder_local_request_unref(m_request);
+    if (m_request) {
+        gbinder_local_request_unref(m_request);
+    }
+
+    if (m_reply) {
+        gbinder_remote_reply_unref(m_reply);
+    }
 }
 
 void Parcel::writeStrongBinder(GBinderLocalObject *value)
@@ -199,6 +251,15 @@ void Parcel::writeStrongBinder(GBinderLocalObject *value)
     }
 
     gbinder_writer_append_local_object(m_writer, value);
+}
+
+void Parcel::writeStrongBinder(GBinderRemoteObject *value)
+{
+    if (!m_writer) {
+        return;
+    }
+
+    gbinder_writer_append_remote_object(m_writer, value);
 }
 
 void Parcel::writeString(const QString &value)
@@ -216,11 +277,19 @@ void Parcel::writeString(const QString &value)
 
 void Parcel::writeInt(int value)
 {
+    if (!m_writer) {
+        return;
+    }
+
     gbinder_writer_append_int32(m_writer, value);
 }
 
 void Parcel::writeBundle(const QVariantHash &value)
 {
+    if (!m_writer) {
+        return;
+    }
+
     gsize lengthPos = gbinder_writer_bytes_written(m_writer);
     writeInt(-1); // dummy, will hold length
     writeInt(BUNDLE_MAGIC);
@@ -243,6 +312,10 @@ void Parcel::writeBundle(const QVariantHash &value)
 
 void Parcel::writeValue(const QVariant &value)
 {
+    if (!m_writer) {
+        return;
+    }
+
     switch (value.type()) {
     case QMetaType::QUrl:
         writeInt(static_cast<int>(VAL_PARCELABLE));
@@ -258,6 +331,141 @@ void Parcel::writeValue(const QVariant &value)
     default:
         qCCritical(binderinterface) << Q_FUNC_INFO << "Unsupported value type:" << QMetaType::typeName(value.type()) << value.type();
     }
+}
+
+int Parcel::readInt() const
+{
+    int result = 0;
+    if (!m_reader) {
+        return result;
+    }
+
+    if (!gbinder_reader_read_int32(m_reader, &result)) {
+        qCCritical(binderinterface) << Q_FUNC_INFO << "Error reading value!";
+    }
+    return result;
+}
+
+QString Parcel::readString() const
+{
+    QString result;
+    if (!m_reader) {
+        return result;
+    }
+
+    gsize length;
+    const ushort* string = gbinder_reader_read_string16_utf16(m_reader, &length);
+    if (!string) {
+        return result;
+    }
+
+    return QString::fromUtf16(string, length);
+}
+
+void Parcel::readBundle() const
+{
+    const int length = readInt();
+    qCDebug(binderinterface) << Q_FUNC_INFO << "Bundle length:" << length;
+}
+
+qlonglong Parcel::readLong() const
+{
+    qlonglong result = 0;
+    if (!m_reader) {
+        return result;
+    }
+
+    if (!gbinder_reader_read_int64(m_reader, &result)) {
+        qCCritical(binderinterface) << Q_FUNC_INFO << "Error reading value!";
+    }
+    return result;
+}
+
+bool Parcel::readBoolean() const
+{
+    return readInt() != 0;
+}
+
+double Parcel::readDouble() const
+{
+    double result = 0;
+    if (!m_reader) {
+        return result;
+    }
+
+    if (!gbinder_reader_read_double(m_reader, &result)) {
+        qCCritical(binderinterface) << Q_FUNC_INFO << "Error reading value!";
+    }
+    return result;
+}
+
+QStringList Parcel::readStringList() const
+{
+    QStringList result;
+    if (!m_reader) {
+        return result;
+    }
+    const int length = readInt();
+    for (int i = 0; i < length; i++) {
+        result.append(readString());
+    }
+    return result;
+}
+
+QHash<int, QVariant> Parcel::readSparseArray() const
+{
+    QHash<int, QVariant> result;
+    if (!m_reader) {
+        return result;
+    }
+    const int length = readInt();
+    for (int i = 0; i < length; i++) {
+        const int key = readInt();
+        const QVariant value = readValue();
+        result.insert(key, value);
+    }
+    return result;
+}
+
+QVariant Parcel::readValue() const
+{
+    QVariant result;
+    if (!m_reader) {
+        return result;
+    }
+    const int type = readInt();
+    switch (type) {
+    case VAL_NULL:
+      return QVariant();
+    case VAL_STRING:
+      return QVariant(readString());
+    case VAL_INTEGER:
+      return QVariant(readInt());
+    case VAL_LONG:
+      return QVariant(readLong());
+    case VAL_BOOLEAN:
+      return QVariant(readBoolean());
+    case VAL_DOUBLE:
+      return QVariant(readDouble());
+    case VAL_STRINGARRAY:
+      return QVariant(readStringList());
+    default:
+      qCritical(binderinterface) << Q_FUNC_INFO << "Unsupported value type:" << type;
+      return result;
+    }
+}
+
+float Parcel::readFloat() const
+{
+    float result = 0;
+    if (!m_reader) {
+        return result;
+    }
+
+    if (!gbinder_reader_read_float(m_reader, &result)) {
+        qCCritical(binderinterface) << Q_FUNC_INFO << "Error reading value!";
+    }
+    return result;
 }
 
 GBinderLocalRequest *Parcel::request()
