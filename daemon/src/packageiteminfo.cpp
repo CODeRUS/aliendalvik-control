@@ -19,10 +19,14 @@ PackageItemInfo::PackageItemInfo(Parcel *parcel)
     qDebug() << Q_FUNC_INFO << "string:" << string;
 
     icon = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "icon:" << icon;
     logo = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "logo:" << logo;
 
     parcel->readBundle(); // metaData
 
     banner = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "banner:" << banner;
     showUserIcon = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "showUserIcon:" << showUserIcon;
 }

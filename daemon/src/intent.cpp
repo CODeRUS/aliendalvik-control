@@ -6,6 +6,33 @@
 
 Q_LOGGING_CATEGORY(parcelCategory, "binder.parcel", QtDebugMsg)
 
+Intent::Intent()
+{
+
+}
+
+Intent::Intent(const Intent &other)
+{
+    action = other.action;
+    data = other.data;
+    type = other.type;
+
+    flags = other.flags;
+
+    package = other.package;
+    classPackage = other.classPackage;
+    className = other.className;
+
+    contentUserHint = other.contentUserHint;
+
+    extras = other.extras;
+}
+
+Intent::~Intent()
+{
+
+}
+
 void Intent::writeToParcel(Parcel *parcel)
 {
     if (!parcel) {
@@ -49,4 +76,10 @@ void Intent::writeToParcel(Parcel *parcel)
     } else {
         parcel->writeBundle(extras);
     }
+}
+
+QDebug operator<<(QDebug dbg, const Intent &intent)
+{
+    dbg << "Action:" << intent.action;
+    return dbg.maybeSpace();
 }

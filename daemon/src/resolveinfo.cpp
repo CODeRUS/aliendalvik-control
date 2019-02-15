@@ -37,16 +37,30 @@ ResolveInfo::ResolveInfo(Parcel *parcel)
     labelRes = parcel->readInt();
     qDebug() << Q_FUNC_INFO << "labelRes:" << labelRes;
 
-//    nonLocalizedLabel
-//            = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source);
-//    icon = parcel->readInt();
-//    resolvePackageName = parcel->readString();
-//    targetUserId = parcel->readInt();
-//    system = parcel->readInt() != 0;
-//    noResourceId = parcel->readInt() != 0;
-//    iconResourceId = parcel->readInt();
-//    handleAllWebDataURI = parcel->readInt() != 0;
-//    instantAppAvailable = isInstantAppAvailable = parcel->readInt() != 0;
+    // TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source)
+    const int kind = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "kind:" << kind;
+    const QString string = parcel->readString();
+    qDebug() << Q_FUNC_INFO << "string:" << string;
+
+    icon = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "icon:" << icon;
+    resolvePackageName = parcel->readString();
+    qDebug() << Q_FUNC_INFO << "resolvePackageName:" << resolvePackageName;
+    targetUserId = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "targetUserId:" << targetUserId;
+    system = parcel->readBoolean();
+    qDebug() << Q_FUNC_INFO << "system:" << system;
+    noResourceId = parcel->readBoolean();
+    qDebug() << Q_FUNC_INFO << "noResourceId:" << noResourceId;
+    iconResourceId = parcel->readInt();
+    qDebug() << Q_FUNC_INFO << "iconResourceId:" << iconResourceId;
+    handleAllWebDataURI = parcel->readBoolean();
+    qDebug() << Q_FUNC_INFO << "handleAllWebDataURI:" << handleAllWebDataURI;
+    instantAppAvailable = parcel->readBoolean();
+    qDebug() << Q_FUNC_INFO << "instantAppAvailable:" << instantAppAvailable;
+    isInstantAppAvailable = instantAppAvailable;
+    qDebug() << Q_FUNC_INFO << "isInstantAppAvailable:" << isInstantAppAvailable;
 }
 
 ResolveInfo::~ResolveInfo()

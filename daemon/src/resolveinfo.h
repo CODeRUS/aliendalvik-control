@@ -32,14 +32,16 @@ public:
 
 //    nonLocalizedLabel
 //            = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source);
-//    icon = -1;
-//    resolvePackageName = parcel->readString();
-//    targetUserId = -1;
-//    system = -1 != 0;
-//    noResourceId = -1 != 0;
-//    iconResourceId = -1;
-//    handleAllWebDataURI = -1 != 0;
-//    instantAppAvailable = isInstantAppAvailable = -1 != 0;
+
+    int icon = -1;
+    QString resolvePackageName;
+    int targetUserId = -1;
+    bool system = false;
+    bool noResourceId = false;
+    int iconResourceId = -1;
+    bool handleAllWebDataURI = false;
+    bool instantAppAvailable = false;
+    bool isInstantAppAvailable = false;
 };
 
 #endif // RESOLVEINFO_H

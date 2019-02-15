@@ -1,6 +1,8 @@
 #ifndef INTENT_H
 #define INTENT_H
 
+#include <QDebug>
+#include <QMetaType>
 #include <QString>
 #include <QVariantHash>
 
@@ -16,6 +18,10 @@ class Parcel;
 class Intent
 {
 public:
+    Intent();
+    Intent(const Intent &other);
+    ~Intent();
+
     void writeToParcel(Parcel *parcel);
 
     QString action;
@@ -32,5 +38,9 @@ public:
 
     QVariantHash extras;
 };
+
+Q_DECLARE_METATYPE(Intent)
+
+QDebug operator<<(QDebug dbg, const Intent &intent);
 
 #endif // INTENT_H

@@ -62,11 +62,15 @@ void PackageManager::queryIntentActivities(Intent intent)
         const int count = out->readInt();
         qCDebug(pmInterface) << Q_FUNC_INFO << "Count:" << count;
         qCDebug(pmInterface) << Q_FUNC_INFO << "Creator:" << out->readString();
-//        for (int i = 0; i < count; i++) {
-        const int present = out->readInt();
-        qCDebug(pmInterface) << Q_FUNC_INFO << "Present:" << present;
-        ResolveInfo info(out.data());
-//        }
+        for (int i = 0; i < count; i++) {
+            const int present = out->readInt();
+            qCDebug(pmInterface) << Q_FUNC_INFO << "Present:" << present;
+            if (present != 0) {
+                ResolveInfo info(out.data());
+            } else {
+                break;
+            }
+        }
     }
     qCDebug(pmInterface) << Q_FUNC_INFO << "Status:" << status;
 }
