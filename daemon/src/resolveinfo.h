@@ -16,7 +16,7 @@ class ResolveInfo
 {
 public:
     ResolveInfo(Parcel *parcel);
-    ~ResolveInfo();
+    virtual ~ResolveInfo();
 
     int typeComponentInfo = 0;
 

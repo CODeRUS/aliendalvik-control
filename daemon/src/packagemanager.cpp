@@ -32,15 +32,16 @@ PackageManager *PackageManager::GetInstance()
     return s_instance;
 }
 
-void PackageManager::queryIntentActivities(Intent intent)
+QList<QSharedPointer<ResolveInfo> > PackageManager::queryIntentActivities(Intent intent)
 {
     qCDebug(pmInterface) << Q_FUNC_INFO << intent.action;
+    QList<QSharedPointer<ResolveInfo> > resolveInfoList;
 
     PackageManager *manager = PackageManager::GetInstance();
-    QScopedPointer<Parcel, QScopedPointerDeleter<Parcel>> parcel(manager->createTransaction());
+    QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
         qCCritical(pmInterface) << Q_FUNC_INFO << "Null Parcel!";
-        return;
+        return resolveInfoList;
     }
 
     parcel->writeInt(1); // const value
@@ -49,12 +50,12 @@ void PackageManager::queryIntentActivities(Intent intent)
     parcel->writeInt(0); // flags
     parcel->writeInt(USER_OWNER); // userId
     int status = 0;
-    QScopedPointer<Parcel, QScopedPointerDeleter<Parcel>> out(
-                manager->sendTransaction(TRANSACTION_queryIntentActivities, parcel.data(), &status));
+    QSharedPointer<Parcel> out = manager->sendTransaction(TRANSACTION_queryIntentActivities, parcel, &status);
+    qCDebug(pmInterface) << Q_FUNC_INFO << "Status:" << status;
     const int exception = out->readInt();
     if (exception != 0) {
         qCCritical(pmInterface) << Q_FUNC_INFO << "Exception:" << exception;
-        return;
+        return resolveInfoList;
     }
     const int result = out->readInt();
     qCDebug(pmInterface) << Q_FUNC_INFO << "Result:" << result;
@@ -66,13 +67,14 @@ void PackageManager::queryIntentActivities(Intent intent)
             const int present = out->readInt();
             qCDebug(pmInterface) << Q_FUNC_INFO << "Present:" << present;
             if (present != 0) {
-                ResolveInfo info(out.data());
+                QSharedPointer<ResolveInfo> resolveInfo(new ResolveInfo(out.data()));
+                resolveInfoList.append(resolveInfo);
             } else {
                 break;
             }
         }
     }
-    qCDebug(pmInterface) << Q_FUNC_INFO << "Status:" << status;
+    return resolveInfoList;
 }
 
 void PackageManager::registrationCompleted()

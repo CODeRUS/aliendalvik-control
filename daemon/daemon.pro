@@ -21,7 +21,8 @@ SOURCES += \
     src/packageiteminfo.cpp \
     src/applicationinfo.cpp \
     src/windowlayout.cpp \
-    src/intentfilter.cpp
+    src/intentfilter.cpp \
+    src/parcelable.cpp
 
 HEADERS += \
     src/dbusmain.h \
@@ -36,7 +37,8 @@ HEADERS += \
     src/packageiteminfo.h \
     src/applicationinfo.h \
     src/windowlayout.h \
-    src/intentfilter.h
+    src/intentfilter.h \
+    src/parcelable.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/services

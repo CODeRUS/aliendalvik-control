@@ -9,7 +9,7 @@ class ComponentInfo : public PackageItemInfo
 {
 public:
     ComponentInfo(Parcel *parcel);
-    ~ComponentInfo();
+    virtual ~ComponentInfo();
 
     bool hasApplicationInfo = false;
 

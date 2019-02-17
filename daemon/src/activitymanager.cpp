@@ -35,7 +35,7 @@ void ActivityManager::startActivity(Intent intent)
     qCDebug(amInterface) << Q_FUNC_INFO << intent.action;
 
     ActivityManager *manager = ActivityManager::GetInstance();
-    Parcel *parcel = manager->createTransaction();
+    QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
         qCCritical(amInterface) << Q_FUNC_INFO << "Null Parcel!";
         return;
@@ -44,19 +44,18 @@ void ActivityManager::startActivity(Intent intent)
     parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // IBinder b; ApplicationThreadNative.asInterface(b);
     parcel->writeString(QString()); // callingPackage
     parcel->writeInt(1); // const value
-    intent.writeToParcel(parcel);
+    intent.writeToParcel(parcel.data());
     parcel->writeString(QString()); // resolvedType
-    parcel->writeStrongBinder(static_cast<GBinderRemoteObject*>(NULL)); // resultTo
-    parcel->writeString(QString()); // resultWho
-    parcel->writeInt(-1); // requestCode
+//    parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // resultTo
+    parcel->writeStrongBinder(manager->localHandler()); // resultTo
+    parcel->writeString(QStringLiteral("intent_receiver")); // resultWho
+    parcel->writeInt(123); // requestCode
     parcel->writeInt(0); // startFlags
     parcel->writeInt(0); // profilerInfo disable
     parcel->writeInt(0); // options disable
     int status = 0;
-    Parcel *out = manager->sendTransaction(TRANSACTION_startActivity, parcel, &status);
-    delete out;
+    manager->sendTransaction(TRANSACTION_startActivity, parcel, &status);
     qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
-    delete parcel;
 }
 
 void ActivityManager::forceStopPackage(const QString &package)
@@ -64,7 +63,7 @@ void ActivityManager::forceStopPackage(const QString &package)
     qCDebug(amInterface) << Q_FUNC_INFO << package << TRANSACTION_forceStopPackage;
     ActivityManager *manager = ActivityManager::GetInstance();
 
-    Parcel *parcel = manager->createTransaction();
+    QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
         qCCritical(amInterface) << Q_FUNC_INFO << "Null Parcel!";
         return;
@@ -73,10 +72,8 @@ void ActivityManager::forceStopPackage(const QString &package)
     parcel->writeString(package);
     parcel->writeInt(USER_OWNER);
     int status = 0;
-    Parcel *out = manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
-    delete out;
+    manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
     qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
-    delete parcel;
 }
 
 void ActivityManager::registrationCompleted()

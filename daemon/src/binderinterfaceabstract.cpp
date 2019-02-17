@@ -1,4 +1,6 @@
 #include "binderinterfaceabstract.h"
+#include "intent.h"
+#include "parcelable.h"
 
 #include <QDebug>
 #include <QEventLoop>
@@ -34,9 +36,10 @@ BinderInterfaceAbstract::~BinderInterfaceAbstract()
     binderDisconnect();
 }
 
-Parcel *BinderInterfaceAbstract::createTransaction()
+QSharedPointer<Parcel> BinderInterfaceAbstract::createTransaction()
 {
     qCDebug(binderinterface) << Q_FUNC_INFO;
+    QSharedPointer<Parcel> dataParcel;
 
     if (!m_client) {
         binderConnect();
@@ -50,19 +53,29 @@ Parcel *BinderInterfaceAbstract::createTransaction()
 
     if (!m_client) {
         qCCritical(binderinterface) << Q_FUNC_INFO << "No client!";
-        return nullptr;
+        return dataParcel;
     }
 
     GBinderLocalRequest* req = gbinder_client_new_request(m_client);
-    return new Parcel(req);
+    dataParcel.reset(new Parcel(req));
+    return dataParcel;
 }
 
-Parcel *BinderInterfaceAbstract::sendTransaction(int code, Parcel *parcel, int *status)
+QSharedPointer<Parcel> BinderInterfaceAbstract::sendTransaction(int code, QSharedPointer<Parcel> parcel, int *status)
 {
+    qCDebug(binderinterface) << Q_FUNC_INFO << code;
+    QSharedPointer<Parcel> outParcel;
+
+    if (!m_client) {
+        qCCritical(binderinterface) << Q_FUNC_INFO << "No client!";
+        return outParcel;
+    }
+
     GBinderRemoteReply *reply = gbinder_client_transact_sync_reply
             (m_client, code, parcel->request(), status);
 
-    return new Parcel(reply);
+    outParcel.reset(new Parcel(reply));
+    return outParcel;
 }
 
 GBinderServiceManager *BinderInterfaceAbstract::manager()
@@ -199,16 +212,16 @@ void BinderInterfaceAbstract::registerManager()
     gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
     m_registrationHandler = 0;
 
-//    m_local = gbinder_servicemanager_new_local_object(m_serviceManager,
-//                                                      "android.app.IApplicationThread",
-//                                                      BinderInterfaceAbstract::onTransact,
-//                                                      this);
+    m_local = gbinder_servicemanager_new_local_object(m_serviceManager,
+                                                      "android.content.IIntentReceiver",
+                                                      BinderInterfaceAbstract::onTransact,
+                                                      this);
 
-//    m_localHandler = gbinder_servicemanager_add_service_sync(m_serviceManager,
-//                                            "activity",
-//                                            m_local);
+    m_localHandler = gbinder_servicemanager_add_service_sync(m_serviceManager,
+                                            "intent_receiver",
+                                            m_local);
 
-//    qCDebug(binderinterface) << Q_FUNC_INFO << "Local handler created:" /*<< m_localHandler*/ << m_local;
+    qCDebug(binderinterface) << Q_FUNC_INFO << "Local handler created:" << m_localHandler << m_local;
 
     registrationCompleted();
 }
@@ -217,8 +230,6 @@ Parcel::Parcel(GBinderLocalRequest *request)
     : m_request(request)
     , m_writer(new GBinderWriter)
 {
-    qCDebug(binderinterface) << Q_FUNC_INFO << this << m_request << m_writer;
-
     gbinder_local_request_init_writer(m_request, m_writer);
 }
 
@@ -226,15 +237,11 @@ Parcel::Parcel(GBinderRemoteReply *reply)
     : m_reply(reply)
     , m_reader(new GBinderReader)
 {
-    qCDebug(binderinterface) << Q_FUNC_INFO << this << m_reply << m_reader;
-
     gbinder_remote_reply_init_reader(m_reply, m_reader);
 }
 
 Parcel::~Parcel()
 {
-    qCDebug(binderinterface) << Q_FUNC_INFO << this << m_request;
-
     if (m_request) {
         gbinder_local_request_unref(m_request);
     }
@@ -299,7 +306,7 @@ void Parcel::writeBundle(const QVariantHash &value)
     writeInt(value.size());
     QHash<QString, QVariant>::const_iterator it = value.begin();
     while (it != value.end()) {
-        qDebug() << it.key() << it.value().toString();
+        qDebug() << it.key() << it.value();
         writeString(it.key());
         writeValue(it.value());
         ++it;
@@ -328,9 +335,32 @@ void Parcel::writeValue(const QVariant &value)
         writeInt(static_cast<int>(VAL_STRING));
         writeString(value.toString());
         break;
+    case QVariant::UserType:
+        if (value.canConvert<Intent>()) {
+            writeInt(static_cast<int>(VAL_PARCELABLE));
+            Intent intent = value.value<Intent>();
+            writeParcelable(intent);
+        } else if (value.canConvert<QList<Intent>>()) {
+            writeInt(static_cast<int>(VAL_PARCELABLEARRAY));
+            QList<Intent> intentArray = value.value<QList<Intent>>();
+            writeInt(intentArray.length());
+            for (const Intent &intent : intentArray) {
+                writeParcelable(intent);
+            }
+        } else {
+            qCCritical(binderinterface) << Q_FUNC_INFO << "Unsupported user value type:" << value.userType();
+        }
+        break;
     default:
         qCCritical(binderinterface) << Q_FUNC_INFO << "Unsupported value type:" << QMetaType::typeName(value.type()) << value.type();
     }
+}
+
+void Parcel::writeParcelable(const Parcelable &parcelable)
+{
+    // writeParcelableCreator
+    writeString(parcelable.creator);
+    parcelable.writeToParcel(this);
 }
 
 int Parcel::readInt() const

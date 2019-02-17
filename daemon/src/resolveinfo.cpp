@@ -11,6 +11,7 @@ ResolveInfo::ResolveInfo(Parcel *parcel)
     switch (typeComponentInfo) {
     case ComponentInfoActivityInfo:
         activityInfo = new ActivityInfo(parcel);
+        qDebug() << Q_FUNC_INFO << "activityInfo:" << activityInfo;
         break;
     case ComponentInfoServiceInfo:
         break;
@@ -67,6 +68,12 @@ ResolveInfo::~ResolveInfo()
 {
     if (activityInfo) {
         delete activityInfo;
+        activityInfo = nullptr;
+    }
+
+    if (intentFilter) {
+        delete intentFilter;
+        intentFilter = nullptr;
     }
 }
 

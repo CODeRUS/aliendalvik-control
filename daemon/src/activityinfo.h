@@ -12,7 +12,7 @@ class ActivityInfo : public ComponentInfo
 {
 public:
     ActivityInfo(Parcel *parcel);
-    ~ActivityInfo();
+    virtual ~ActivityInfo();
 
     int theme = -1;
     int launchMode = -1;

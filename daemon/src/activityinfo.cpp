@@ -57,5 +57,6 @@ ActivityInfo::~ActivityInfo()
 {
     if (windowLayout) {
         delete windowLayout;
+        windowLayout = nullptr;
     }
 }

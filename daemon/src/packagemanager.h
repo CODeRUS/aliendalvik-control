@@ -3,11 +3,14 @@
 
 #include "binderinterfaceabstract.h"
 
+#include <QSharedPointer>
+
 enum {
     TRANSACTION_queryIntentActivities = 45,
 };
 
 class Intent;
+class ResolveInfo;
 class PackageManager : public BinderInterfaceAbstract
 {
     Q_OBJECT
@@ -17,7 +20,7 @@ public:
 
     static PackageManager *GetInstance();
 
-    static void queryIntentActivities(Intent intent);
+    static QList<QSharedPointer<ResolveInfo> > queryIntentActivities(Intent intent);
 
 protected:
     void registrationCompleted() override;

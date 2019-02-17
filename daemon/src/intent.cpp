@@ -7,11 +7,13 @@
 Q_LOGGING_CATEGORY(parcelCategory, "binder.parcel", QtDebugMsg)
 
 Intent::Intent()
+    : Parcelable(QStringLiteral("android.content.Intent"))
 {
 
 }
 
 Intent::Intent(const Intent &other)
+    : Parcelable(other.creator)
 {
     action = other.action;
     data = other.data;
@@ -33,7 +35,7 @@ Intent::~Intent()
 
 }
 
-void Intent::writeToParcel(Parcel *parcel)
+void Intent::writeToParcel(Parcel *parcel) const
 {
     if (!parcel) {
         qCCritical(parcelCategory) << Q_FUNC_INFO << "Null Parcel!";

@@ -33,5 +33,6 @@ ComponentInfo::~ComponentInfo()
 {
     if (applicationInfo) {
         delete applicationInfo;
+        applicationInfo = nullptr;
     }
 }

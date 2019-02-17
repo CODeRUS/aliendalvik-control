@@ -3,6 +3,7 @@
 
 #include <QObject>
 
+#include <QSharedPointer>
 #include <gbinder.h>
 
 enum {
@@ -24,6 +25,7 @@ enum {
     VAL_BYTEARRAY = 13,
     VAL_STRINGARRAY = 14,
     VAL_IBINDER = 15,
+    VAL_PARCELABLEARRAY = 16,
     VAL_INTARRAY = 18,
     VAL_LONGARRAY = 19,
     VAL_BYTE = 20,
@@ -39,6 +41,8 @@ enum {
     BUNDLE_MAGIC_NATIVE = 0x4C444E44,
 };
 
+class Intent;
+class Parcelable;
 class Parcel
 {
 public:
@@ -52,6 +56,7 @@ public:
     void writeInt(int value);
     void writeBundle(const QVariantHash &value);
     void writeValue(const QVariant &value);
+    void writeParcelable(const Parcelable &parcelable);
 
     int readInt() const;
     QString readString() const;
@@ -82,8 +87,8 @@ public:
                                      QObject *parent = nullptr);
     virtual ~BinderInterfaceAbstract();
 
-    Parcel *createTransaction();
-    Parcel *sendTransaction(int code, Parcel *parcel, int *status);
+    QSharedPointer<Parcel> createTransaction();
+    QSharedPointer<Parcel> sendTransaction(int code, QSharedPointer<Parcel> parcel, int *status);
 
     GBinderServiceManager *manager();
     GBinderLocalObject *localHandler();

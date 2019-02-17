@@ -1,6 +1,8 @@
 #ifndef INTENT_H
 #define INTENT_H
 
+#include "parcelable.h"
+
 #include <QDebug>
 #include <QMetaType>
 #include <QString>
@@ -15,14 +17,14 @@ enum {
 };
 
 class Parcel;
-class Intent
+class Intent : public Parcelable
 {
 public:
     Intent();
     Intent(const Intent &other);
     ~Intent();
 
-    void writeToParcel(Parcel *parcel);
+    void writeToParcel(Parcel *parcel) const override;
 
     QString action;
     QString data;

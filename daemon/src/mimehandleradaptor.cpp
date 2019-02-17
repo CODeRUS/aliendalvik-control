@@ -3,6 +3,8 @@
 #include "activitymanager.h"
 #include "packagemanager.h"
 #include "intent.h"
+#include "resolveinfo.h"
+#include "componentinfo.h"
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -379,7 +381,29 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     };
 //    ActivityManager::startActivity(intent);
 
-    PackageManager::queryIntentActivities(intent);
+    QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
+    qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
+
+    QList<Intent> optionIntents;
+    for (QSharedPointer<ResolveInfo> info : resolveInfo) {
+        Intent option;
+        option.action = intent.action;
+        option.type = intent.type;
+        ComponentInfo *componentInfo = info->getComponentInfo();
+        if (componentInfo) {
+            option.package = componentInfo->packageName;
+        }
+        optionIntents.append(option);
+    }
+
+    Intent pickIntent;
+    pickIntent.action = QStringLiteral("android.intent.action.PICK_ACTIVITY");
+    pickIntent.extras = {
+        {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
+        {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
+        {"android.intent.extra.INITIAL_INTENTS", QVariant::fromValue(optionIntents)},
+    };
+    ActivityManager::startActivity(pickIntent);
 
     return QVariant();
 }
