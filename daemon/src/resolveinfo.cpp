@@ -3,8 +3,6 @@
 #include "intentfilter.h"
 #include "parcel.h"
 
-#define LOGME LOGGING(ActivityInfo)".parcel"
-
 ResolveInfo::ResolveInfo(Parcel *parcel, const char *loggingCategoryName)
     : LoggingClassWrapper(loggingCategoryName)
 {

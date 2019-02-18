@@ -15,7 +15,7 @@ class ActivityManager : public BinderInterfaceAbstract
 {
     Q_OBJECT
 public:
-    explicit ActivityManager(QObject *parent = nullptr);
+    explicit ActivityManager(QObject *parent = nullptr, const char *loggingCategoryName = LOGGING(PackageManager)".parcel");
     virtual ~ActivityManager();
 
     static ActivityManager *GetInstance();

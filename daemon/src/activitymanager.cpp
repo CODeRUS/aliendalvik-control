@@ -3,18 +3,14 @@
 #include "parcel.h"
 
 #include <QCoreApplication>
-#include <QDebug>
-#include <QLoggingCategory>
-
-Q_LOGGING_CATEGORY(amInterface, "activitymanager.interface", QtDebugMsg)
 
 #define AM_SERVICE_NAME "activity"
 #define AM_INTERFACE_NAME "android.app.IActivityManager"
 
 static ActivityManager *s_instance = nullptr;
 
-ActivityManager::ActivityManager(QObject *parent)
-    : BinderInterfaceAbstract(AM_SERVICE_NAME, AM_INTERFACE_NAME, parent)
+ActivityManager::ActivityManager(QObject *parent, const char *loggingCategoryName)
+    : BinderInterfaceAbstract(AM_SERVICE_NAME, AM_INTERFACE_NAME, parent, loggingCategoryName)
 {
 }
 
@@ -33,12 +29,12 @@ ActivityManager *ActivityManager::GetInstance()
 
 void ActivityManager::startActivity(Intent intent)
 {
-    qCDebug(amInterface) << Q_FUNC_INFO << intent.action;
-
     ActivityManager *manager = ActivityManager::GetInstance();
+    qCDebug(manager->logging) << Q_FUNC_INFO << intent.action;
+
     QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
-        qCCritical(amInterface) << Q_FUNC_INFO << "Null Parcel!";
+        qCCritical(manager->logging) << Q_FUNC_INFO << "Null Parcel!";
         return;
     }
 
@@ -56,17 +52,17 @@ void ActivityManager::startActivity(Intent intent)
     parcel->writeInt(0); // options disable
     int status = 0;
     manager->sendTransaction(TRANSACTION_startActivity, parcel, &status);
-    qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
 }
 
 void ActivityManager::forceStopPackage(const QString &package)
 {
-    qCDebug(amInterface) << Q_FUNC_INFO << package << TRANSACTION_forceStopPackage;
     ActivityManager *manager = ActivityManager::GetInstance();
+    qCDebug(manager->logging) << Q_FUNC_INFO << package << TRANSACTION_forceStopPackage;
 
     QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
-        qCCritical(amInterface) << Q_FUNC_INFO << "Null Parcel!";
+        qCCritical(manager->logging) << Q_FUNC_INFO << "Null Parcel!";
         return;
     }
 
@@ -74,10 +70,10 @@ void ActivityManager::forceStopPackage(const QString &package)
     parcel->writeInt(USER_OWNER);
     int status = 0;
     manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
-    qCDebug(amInterface) << Q_FUNC_INFO << "Status:" << status;
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
 }
 
 void ActivityManager::registrationCompleted()
 {
-    qCDebug(amInterface) << Q_FUNC_INFO;
+    qCDebug(logging) << Q_FUNC_INFO;
 }

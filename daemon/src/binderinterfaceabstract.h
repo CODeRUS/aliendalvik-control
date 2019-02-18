@@ -1,19 +1,22 @@
 #ifndef BINDERINTERFACEABSTRACT_H
 #define BINDERINTERFACEABSTRACT_H
 
+#include "loggingclasswrapper.h"
+
 #include <QObject>
 
 #include <QSharedPointer>
 #include <gbinder.h>
 
 class Parcel;
-class BinderInterfaceAbstract : public QObject
+class BinderInterfaceAbstract : public QObject, public LoggingClassWrapper
 {
     Q_OBJECT
 public:
     explicit BinderInterfaceAbstract(const char *serviceName,
                                      const char *interfaceName,
-                                     QObject *parent = nullptr);
+                                     QObject *parent = nullptr,
+                                     const char *loggingCategoryName = LOGGING(BinderInterfaceAbstract)".parcel");
     virtual ~BinderInterfaceAbstract();
 
     QSharedPointer<Parcel> createTransaction();

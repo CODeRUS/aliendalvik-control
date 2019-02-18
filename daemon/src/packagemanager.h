@@ -2,6 +2,7 @@
 #define PACKAGEMANAGER_H
 
 #include "binderinterfaceabstract.h"
+#include "loggingclasswrapper.h"
 
 #include <QSharedPointer>
 
@@ -15,7 +16,7 @@ class PackageManager : public BinderInterfaceAbstract
 {
     Q_OBJECT
 public:
-    explicit PackageManager(QObject *parent = nullptr);
+    explicit PackageManager(QObject *parent = nullptr, const char *loggingCategoryName = LOGGING(PackageManager)".parcel");
     virtual ~PackageManager();
 
     static PackageManager *GetInstance();
