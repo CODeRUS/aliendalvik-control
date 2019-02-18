@@ -1,30 +1,29 @@
 #include "applicationinfo.h"
 #include "binderinterfaceabstract.h"
 #include "componentinfo.h"
+#include "parcel.h"
 
-#include <QDebug>
-
-ComponentInfo::ComponentInfo(Parcel *parcel)
-    : PackageItemInfo(parcel)
+ComponentInfo::ComponentInfo(Parcel *parcel, const char *loggingCategoryName)
+    : PackageItemInfo(parcel, loggingCategoryName)
 {
     hasApplicationInfo = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "hasApplicationInfo:" << hasApplicationInfo;
+    qCDebug(logging) << Q_FUNC_INFO << "hasApplicationInfo:" << hasApplicationInfo;
     if (hasApplicationInfo) {
 //        applicationInfo = ApplicationInfo.CREATOR.createFromParcel(source);
         applicationInfo = new ApplicationInfo(parcel);
     }
     processName = parcel->readString();
-    qDebug() << Q_FUNC_INFO << "processName:" << processName;
+    qCDebug(logging) << Q_FUNC_INFO << "processName:" << processName;
     splitName = parcel->readString();
-    qDebug() << Q_FUNC_INFO << "splitName:" << splitName;
+    qCDebug(logging) << Q_FUNC_INFO << "splitName:" << splitName;
     descriptionRes = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "descriptionRes:" << descriptionRes;
+    qCDebug(logging) << Q_FUNC_INFO << "descriptionRes:" << descriptionRes;
     enabled = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "enabled:" << enabled;
+    qCDebug(logging) << Q_FUNC_INFO << "enabled:" << enabled;
     exported = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "exported:" << exported;
+    qCDebug(logging) << Q_FUNC_INFO << "exported:" << exported;
     directBootAware = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "directBootAware:" << directBootAware;
+    qCDebug(logging) << Q_FUNC_INFO << "directBootAware:" << directBootAware;
     encryptionAware = directBootAware;
 
 }

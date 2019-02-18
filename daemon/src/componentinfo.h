@@ -8,7 +8,7 @@ class ApplicationInfo;
 class ComponentInfo : public PackageItemInfo
 {
 public:
-    ComponentInfo(Parcel *parcel);
+    ComponentInfo(Parcel *parcel, const char *loggingCategoryName = LOGGING(ComponentInfo)".parcel");
     virtual ~ComponentInfo();
 
     bool hasApplicationInfo = false;

@@ -1,13 +1,15 @@
 #ifndef PACKAGEITEMINFO_H
 #define PACKAGEITEMINFO_H
 
-#include <qstring.h>
+#include "loggingclasswrapper.h"
+
+#include <QString>
 
 class Parcel;
-class PackageItemInfo
+class PackageItemInfo : public LoggingClassWrapper
 {
 public:
-    PackageItemInfo(Parcel *parcel);
+    PackageItemInfo(Parcel *parcel, const char *loggingCategoryName = LOGGING(PackageItemInfo)".parcel");
 
     QString name;
     QString packageName;

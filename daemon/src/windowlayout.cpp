@@ -1,22 +1,22 @@
 #include "binderinterfaceabstract.h"
+#include "parcel.h"
 #include "windowlayout.h"
 
-#include <QDebug>
-
-WindowLayout::WindowLayout(Parcel *parcel)
+WindowLayout::WindowLayout(Parcel *parcel ,const char *loggingCategoryName)
+    : LoggingClassWrapper(loggingCategoryName)
 {
     width = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "width:" << width;
+    qCDebug(logging) << Q_FUNC_INFO << "width:" << width;
     widthFraction = parcel->readFloat();
-    qDebug() << Q_FUNC_INFO << "widthFraction:" << widthFraction;
+    qCDebug(logging) << Q_FUNC_INFO << "widthFraction:" << widthFraction;
     height = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "height:" << height;
+    qCDebug(logging) << Q_FUNC_INFO << "height:" << height;
     heightFraction = parcel->readFloat();
-    qDebug() << Q_FUNC_INFO << "heightFraction:" << heightFraction;
+    qCDebug(logging) << Q_FUNC_INFO << "heightFraction:" << heightFraction;
     gravity = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "gravity:" << gravity;
+    qCDebug(logging) << Q_FUNC_INFO << "gravity:" << gravity;
     minWidth = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "minWidth:" << minWidth;
+    qCDebug(logging) << Q_FUNC_INFO << "minWidth:" << minWidth;
     minHeight = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "minHeight:" << minHeight;
+    qCDebug(logging) << Q_FUNC_INFO << "minHeight:" << minHeight;
 }

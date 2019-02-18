@@ -1,11 +1,13 @@
 #ifndef WINDOWLAYOUT_H
 #define WINDOWLAYOUT_H
 
+#include "loggingclasswrapper.h"
+
 class Parcel;
-class WindowLayout
+class WindowLayout : public LoggingClassWrapper
 {
 public:
-    WindowLayout(Parcel *parcel);
+    WindowLayout(Parcel *parcel, const char *loggingCategoryName = LOGGING(WindowLayout)".parcel");
 
     int width = -1;
     float widthFraction = -1;

@@ -10,7 +10,7 @@ class Parcel;
 class ApplicationInfo : public PackageItemInfo
 {
 public:
-    ApplicationInfo(Parcel *parcel);
+    ApplicationInfo(Parcel *parcel, const char *loggingCategoryName = LOGGING(ApplicationInfo)".parcel");
 
     QString taskAffinity;
     QString permission;

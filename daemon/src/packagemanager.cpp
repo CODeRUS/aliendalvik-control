@@ -1,6 +1,7 @@
 #include "packagemanager.h"
 #include "intent.h"
 #include "resolveinfo.h"
+#include "parcel.h"
 
 #include <QCoreApplication>
 #include <QDebug>

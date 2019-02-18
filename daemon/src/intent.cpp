@@ -1,19 +1,20 @@
 #include "binderinterfaceabstract.h"
 #include "intent.h"
+#include "parcel.h"
 
 #include <QDebug>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(parcelCategory, "binder.parcel", QtDebugMsg)
-
-Intent::Intent()
+Intent::Intent(const char *loggingCategoryName)
     : Parcelable(QStringLiteral("android.content.Intent"))
+    , LoggingClassWrapper(loggingCategoryName)
 {
 
 }
 
 Intent::Intent(const Intent &other)
     : Parcelable(other.creator)
+    , LoggingClassWrapper(other.logging.categoryName())
 {
     action = other.action;
     data = other.data;
@@ -38,7 +39,7 @@ Intent::~Intent()
 void Intent::writeToParcel(Parcel *parcel) const
 {
     if (!parcel) {
-        qCCritical(parcelCategory) << Q_FUNC_INFO << "Null Parcel!";
+        qCCritical(logging) << Q_FUNC_INFO << "Null Parcel!";
         return;
     }
 

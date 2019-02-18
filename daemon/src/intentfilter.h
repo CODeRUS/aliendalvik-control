@@ -1,14 +1,16 @@
 #ifndef INTENTFILTER_H
 #define INTENTFILTER_H
 
+#include "loggingclasswrapper.h"
+
 #include <QStringList>
 
 
 class Parcel;
-class IntentFilter
+class IntentFilter : public LoggingClassWrapper
 {
 public:
-    IntentFilter(Parcel *parcel);
+    IntentFilter(Parcel *parcel, const char *loggingCategoryName = LOGGING(IntentFilter)".parcel");
 
     QStringList mActions;
     QStringList mCategories;

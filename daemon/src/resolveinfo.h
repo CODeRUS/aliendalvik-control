@@ -2,6 +2,7 @@
 #define RESOLVEINFO_H
 
 #include "binderinterfaceabstract.h"
+#include "loggingclasswrapper.h"
 
 enum {
     ComponentInfoActivityInfo = 1,
@@ -12,10 +13,10 @@ enum {
 class ComponentInfo;
 class ActivityInfo;
 class IntentFilter;
-class ResolveInfo
+class ResolveInfo : public LoggingClassWrapper
 {
 public:
-    ResolveInfo(Parcel *parcel);
+    ResolveInfo(Parcel *parcel, const char *loggingCategoryName = LOGGING(ResolveInfo)".parcel");
     virtual ~ResolveInfo();
 
     int typeComponentInfo = 0;

@@ -1,5 +1,6 @@
 #include "activitymanager.h"
 #include "intent.h"
+#include "parcel.h"
 
 #include <QCoreApplication>
 #include <QDebug>

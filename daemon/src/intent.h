@@ -1,9 +1,9 @@
 #ifndef INTENT_H
 #define INTENT_H
 
+#include "loggingclasswrapper.h"
 #include "parcelable.h"
 
-#include <QDebug>
 #include <QMetaType>
 #include <QString>
 #include <QVariantHash>
@@ -17,10 +17,10 @@ enum {
 };
 
 class Parcel;
-class Intent : public Parcelable
+class Intent : public Parcelable, public LoggingClassWrapper
 {
 public:
-    Intent();
+    Intent(const char *loggingCategoryName = LOGGING(Intent)".parcel");
     Intent(const Intent &other);
     ~Intent();
 

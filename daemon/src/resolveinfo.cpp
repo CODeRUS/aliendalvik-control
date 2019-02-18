@@ -1,17 +1,19 @@
 #include "resolveinfo.h"
 #include "activityinfo.h"
 #include "intentfilter.h"
+#include "parcel.h"
 
-#include <QDebug>
+#define LOGME LOGGING(ActivityInfo)".parcel"
 
-ResolveInfo::ResolveInfo(Parcel *parcel)
+ResolveInfo::ResolveInfo(Parcel *parcel, const char *loggingCategoryName)
+    : LoggingClassWrapper(loggingCategoryName)
 {
     typeComponentInfo = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "Info source:" << typeComponentInfo;
+    qCDebug(logging) << Q_FUNC_INFO << "Info source:" << typeComponentInfo;
     switch (typeComponentInfo) {
     case ComponentInfoActivityInfo:
         activityInfo = new ActivityInfo(parcel);
-        qDebug() << Q_FUNC_INFO << "activityInfo:" << activityInfo;
+        qCDebug(logging) << Q_FUNC_INFO << "activityInfo:" << activityInfo;
         break;
     case ComponentInfoServiceInfo:
         break;
@@ -24,44 +26,44 @@ ResolveInfo::ResolveInfo(Parcel *parcel)
 
     const int haveIntentFilter = parcel->readInt();
     if (haveIntentFilter != 0) {
-        qDebug() << Q_FUNC_INFO << "have intent filter!" << haveIntentFilter;
+        qCDebug(logging) << Q_FUNC_INFO << "have intent filter!" << haveIntentFilter;
         intentFilter = new IntentFilter(parcel);
     }
     priority = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "priority:" << priority;
+    qCDebug(logging) << Q_FUNC_INFO << "priority:" << priority;
     preferredOrder = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "preferredOrder:" << preferredOrder;
+    qCDebug(logging) << Q_FUNC_INFO << "preferredOrder:" << preferredOrder;
     match = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "match:" << match;
+    qCDebug(logging) << Q_FUNC_INFO << "match:" << match;
     specificIndex = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "specificIndex:" << specificIndex;
+    qCDebug(logging) << Q_FUNC_INFO << "specificIndex:" << specificIndex;
     labelRes = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "labelRes:" << labelRes;
+    qCDebug(logging) << Q_FUNC_INFO << "labelRes:" << labelRes;
 
     // TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source)
     const int kind = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "kind:" << kind;
+    qCDebug(logging) << Q_FUNC_INFO << "kind:" << kind;
     const QString string = parcel->readString();
-    qDebug() << Q_FUNC_INFO << "string:" << string;
+    qCDebug(logging) << Q_FUNC_INFO << "string:" << string;
 
     icon = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "icon:" << icon;
+    qCDebug(logging) << Q_FUNC_INFO << "icon:" << icon;
     resolvePackageName = parcel->readString();
-    qDebug() << Q_FUNC_INFO << "resolvePackageName:" << resolvePackageName;
+    qCDebug(logging) << Q_FUNC_INFO << "resolvePackageName:" << resolvePackageName;
     targetUserId = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "targetUserId:" << targetUserId;
+    qCDebug(logging) << Q_FUNC_INFO << "targetUserId:" << targetUserId;
     system = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "system:" << system;
+    qCDebug(logging) << Q_FUNC_INFO << "system:" << system;
     noResourceId = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "noResourceId:" << noResourceId;
+    qCDebug(logging) << Q_FUNC_INFO << "noResourceId:" << noResourceId;
     iconResourceId = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "iconResourceId:" << iconResourceId;
+    qCDebug(logging) << Q_FUNC_INFO << "iconResourceId:" << iconResourceId;
     handleAllWebDataURI = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "handleAllWebDataURI:" << handleAllWebDataURI;
+    qCDebug(logging) << Q_FUNC_INFO << "handleAllWebDataURI:" << handleAllWebDataURI;
     instantAppAvailable = parcel->readBoolean();
-    qDebug() << Q_FUNC_INFO << "instantAppAvailable:" << instantAppAvailable;
+    qCDebug(logging) << Q_FUNC_INFO << "instantAppAvailable:" << instantAppAvailable;
     isInstantAppAvailable = instantAppAvailable;
-    qDebug() << Q_FUNC_INFO << "isInstantAppAvailable:" << isInstantAppAvailable;
+    qCDebug(logging) << Q_FUNC_INFO << "isInstantAppAvailable:" << isInstantAppAvailable;
 }
 
 ResolveInfo::~ResolveInfo()

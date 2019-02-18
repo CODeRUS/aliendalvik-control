@@ -4,14 +4,13 @@
 #include "binderinterfaceabstract.h"
 #include "componentinfo.h"
 
-#include <QDebug>
 
 class Parcel;
 class WindowLayout;
 class ActivityInfo : public ComponentInfo
 {
 public:
-    ActivityInfo(Parcel *parcel);
+    ActivityInfo(Parcel *parcel, const char *loggingCategoryName = LOGGING(ActivityInfo)".parcel");
     virtual ~ActivityInfo();
 
     int theme = -1;

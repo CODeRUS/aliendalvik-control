@@ -1,28 +1,28 @@
 #include "binderinterfaceabstract.h"
 #include "intentfilter.h"
+#include "parcel.h"
 
-#include <QDebug>
-
-IntentFilter::IntentFilter(Parcel *parcel)
+IntentFilter::IntentFilter(Parcel *parcel, const char *loggingCategoryName)
+    : LoggingClassWrapper(loggingCategoryName)
 {
     const int length = parcel->readInt();
-    qDebug() << Q_FUNC_INFO << "mActions length:" << length;
+    qCDebug(logging) << Q_FUNC_INFO << "mActions length:" << length;
 //    mActions = parcel->readStringList();
-//    qDebug() << Q_FUNC_INFO << "mActions:" << mActions;
+//    qCDebug(logging) << Q_FUNC_INFO << "mActions:" << mActions;
 //    if (parcel->readInt() != 0) {
 //        mCategories = parcel->readStringList();
-//        qDebug() << Q_FUNC_INFO << "mCategories:" << mActions;
+//        qCDebug(logging) << Q_FUNC_INFO << "mCategories:" << mActions;
 //    }
 //    if (parcel->readInt() != 0) {
 //        mDataSchemes = parcel->readStringList();
-//        qDebug() << Q_FUNC_INFO << "mDataSchemes:" << mActions;
+//        qCDebug(logging) << Q_FUNC_INFO << "mDataSchemes:" << mActions;
 //    }
 //    if (parcel->readInt() != 0) {
 //        mDataTypes = parcel->readStringList();
-//        qDebug() << Q_FUNC_INFO << "mDataTypes:" << mActions;
+//        qCDebug(logging) << Q_FUNC_INFO << "mDataTypes:" << mActions;
 //    }
 //    const int N = parcel->readInt();
-//    qDebug() << Q_FUNC_INFO << "have mDataSchemeSpecificParts!";
+//    qCDebug(logging) << Q_FUNC_INFO << "have mDataSchemeSpecificParts!";
 //    if (N > 0) {
 //        mDataSchemeSpecificParts = new ArrayList<PatternMatcher>(N);
 //        for (int i=0; i<N; i++) {
