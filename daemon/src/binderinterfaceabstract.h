@@ -15,6 +15,7 @@ class BinderInterfaceAbstract : public QObject, public LoggingClassWrapper
 public:
     explicit BinderInterfaceAbstract(const char *serviceName,
                                      const char *interfaceName,
+                                     const char *listenInterface = "",
                                      QObject *parent = nullptr,
                                      const char *loggingCategoryName = LOGGING(BinderInterfaceAbstract)".parcel");
     virtual ~BinderInterfaceAbstract();
@@ -50,6 +51,7 @@ private:
 
     const char *m_serviceName;
     const char *m_interfaceName;
+    const char *m_listenInterface;
 
     GBinderRemoteObject *m_remote = nullptr;
     GBinderLocalObject *m_local = nullptr;

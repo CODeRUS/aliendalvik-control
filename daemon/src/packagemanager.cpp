@@ -11,7 +11,11 @@
 static PackageManager *s_instance = nullptr;
 
 PackageManager::PackageManager(QObject *parent, const char *loggingCategoryName)
-    : BinderInterfaceAbstract(PM_SERVICE_NAME, PM_INTERFACE_NAME, parent, loggingCategoryName)
+    : BinderInterfaceAbstract(PM_SERVICE_NAME,
+                              PM_INTERFACE_NAME,
+                              "",
+                              parent,
+                              loggingCategoryName)
 {
 
 }

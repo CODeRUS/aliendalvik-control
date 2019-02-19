@@ -7,6 +7,7 @@
 
 enum {
     TRANSACTION_startActivity = 3,
+    TRANSACTION_getIntentSender = 54,
     TRANSACTION_forceStopPackage = 72,
 };
 
@@ -22,6 +23,7 @@ public:
 
     static void startActivity(Intent intent);
     static void forceStopPackage(const QString &package);
+    static void getIntentSender(Intent intent);
 
 protected:
     void registrationCompleted() override;

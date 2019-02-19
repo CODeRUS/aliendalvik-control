@@ -403,7 +403,8 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
         {"android.intent.extra.INITIAL_INTENTS", QVariant::fromValue(optionIntents)},
     };
-    ActivityManager::startActivity(pickIntent);
+//    ActivityManager::startActivity(pickIntent);
+    ActivityManager::getIntentSender(intent);
 
     return QVariant();
 }

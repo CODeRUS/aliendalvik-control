@@ -7,6 +7,7 @@ After=lipstick.service
 Type=dbus
 ExecStart=/usr/bin/aliendalvik-control
 ExecStop=/bin/dbus-send --type=method_call --dest=org.coderus.aliendalvikcontrol / org.coderus.aliendalvikcontrol.quit
+EnvironmentFile=-/var/lib/environment/aliendalvik-control/*.conf
 BusName=org.coderus.aliendalvikcontrol
 Restart=on-failure
 RestartSec=15

@@ -28,7 +28,7 @@ void DBusMain::start()
 
     bool handler = QDBusConnection::sessionBus().registerVirtualObject("/", mimeHandlerAdaptor);
     if (handler) {
-        qDebug() << "Handler registered successfully!";
+        qDebug() << "D-Bus handler registered successfully!";
     }
     else {
         qWarning() << "Register hanler fails!";

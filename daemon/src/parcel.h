@@ -69,6 +69,7 @@ public:
     QHash<int, QVariant> readSparseArray() const;
     QVariant readValue() const;
     float readFloat() const;
+    GBinderRemoteObject *readStrongBinder();
 
     GBinderLocalRequest *request();
 
