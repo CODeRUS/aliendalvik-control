@@ -281,11 +281,11 @@ float Parcel::readFloat() const
 
 GBinderRemoteObject *Parcel::readStrongBinder()
 {
-    GBinderRemoteObject* result;
+    GBinderRemoteObject* result = nullptr;
     if (!m_reader) {
         return result;
     }
-    if (gbinder_reader_read_nullable_object(m_reader, &result)) {
+    if (!gbinder_reader_read_nullable_object(m_reader, &result)) {
         qCCritical(logging) << Q_FUNC_INFO << "Error reading value!";
     }
     return result;

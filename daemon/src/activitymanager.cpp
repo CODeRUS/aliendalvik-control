@@ -101,7 +101,20 @@ void ActivityManager::getIntentSender(Intent intent)
     int status = 0;
     QSharedPointer<Parcel> in = manager->sendTransaction(TRANSACTION_getIntentSender, parcel, &status);
     qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
-    qCWarning(manager->logging) << Q_FUNC_INFO << "IntentSender:" << parcel->readStrongBinder();
+    const int exception = in->readInt();
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Exception:" << exception;
+    if (exception != 0) {
+        return;
+    }
+
+    GBinderRemoteObject *object = in->readStrongBinder();
+    qCWarning(manager->logging) << Q_FUNC_INFO << "IntentSender:" << object;
+
+    if (object) {
+        GBinderClient *client = gbinder_client_new(object, "android.content.IIntentSender");
+        qCWarning(manager->logging) << Q_FUNC_INFO << "Client:" << client;
+        gbinder_client_unref(client);
+    }
 }
 
 void ActivityManager::registrationCompleted()
