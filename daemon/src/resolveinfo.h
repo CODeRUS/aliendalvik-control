@@ -1,7 +1,6 @@
 #ifndef RESOLVEINFO_H
 #define RESOLVEINFO_H
 
-#include "binderinterfaceabstract.h"
 #include "loggingclasswrapper.h"
 
 enum {
@@ -13,6 +12,7 @@ enum {
 class ComponentInfo;
 class ActivityInfo;
 class IntentFilter;
+class Parcel;
 class ResolveInfo : public LoggingClassWrapper
 {
 public:

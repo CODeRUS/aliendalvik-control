@@ -398,13 +398,18 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
 
     Intent pickIntent;
     pickIntent.action = QStringLiteral("android.intent.action.PICK_ACTIVITY");
+//    pickIntent.flags = 0x10400000;
+//    pickIntent.flags = 0x10000000;
+    pickIntent.classPackage = QStringLiteral("com.android.settings");
+    pickIntent.className = QStringLiteral(".ActivityPicker");
+//    pickIntent.type = intent.type;
     pickIntent.extras = {
         {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
         {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
         {"android.intent.extra.INITIAL_INTENTS", QVariant::fromValue(optionIntents)},
     };
 //    ActivityManager::startActivity(pickIntent);
-    ActivityManager::getIntentSender(intent);
+    ActivityManager::getIntentSender(pickIntent);
 
     return QVariant();
 }
@@ -618,6 +623,7 @@ void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arg
 void MimeHandlerAdaptor::desktopChanged(const QString &path)
 {
     qDebug() << path;
+    return;
 
     QFile desktop(path);
     if (desktop.exists()) {

@@ -17,7 +17,7 @@ public:
                                      const char *interfaceName,
                                      const char *listenInterface = "",
                                      QObject *parent = nullptr,
-                                     const char *loggingCategoryName = LOGGING(BinderInterfaceAbstract)".parcel");
+                                     const char *loggingCategoryName = LOGGING(BinderInterfaceAbstract)".interface");
     virtual ~BinderInterfaceAbstract();
 
     QSharedPointer<Parcel> createTransaction();

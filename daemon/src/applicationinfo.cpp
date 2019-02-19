@@ -1,5 +1,4 @@
 #include "applicationinfo.h"
-#include "binderinterfaceabstract.h"
 #include "parcel.h"
 
 ApplicationInfo::ApplicationInfo(Parcel *parcel, const char *loggingCategoryName)

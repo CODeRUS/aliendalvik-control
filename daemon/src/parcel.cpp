@@ -1,8 +1,6 @@
 #include "intent.h"
 #include "parcel.h"
 
-#include <QLoggingCategory>
-
 #define LOGME LOGGING(Parcel)".parcel"
 
 Parcel::Parcel(GBinderLocalRequest *request)

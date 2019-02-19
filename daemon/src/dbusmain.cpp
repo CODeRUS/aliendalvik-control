@@ -12,19 +12,21 @@ DBusMain::DBusMain(QObject *parent) :
 }
 
 void DBusMain::start()
-{
+{    
+    MimeHandlerAdaptor *mimeHandlerAdaptor = new MimeHandlerAdaptor(this);
+
     QString service("org.coderus.aliendalvikcontrol");
     qDebug() << "Starting dbus service" << service << "...";
     bool success = QDBusConnection::sessionBus().registerService(service);
     if (!success) {
         qWarning() << "Register service fails!";
-        QCoreApplication::exit(0);
+        mimeHandlerAdaptor->shareFile(QStringLiteral("/home/nemo/Pictures/Default/All_green.jpg"),
+                                      QStringLiteral("image/jpeg"));
+//        QCoreApplication::exit(0);
         return;
     }
 
     qDebug() << "Service registered successfully!";
-
-    MimeHandlerAdaptor *mimeHandlerAdaptor = new MimeHandlerAdaptor(this);
 
     bool handler = QDBusConnection::sessionBus().registerVirtualObject("/", mimeHandlerAdaptor);
     if (handler) {

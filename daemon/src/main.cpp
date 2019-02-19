@@ -16,34 +16,34 @@ int main(int argc, char *argv[])
     ::setgid(0);
     ::setuid(0);
 
-    if (argc > 1 && strcmp(argv[1], "restore") == 0) {
-        QString appsDir = QStringLiteral("/usr/share/applications/");
-        QDir appl(appsDir);
-        for (const QString &desktoppath : appl.entryList({QStringLiteral("apkd_launcher_*.desktop")})) {
-            QString path = appsDir + desktoppath;
-            QFile desktop(path);
-            if (desktop.open(QFile::ReadWrite | QFile::Text)) {
-                QString data;
-                QTextStream stream(&desktop);
-                stream.setCodec("UTF-8");
-                while (!stream.atEnd()) {
-                    QString line = stream.readLine();
-                    if (!line.startsWith(QLatin1String("MimeType")) &&
-                            !line.startsWith(QLatin1String("X-Maemo-Method")) &&
-                            !line.startsWith(QLatin1String("X-Maemo-Object")) &&
-                            !line.startsWith(QLatin1String("X-Maemo-Service"))) {
-                        data.append(line);
-                        data.append("\n");
-                    }
-                }
-                desktop.seek(0);
-                desktop.resize(0);
-                stream << data;
-                desktop.close();
-            }
-        }
-        return 0;
-    }
+//    if (argc > 1 && strcmp(argv[1], "restore") == 0) {
+//        QString appsDir = QStringLiteral("/usr/share/applications/");
+//        QDir appl(appsDir);
+//        for (const QString &desktoppath : appl.entryList({QStringLiteral("apkd_launcher_*.desktop")})) {
+//            QString path = appsDir + desktoppath;
+//            QFile desktop(path);
+//            if (desktop.open(QFile::ReadWrite | QFile::Text)) {
+//                QString data;
+//                QTextStream stream(&desktop);
+//                stream.setCodec("UTF-8");
+//                while (!stream.atEnd()) {
+//                    QString line = stream.readLine();
+//                    if (!line.startsWith(QLatin1String("MimeType")) &&
+//                            !line.startsWith(QLatin1String("X-Maemo-Method")) &&
+//                            !line.startsWith(QLatin1String("X-Maemo-Object")) &&
+//                            !line.startsWith(QLatin1String("X-Maemo-Service"))) {
+//                        data.append(line);
+//                        data.append("\n");
+//                    }
+//                }
+//                desktop.seek(0);
+//                desktop.resize(0);
+//                stream << data;
+//                desktop.close();
+//            }
+//        }
+//        return 0;
+//    }
 
 //    ::chroot("/opt/alien");
 //    ::chdir("/");

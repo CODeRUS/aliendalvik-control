@@ -55,6 +55,7 @@ private slots:
     QVariant quit();
 
 private:
+    friend class DBusMain;
     void launchPackage(const QString &packageName);
 
     void componentActivity(const QString &component, const QString &data);

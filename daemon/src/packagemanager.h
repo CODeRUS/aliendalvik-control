@@ -16,7 +16,7 @@ class PackageManager : public BinderInterfaceAbstract
 {
     Q_OBJECT
 public:
-    explicit PackageManager(QObject *parent = nullptr, const char *loggingCategoryName = LOGGING(PackageManager)".parcel");
+    explicit PackageManager(QObject *parent = nullptr, const char *loggingCategoryName = LOGGING(PackageManager)".manager");
     virtual ~PackageManager();
 
     static PackageManager *GetInstance();

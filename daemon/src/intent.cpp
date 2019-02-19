@@ -1,9 +1,5 @@
-#include "binderinterfaceabstract.h"
 #include "intent.h"
 #include "parcel.h"
-
-#include <QDebug>
-#include <QLoggingCategory>
 
 Intent::Intent(const char *loggingCategoryName)
     : Parcelable(QStringLiteral("android.content.Intent"))
@@ -64,7 +60,11 @@ void Intent::writeToParcel(Parcel *parcel) const
         parcel->writeString(QString());
     } else {
         parcel->writeString(classPackage);
-        parcel->writeString(className);
+        if (className.startsWith(QChar(u'.'))) {
+            parcel->writeString(classPackage + className);
+        } else {
+            parcel->writeString(className);
+        }
     }
 
     parcel->writeInt(0); // mSourceBounds disable

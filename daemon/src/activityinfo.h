@@ -1,7 +1,6 @@
 #ifndef ACTIVITYINFO_H
 #define ACTIVITYINFO_H
 
-#include "binderinterfaceabstract.h"
 #include "componentinfo.h"
 
 
