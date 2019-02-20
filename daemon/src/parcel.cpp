@@ -19,6 +19,14 @@ Parcel::Parcel(GBinderRemoteReply *reply)
     gbinder_remote_reply_init_reader(m_reply, m_reader);
 }
 
+Parcel::Parcel(GBinderRemoteRequest *remote)
+    : LoggingClassWrapper(LOGME)
+    , m_remote(remote)
+    , m_reader(new GBinderReader)
+{
+    gbinder_remote_request_init_reader(m_remote, m_reader);
+}
+
 Parcel::~Parcel()
 {
     if (m_request) {
@@ -171,10 +179,27 @@ QString Parcel::readString() const
     return QString::fromUtf16(string, length);
 }
 
-void Parcel::readBundle() const
+QVariantHash Parcel::readBundle() const
 {
+    QVariantHash result;
     const int length = readInt();
-    qCDebug(logging) << Q_FUNC_INFO << "Bundle length:" << length;
+
+    if (length <= 0) {
+        return result;
+    }
+
+    const int magic = readInt();
+    if (magic != BUNDLE_MAGIC) {
+        qCCritical(logging) << Q_FUNC_INFO << "Bundle magic does not match:" << magic;
+    }
+
+    const int size = readInt();
+    for (int i = 0; i < size; i++) {
+        const QString key(readString());
+        const QVariant value(readValue());
+        result.insert(key, value);
+    }
+    return result;
 }
 
 qlonglong Parcel::readLong() const
@@ -245,22 +270,26 @@ QVariant Parcel::readValue() const
     const int type = readInt();
     switch (type) {
     case VAL_NULL:
-      return QVariant();
+        return QVariant();
     case VAL_STRING:
-      return QVariant(readString());
+        return QVariant(readString());
     case VAL_INTEGER:
-      return QVariant(readInt());
+        return QVariant(readInt());
     case VAL_LONG:
-      return QVariant(readLong());
+        return QVariant(readLong());
     case VAL_BOOLEAN:
-      return QVariant(readBoolean());
+        return QVariant(readBoolean());
     case VAL_DOUBLE:
-      return QVariant(readDouble());
+        return QVariant(readDouble());
     case VAL_STRINGARRAY:
-      return QVariant(readStringList());
+        return QVariant(readStringList());
+    case VAL_PARCELABLE:
+        return readParcelable();
+    case VAL_PARCELABLEARRAY:
+        return readParcelableArray();
     default:
-      qCritical(logging) << Q_FUNC_INFO << "Unsupported value type:" << type;
-      return result;
+        qCritical(logging) << Q_FUNC_INFO << "Unsupported value type:" << type;
+        return result;
     }
 }
 
@@ -285,6 +314,35 @@ GBinderRemoteObject *Parcel::readStrongBinder()
     }
     if (!gbinder_reader_read_nullable_object(m_reader, &result)) {
         qCCritical(logging) << Q_FUNC_INFO << "Error reading value!";
+    }
+    return result;
+}
+
+QVariant Parcel::readParcelable() const
+{
+    const QString creator = readString();
+    if (creator == QLatin1String("android.content.Intent")) {
+        return QVariant::fromValue(Intent(this));
+    } else if (creator == QLatin1String("android.net.Uri")) {
+        const int typeId = readInt();
+        if (typeId == StringUri_TYPE_ID) {
+            return QVariant(readString());
+        } else {
+            qCDebug(logging) << Q_FUNC_INFO << "Unsupported uri type id:" << typeId;
+        }
+        return QVariant();
+    } else {
+        qCDebug(logging) << Q_FUNC_INFO << "Unsupported creator:" << creator;
+        return QVariant();
+    }
+}
+
+QVariantList Parcel::readParcelableArray() const
+{
+    QVariantList result;
+    const int length = readInt();
+    for (int i = 0; i < length; i++) {
+        result.append(readParcelable());
     }
     return result;
 }

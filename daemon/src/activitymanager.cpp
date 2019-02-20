@@ -97,7 +97,7 @@ void ActivityManager::getIntentSender(Intent intent)
     parcel->writeString(QString()); // packageName
     parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // token
     parcel->writeString(QString()); // resultWho
-    parcel->writeInt(0); // requestCode
+    parcel->writeInt(123); // requestCode
     parcel->writeInt(1); // intents
     parcel->writeInt(1); // intent
     intent.writeToParcel(parcel.data());
@@ -131,18 +131,26 @@ void ActivityManager::getIntentSender(Intent intent)
     qCWarning(manager->logging) << Q_FUNC_INFO << "Client:" << client;
     GBinderLocalRequest* req = gbinder_client_new_request(client);
     Parcel out(req);
-    out.writeInt(0); // code
+    out.writeInt(123); // code
     out.writeInt(0); // new intent
 //    out.writeInt(1); // intent
 //    intent.writeToParcel(&out);
     out.writeString(QString()); // resolvedType
-    parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // whitelistToken
-    parcel->writeStrongBinder(manager->m_receiver); // finishedReceiver
+    out.writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // whitelistToken
+    out.writeStrongBinder(manager->m_receiver); // finishedReceiver
     out.writeString(QString()); // requiredPermission
     out.writeInt(0); // options
 
     int sstatus = gbinder_client_transact_sync_oneway(client, 1, req);
     qCWarning(manager->logging) << Q_FUNC_INFO << "Status:" << sstatus;
+
+//    QSharedPointer<Parcel> parcel2 = manager->createTransaction();
+//    if (!parcel2) {
+//        qCCritical(manager->logging) << Q_FUNC_INFO << "Null Parcel!";
+//        return;
+//    }
+//    parcel2->writeStrongBinder(object); // IIntentSender target
+//    parcel2->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // whitelistToken
 
     gbinder_client_unref(client);
 }
@@ -156,6 +164,34 @@ GBinderLocalReply *ActivityManager::intentReceiver(GBinderLocalObject *obj, GBin
     qWarning() << "GBinderRemoteRequest:" << req;
     qWarning() << "Code:" << code;
     qWarning() << "Flags:" << flags;
+
+
+    Parcel in(req);
+    const int haveIntent = in.readInt();
+    qWarning() << "Have intent:" << haveIntent;
+    if (haveIntent != 0) {
+        Intent intent(&in);
+        qWarning() << "intent:" << intent.action;
+    }
+
+    const int resultCode = in.readInt();
+    qWarning() << "resultCode:" << resultCode;
+    const QString data = in.readString();
+    qWarning() << "data:" << data;
+
+    const int haveBundle = in.readInt();
+    qWarning() << "Have bundle:" << haveBundle;
+
+    if (haveBundle != 0) {
+        //
+    }
+    const int ordered = in.readInt();
+    qWarning() << "ordered:" << ordered;
+    const int sticky = in.readInt();
+    qWarning() << "sticky:" << sticky;
+    const int sendingUser = in.readInt();
+    qWarning() << "sendingUser:" << sendingUser;
+
     GBinderLocalReply *reply = NULL;
     *status = GBINDER_STATUS_OK;
     return reply;
@@ -173,6 +209,33 @@ void ActivityManager::registrationCompleted()
                     this);
 
         qWarning() << Q_FUNC_INFO << "Receiver:" << m_receiver;
+
+        QSharedPointer<Parcel> parcel = createTransaction();
+        if (!parcel) {
+            qCCritical(logging) << Q_FUNC_INFO << "Null Parcel!";
+            return;
+        }
+
+        parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // IApplicationThread caller
+        parcel->writeString(QString()); // String callerPackage
+        parcel->writeStrongBinder(m_receiver); // IIntentReceiver receiver
+        parcel->writeInt(0); // IntentFilter filter
+        parcel->writeString(QString()); // String requiredPermission
+        parcel->writeInt(USER_CURRENT); // int userId
+        parcel->writeInt(0); // int flags
+        int status = 0;
+        QSharedPointer<Parcel> in = sendTransaction(TRANSACTION_registerReceiver, parcel, &status);
+        qCDebug(logging) << Q_FUNC_INFO << "Status:" << status;
+        const int exception = in->readInt();
+        qCDebug(logging) << Q_FUNC_INFO << "Exception:" << exception;
+        if (exception != 0) {
+            return;
+        }
+        const int haveIntent = in->readInt();
+        qCDebug(logging) << Q_FUNC_INFO << "Have intent:" << haveIntent;
+        if (haveIntent != 0) {
+            //
+        }
     }
 
 }

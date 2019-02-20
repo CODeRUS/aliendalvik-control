@@ -49,6 +49,7 @@ class Parcel : public LoggingClassWrapper
 public:
     Parcel(GBinderLocalRequest *request);
     Parcel(GBinderRemoteReply *reply);
+    Parcel(GBinderRemoteRequest *remote);
     ~Parcel();
 
     void writeStrongBinder(GBinderLocalObject *value);
@@ -61,7 +62,7 @@ public:
 
     int readInt() const;
     QString readString() const;
-    void readBundle() const;
+    QVariantHash readBundle() const;
     qlonglong readLong() const;
     bool readBoolean() const;
     double readDouble() const;
@@ -70,12 +71,15 @@ public:
     QVariant readValue() const;
     float readFloat() const;
     GBinderRemoteObject *readStrongBinder();
+    QVariant readParcelable() const;
+    QVariantList readParcelableArray() const;
 
     GBinderLocalRequest *request();
 
 private:
     GBinderLocalRequest *m_request = nullptr;
     GBinderRemoteReply *m_reply = nullptr;
+    GBinderRemoteRequest *m_remote = nullptr;
     GBinderWriter *m_writer = nullptr;
     GBinderReader *m_reader = nullptr;
 };

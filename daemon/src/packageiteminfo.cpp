@@ -5,7 +5,7 @@ PackageItemInfo::PackageItemInfo(Parcel *parcel, const char *loggingCategoryName
     : LoggingClassWrapper(loggingCategoryName)
 {
     name = parcel->readString();
-    qCDebug(logging) << Q_FUNC_INFO << "Name:" << loggingCategoryName;
+    qCDebug(logging) << Q_FUNC_INFO << "Name:" << name;
     packageName = parcel->readString();
     qCDebug(logging) << Q_FUNC_INFO << "Package:" << packageName;
 

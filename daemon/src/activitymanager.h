@@ -7,8 +7,10 @@
 
 enum {
     TRANSACTION_startActivity = 3,
+    TRANSACTION_registerReceiver = 6,
     TRANSACTION_getIntentSender = 54,
     TRANSACTION_forceStopPackage = 72,
+    TRANSACTION_sendIntentSender = 271,
 };
 
 class Intent;

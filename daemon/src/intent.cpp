@@ -8,6 +8,52 @@ Intent::Intent(const char *loggingCategoryName)
 
 }
 
+Intent::Intent(const Parcel *parcel, const char *loggingCategoryName)
+    : Parcelable(QStringLiteral("android.content.Intent"))
+    , LoggingClassWrapper(loggingCategoryName)
+{
+    if (!parcel) {
+        qCCritical(logging) << Q_FUNC_INFO << "Null Parcel!";
+        return;
+    }
+
+    action = parcel->readString();
+    qCDebug(logging) << Q_FUNC_INFO << "Action:" << action;
+
+    // Uri createFromParcel(Parcel in)
+    const int uriType = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "Uri type:" << uriType;
+
+    if (uriType == 1) {
+        data = parcel->readString();
+        qCDebug(logging) << Q_FUNC_INFO << "Data:" << data;
+    }
+
+    type = parcel->readString();
+    qCDebug(logging) << Q_FUNC_INFO << "Type:" << type;
+    flags = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "Flags:" << flags;
+    package = parcel->readString();
+    qCDebug(logging) << Q_FUNC_INFO << "Package:" << package;
+    classPackage = parcel->readString();
+    qCDebug(logging) << Q_FUNC_INFO << "Class package:" << classPackage;
+    if (!classPackage.isNull()) {
+        className = parcel->readString();
+        qCDebug(logging) << Q_FUNC_INFO << "Class name:" << className;
+    }
+    const int mSourceBounds = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "mSourceBounds:" << mSourceBounds;
+    const int categoriesLength = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "categoriesLength:" << categoriesLength;
+    const int mSelector = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "mSelector:" << mSelector;
+    const int mClipData = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "mClipData:" << mClipData;
+    const int contentUserHint = parcel->readInt();
+    qCDebug(logging) << Q_FUNC_INFO << "contentUserHint:" << contentUserHint;
+    parcel->readBundle();
+}
+
 Intent::Intent(const Intent &other)
     : Parcelable(other.creator)
     , LoggingClassWrapper(other.logging.categoryName())

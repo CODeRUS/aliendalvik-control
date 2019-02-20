@@ -21,6 +21,7 @@ class Intent : public Parcelable, public LoggingClassWrapper
 {
 public:
     Intent(const char *loggingCategoryName = LOGGING(Intent)".parcel");
+    Intent(const Parcel *parcel, const char *loggingCategoryName = LOGGING(Intent)".parcel");
     Intent(const Intent &other);
     ~Intent();
 
