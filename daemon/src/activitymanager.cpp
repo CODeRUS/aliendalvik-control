@@ -93,7 +93,7 @@ void ActivityManager::getIntentSender(Intent intent)
         return;
     }
 
-    parcel->writeInt(2); // ?
+    parcel->writeInt(INTENT_SENDER_ACTIVITY_RESULT); // intent sender type
     parcel->writeString(QString()); // packageName
     parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // token
     parcel->writeString(QString()); // resultWho
@@ -121,11 +121,10 @@ void ActivityManager::getIntentSender(Intent intent)
         return;
     }
 
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(5000);
-    loop.exec();
+//    oneway interface IIntentSender {
+//        void send(int code, in Intent intent, String resolvedType, in IBinder whitelistToken,
+//                IIntentReceiver finishedReceiver, String requiredPermission, in Bundle options);
+//    }
 
     GBinderClient *client = gbinder_client_new(object, "android.content.IIntentSender");
     qCWarning(manager->logging) << Q_FUNC_INFO << "Client:" << client;
@@ -154,6 +153,12 @@ void ActivityManager::getIntentSender(Intent intent)
 
     gbinder_client_unref(client);
 }
+
+
+//oneway interface IIntentReceiver {
+//    void performReceive(in Intent intent, int resultCode, String data,
+//            in Bundle extras, boolean ordered, boolean sticky, int sendingUser);
+//}
 
 GBinderLocalReply *ActivityManager::intentReceiver(GBinderLocalObject *obj, GBinderRemoteRequest *req, guint code, guint flags, int *status, void *user_data)
 {
@@ -210,32 +215,32 @@ void ActivityManager::registrationCompleted()
 
         qWarning() << Q_FUNC_INFO << "Receiver:" << m_receiver;
 
-        QSharedPointer<Parcel> parcel = createTransaction();
-        if (!parcel) {
-            qCCritical(logging) << Q_FUNC_INFO << "Null Parcel!";
-            return;
-        }
+//        QSharedPointer<Parcel> parcel = createTransaction();
+//        if (!parcel) {
+//            qCCritical(logging) << Q_FUNC_INFO << "Null Parcel!";
+//            return;
+//        }
 
-        parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // IApplicationThread caller
-        parcel->writeString(QString()); // String callerPackage
-        parcel->writeStrongBinder(m_receiver); // IIntentReceiver receiver
-        parcel->writeInt(0); // IntentFilter filter
-        parcel->writeString(QString()); // String requiredPermission
-        parcel->writeInt(USER_CURRENT); // int userId
-        parcel->writeInt(0); // int flags
-        int status = 0;
-        QSharedPointer<Parcel> in = sendTransaction(TRANSACTION_registerReceiver, parcel, &status);
-        qCDebug(logging) << Q_FUNC_INFO << "Status:" << status;
-        const int exception = in->readInt();
-        qCDebug(logging) << Q_FUNC_INFO << "Exception:" << exception;
-        if (exception != 0) {
-            return;
-        }
-        const int haveIntent = in->readInt();
-        qCDebug(logging) << Q_FUNC_INFO << "Have intent:" << haveIntent;
-        if (haveIntent != 0) {
-            //
-        }
+//        parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // IApplicationThread caller
+//        parcel->writeString(QString()); // String callerPackage
+//        parcel->writeStrongBinder(m_receiver); // IIntentReceiver receiver
+//        parcel->writeInt(0); // IntentFilter filter
+//        parcel->writeString(QString()); // String requiredPermission
+//        parcel->writeInt(USER_CURRENT); // int userId
+//        parcel->writeInt(0); // int flags
+//        int status = 0;
+//        QSharedPointer<Parcel> in = sendTransaction(TRANSACTION_registerReceiver, parcel, &status);
+//        qCDebug(logging) << Q_FUNC_INFO << "Status:" << status;
+//        const int exception = in->readInt();
+//        qCDebug(logging) << Q_FUNC_INFO << "Exception:" << exception;
+//        if (exception != 0) {
+//            return;
+//        }
+//        const int haveIntent = in->readInt();
+//        qCDebug(logging) << Q_FUNC_INFO << "Have intent:" << haveIntent;
+//        if (haveIntent != 0) {
+//            //
+//        }
     }
 
 }

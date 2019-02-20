@@ -13,6 +13,14 @@ enum {
     TRANSACTION_sendIntentSender = 271,
 };
 
+enum {
+    INTENT_SENDER_BROADCAST = 1,
+    INTENT_SENDER_ACTIVITY = 2,
+    INTENT_SENDER_ACTIVITY_RESULT = 3,
+    INTENT_SENDER_SERVICE = 4,
+    INTENT_SENDER_FOREGROUND_SERVICE = 5,
+};
+
 class Intent;
 class ActivityManager : public BinderInterfaceAbstract
 {
