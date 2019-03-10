@@ -2,11 +2,18 @@
 
 #include <QDebug>
 
+#include <TransferEngine-qt5/mediaitem.h>
+
+#include <QMimeDatabase>
+#include <QMimeType>
+#include <QFile>
+#include <QDateTime>
+#include <QtDBus>
+#include <QVariant>
+
 MediaTransfer::MediaTransfer(QObject *parent) :
     MediaTransferInterface(parent)
 {
-    _iface = new QDBusInterface("org.coderus.aliendalvikcontrol", "/", "org.coderus.aliendalvikcontrol",
-                                QDBusConnection::sessionBus(), this);
 }
 
 MediaTransfer::~MediaTransfer()
@@ -21,7 +28,7 @@ bool MediaTransfer::cancelEnabled() const
 
 QString MediaTransfer::displayName() const
 {
-    return QString("Android");
+    return QStringLiteral("Android");
 }
 
 bool MediaTransfer::restartEnabled() const
@@ -36,16 +43,22 @@ QUrl MediaTransfer::serviceIcon() const
 
 void MediaTransfer::shareFile(const QString &filename, const QString mimetype)
 {
-    if (_iface) {
-        _iface->call(QDBus::NoBlock, "shareFile", filename, mimetype);
-    }
+    QDBusMessage shareFile = QDBusMessage::createMethodCall(QStringLiteral("org.coderus.aliendalvikcontrol"),
+                                                            QStringLiteral("/"),
+                                                            QStringLiteral("org.coderus.aliendalvikcontrol"),
+                                                            QStringLiteral("shareFile"));
+    shareFile.setArguments({filename, mimetype});
+    QDBusConnection::sessionBus().send(shareFile);
 }
 
 void MediaTransfer::shareText(const QString &data)
 {
-    if (_iface) {
-        _iface->call(QDBus::NoBlock, "shareText", data);
-    }
+    QDBusMessage shareText = QDBusMessage::createMethodCall(QStringLiteral("org.coderus.aliendalvikcontrol"),
+                                                            QStringLiteral("/"),
+                                                            QStringLiteral("org.coderus.aliendalvikcontrol"),
+                                                            QStringLiteral("shareText"));
+    shareText.setArguments({data});
+    QDBusConnection::sessionBus().send(shareText);
 }
 
 void MediaTransfer::cancel()
@@ -55,30 +68,34 @@ void MediaTransfer::cancel()
 
 void MediaTransfer::start()
 {
-    QUrl url = mediaItem()->value(MediaItem::Url).toUrl();
+    const QUrl url = mediaItem()->value(MediaItem::Url).toUrl();
     if (!url.isValid()) {
-        QString mimeType = mediaItem()->value(MediaItem::MimeType).toString();
-        QString content = mediaItem()->value(MediaItem::ContentData).toString();
+        const QString mimeType = mediaItem()->value(MediaItem::MimeType).toString();
+        const QString content = mediaItem()->value(MediaItem::ContentData).toString();
 
-        if (mimeType == "text/vcard") {
-            QFile tmp(QString("/home/nemo/%1.vcf").arg(QDateTime::currentMSecsSinceEpoch()));
+        if (mimeType == QLatin1String("text/vcard")) {
+            QFile tmp(QStringLiteral("/home/nemo/.aliendalvik-control-share.vcf"));
             if (tmp.open(QFile::WriteOnly)) {
                 tmp.write(content.toUtf8());
-                tmp.close();
 
                 shareFile(tmp.fileName(), mimeType);
             }
-        }
-        else if (mimeType == "text/x-url") {
-            shareText(mediaItem()->value(MediaItem::UserData).toMap().value("status").toString());
+        } else if (mimeType == QLatin1String("text/x-url")) {
+            const QVariantMap userData = mediaItem()->value(MediaItem::UserData).toMap();
+            if (userData.isEmpty()) {
+                return;
+            }
+            const QString data = userData.value(QStringLiteral("status"));
+            if (data.isEmpty()) {
+                return;
+            }
+            shareText(data);
         }
         else {
             shareText(content);
         }
-    }
-    else {
-        QMimeDatabase db;
-        QMimeType mimeType = db.mimeTypeForFile(url.toString());
+    } else {
+        const QMimeType mimeType = QMimeDatabase().mimeTypeForFile(url.toString());
 
         shareFile(url.toString(QUrl::PreferLocalFile), mimeType.name());
     }

@@ -7,6 +7,7 @@
 #include <QSharedPointer>
 
 enum {
+    TRANSACTION_getPackageUid = 5,
     TRANSACTION_queryIntentActivities = 45,
 };
 
@@ -22,6 +23,7 @@ public:
     static PackageManager *GetInstance();
 
     static QList<QSharedPointer<ResolveInfo> > queryIntentActivities(Intent intent);
+    static int getPackageUid(const QString &packageName);
 
 protected:
     void registrationCompleted() override;

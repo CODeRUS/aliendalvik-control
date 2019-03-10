@@ -79,6 +79,36 @@ QList<QSharedPointer<ResolveInfo> > PackageManager::queryIntentActivities(Intent
     return resolveInfoList;
 }
 
+int PackageManager::getPackageUid(const QString &packageName)
+{
+    PackageManager *manager = PackageManager::GetInstance();
+    qCDebug(manager->logging) << Q_FUNC_INFO << intent.action;
+
+    int uid = -1;
+
+    QSharedPointer<Parcel> parcel = manager->createTransaction();
+    if (!parcel) {
+        qCCritical(manager->logging) << Q_FUNC_INFO << "Null Parcel!";
+        return resolveInfoList;
+    }
+
+    parcel->writeString(packageName);
+    parcel->writeInt(0); // flags
+    parcel->writeInt(USER_OWNER); // userId
+    int status = 0;
+    QSharedPointer<Parcel> out = manager->sendTransaction(TRANSACTION_getPackageUid, parcel, &status);
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
+    const int exception = out->readInt();
+    if (exception != 0) {
+        qCCritical(manager->logging) << Q_FUNC_INFO << "Exception:" << exception;
+        return uid;
+    }
+    uid = out->readInt();
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Result:" << uid;
+
+    return uid;
+}
+
 void PackageManager::registrationCompleted()
 {
     qCDebug(logging) << Q_FUNC_INFO;

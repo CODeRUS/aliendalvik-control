@@ -21,3 +21,5 @@ qml.files = qml/AliendalvikShare.qml
 qml.path = /usr/share/nemo-transferengine/plugins
 
 INSTALLS += target qml
+
+INCLUDEPATH += /usr/include

@@ -11,7 +11,7 @@ License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   aliendalvik >= 8.1.0
+Requires:   aliendalvik >= 8.1.0.46.17
 Conflicts:  android-shareui
 Obsoletes:  android-shareui
 Requires:   nemo-transferengine-qt5 >= 0.3.1

@@ -1,7 +1,7 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import Sailfish.TransferEngine 1.0
-import org.nemomobile.dbus 2.0
+import Nemo.DBus 2.0
 
 ShareDialog {
     id: root
@@ -16,11 +16,27 @@ ShareDialog {
 
     Component.onCompleted: {
         if (aliendalvikServiceIface.isActive()) {
-            shareItem.start()
+//            shareItem.start()
+            control.call("prepareSharing", [root.content])
         }
     }
 
     canAccept: aliendalvikServiceIface.isActive()
+
+    DBusInterface {
+        id: control
+        bus: DBus.SessionBus
+        service: "org.coderus.aliendalvikcontrol"
+        path: "/"
+        iface: "org.coderus.aliendalvikcontrol"
+        signalsEnabled: true
+
+        function sharingListReady(data, sharing) {
+            console.log(root.content)
+            console.log(data)
+            console.log(JSON.stringify(sharing))
+        }
+    }
 
     DBusInterface {
         id: aliendalvikServiceIface
