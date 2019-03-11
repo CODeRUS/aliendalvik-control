@@ -377,26 +377,14 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         return QVariant();
     }
 
-//    forceStop(QStringLiteral("com.android.documentsui"));
-//    launchPackage(QStringLiteral("com.android.documentsui"));
-
-//    QEventLoop loop;
-//    QTimer timer;
-//    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-//    timer.start(2000);
-//    loop.exec();
-
     qDebug() << Q_FUNC_INFO << containerPath;
 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = mimetype.toString();
-//    intent.classPackage = QStringLiteral("android");
-//    intent.className = QStringLiteral("com.android.internal.app.ResolverActivity");
     intent.extras = {
         {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)}
     };
-////    ActivityManager::startActivity(intent);
 
     QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
     qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
@@ -430,85 +418,6 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     }
 
     emitSignal(QStringLiteral("sharingListReady"), {sharingList});
-
-//    QList<Intent> optionIntents;
-//    for (QSharedPointer<ResolveInfo> info : resolveInfo) {
-//        Intent option;
-//        option.action = intent.action;
-//        option.type = intent.type;
-//        ComponentInfo *componentInfo = info->getComponentInfo();
-//        if (componentInfo) {
-//            option.package = componentInfo->packageName;
-//        }
-//        optionIntents.append(option);
-//    }
-
-//    if (!intentSender) {
-//        GBinderRemoteObject *target = ActivityManager::getIntentSender(intent);
-//        intentSender = new IntentSender(target);
-
-//        qDebug() << Q_FUNC_INFO << "New Intent sender:" << intentSender << target;
-
-//        Intent pickIntent;
-//        pickIntent.action = QStringLiteral("android.intent.action.CHOOSER");
-//        pickIntent.classPackage = QStringLiteral("com.android.settings");
-//        pickIntent.className = QStringLiteral(".ActivityPicker");
-//        pickIntent.extras = {
-//            {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
-//            {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
-//            {"android.intent.extra.CHOOSER_REFINEMENT_INTENT_SENDER", QVariant::fromValue(*intentSender)},
-//            {"android.intent.extra.CHOSEN_COMPONENT_INTENT_SENDER", QVariant::fromValue(*intentSender)},
-//        };
-//        ActivityManager::startActivity(pickIntent);
-//    } else {
-//        qDebug() << Q_FUNC_INFO << "Old Intent sender:" << intentSender;
-
-//        GBinderClient *client = gbinder_client_new(intentSender->target(), "android.content.IIntentSender");
-//        qWarning() << Q_FUNC_INFO << "Client:" << client;
-//        GBinderLocalRequest* req = gbinder_client_new_request(client);
-//        Parcel out(req);
-//        out.writeInt(123); // code
-//        out.writeInt(0); // new intent
-//    //    out.writeInt(1); // intent
-//    //    intent.writeToParcel(&out);
-//        out.writeString(QString()); // resolvedType
-//        out.writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // whitelistToken
-//        out.writeStrongBinder(ActivityManager::GetInstance()->m_receiver); // finishedReceiver
-//        out.writeString(QString()); // requiredPermission
-//        out.writeInt(0); // options
-
-//        int sstatus = gbinder_client_transact_sync_oneway(client, 1, req);
-//        qWarning() << Q_FUNC_INFO << "Status:" << sstatus;
-
-//        gbinder_client_unref(client);
-
-//        delete intentSender;
-//        intentSender = nullptr;
-//    }
-
-//    IntentSender intentSender(target);
-//    qDebug() << Q_FUNC_INFO << "Intent sender:" << target;
-
-//    Intent pickIntent;
-//    pickIntent.action = QStringLiteral("android.intent.action.CHOOSER");
-////    pickIntent.flags = 0x10400000;
-////    pickIntent.flags = 0x10000000;
-//    pickIntent.classPackage = QStringLiteral("com.android.settings");
-//    pickIntent.className = QStringLiteral(".ActivityPicker");
-////    pickIntent.type = intent.type;
-//    pickIntent.extras = {
-//        {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
-//        {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
-////        {"android.intent.extra.CHOOSER_REFINEMENT_INTENT_SENDER", QVariant::fromValue(intentSender)},
-////        {"android.intent.extra.INITIAL_INTENTS", QVariant::fromValue(optionIntents)},
-//    };
-//    ActivityManager::startActivity(pickIntent);
-
-//    qDebug() << Q_FUNC_INFO << "client token:" << AppOpsService::GetInstance()->localHandler();
-//    GBinderRemoteObject *token = AppOpsService::getToken(AppOpsService::GetInstance()->localHandler());
-//    qDebug() << Q_FUNC_INFO << "remote token:" << token;
-
-//    ActivityManager::getIntentSender(pickIntent, token);
 
     return QVariant();
 }
