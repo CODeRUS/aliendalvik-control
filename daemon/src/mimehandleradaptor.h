@@ -1,6 +1,8 @@
 #ifndef MIMEHANDLERADAPTOR_H
 #define MIMEHANDLERADAPTOR_H
 
+#include "intentsender.h"
+
 #include <QObject>
 #include <QDBusVirtualObject>
 #include <QFileSystemWatcher>
@@ -46,6 +48,7 @@ private slots:
     QVariant setImeMethod(const QVariant &ime);
     QVariant shareFile(const QVariant &filename, const QVariant &mimetype);
     QVariant shareText(const QVariant &text);
+    QVariant doShare(const QVariant &mimetype, const QVariant &filename, const QVariant &data, const QVariant &packageName, const QVariant &className);
     QVariant getFocusedApp();
     QVariant isTopmostAndroid();
     QVariant getSettings(const QVariant &nspace, const QVariant &key);
@@ -53,6 +56,8 @@ private slots:
     QVariant getprop(const QVariant &key);
     QVariant setprop(const QVariant &key, const QVariant &value);
     QVariant quit();
+
+    QVariant prepareSharing(const QVariant &data);
 
 private:
     friend class DBusMain;

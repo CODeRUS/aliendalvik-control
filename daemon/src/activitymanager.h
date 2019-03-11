@@ -33,7 +33,7 @@ public:
 
     static void startActivity(Intent intent);
     static void forceStopPackage(const QString &package);
-    static void getIntentSender(Intent intent);
+    static GBinderRemoteObject *getIntentSender(Intent intent);
 
     GBinderLocalObject *m_receiver = nullptr;
 

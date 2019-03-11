@@ -82,14 +82,14 @@ QList<QSharedPointer<ResolveInfo> > PackageManager::queryIntentActivities(Intent
 int PackageManager::getPackageUid(const QString &packageName)
 {
     PackageManager *manager = PackageManager::GetInstance();
-    qCDebug(manager->logging) << Q_FUNC_INFO << intent.action;
+    qCDebug(manager->logging) << Q_FUNC_INFO << packageName;
 
     int uid = -1;
 
     QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
         qCCritical(manager->logging) << Q_FUNC_INFO << "Null Parcel!";
-        return resolveInfoList;
+        return uid;
     }
 
     parcel->writeString(packageName);

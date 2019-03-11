@@ -41,7 +41,7 @@ rm -rf %{buildroot}
 %qmake5_install
 
 %pre
-#systemctl-user stop aliendalvik-control ||:
+systemctl-user stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
 fi
@@ -49,10 +49,10 @@ fi
 #/usr/bin/update-desktop-database ||:
 
 %post
-#systemctl-user restart aliendalvik-control ||:
+systemctl-user restart aliendalvik-control ||:
 
 %preun
-#systemctl-user stop aliendalvik-control ||:
+systemctl-user stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
 fi

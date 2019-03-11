@@ -5,6 +5,10 @@
 #include "intent.h"
 #include "resolveinfo.h"
 #include "componentinfo.h"
+#include "appopsservice.h"
+#include "intentsender.h"
+#include "parcel.h"
+#include "alienservice.h"
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -44,6 +48,8 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
 
     ActivityManager::GetInstance();
     PackageManager::GetInstance();
+    AppOpsService::GetInstance();
+    AlienService::GetInstance();
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -79,6 +85,16 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    <method name=\"shareFile\">\n";
     xml += "      <arg name=\"filename\" type=\"s\" direction=\"in\"/>\n";
     xml += "      <arg name=\"mimetype\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"doShare\">\n";
+    xml += "      <arg name=\"mimetype\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"filename\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"data\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"packageName\" type=\"s\" direction=\"in\"/>\n";
+    xml += "      <arg name=\"className\" type=\"s\" direction=\"in\"/>\n";
+    xml += "    </method>\n";
+    xml += "    <method name=\"prepareSharing\">\n";
+    xml += "      <arg name=\"data\" type=\"s\" direction=\"in\"/>\n";
     xml += "    </method>\n";
     xml += "    <method name=\"shareText\">\n";
     xml += "      <arg name=\"text\" type=\"s\" direction=\"in\"/>\n";
@@ -140,6 +156,9 @@ QString MimeHandlerAdaptor::introspect(const QString &) const
     xml += "    </method>\n";
     xml += "    <method name=\"quit\">\n";
     xml += "    </method>\n";
+    xml += "    <signal name=\"sharingListReady\">";
+    xml += "      <arg name=\"list\" type=\"a{sv}\" direction=\"out\"/>";
+    xml += "    </signal>";
     xml += "  </interface>\n";
     return xml;
 }
@@ -164,25 +183,23 @@ bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusC
 //            apkdIface->call(QStringLiteral("controlService"), QVariant::fromValue(true));
 //        }
 
-        if (dbusArguments.size() == 0) {
-            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
-                                      Q_RETURN_ARG(QVariant, output));
-        } else if (dbusArguments.size() == 1) {
-            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
-                                      Q_RETURN_ARG(QVariant, output),
-                                      Q_ARG(QVariant, dbusArguments[0]));
-        } else if (dbusArguments.size() == 2) {
-            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
-                                      Q_RETURN_ARG(QVariant, output),
-                                      Q_ARG(QVariant, dbusArguments[0]),
-                                      Q_ARG(QVariant, dbusArguments[1]));
-        } else if (dbusArguments.size() == 3) {
-            QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
-                                      Q_RETURN_ARG(QVariant, output),
-                                      Q_ARG(QVariant, dbusArguments[0]),
-                                      Q_ARG(QVariant, dbusArguments[1]),
-                                      Q_ARG(QVariant, dbusArguments[2]));
+        QGenericArgument arguments[10] = { QGenericArgument() };
+        for (int i = 0; i < dbusArguments.size(); i++) {
+            arguments[i] = Q_ARG(QVariant, dbusArguments[i]);
         }
+
+        QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
+                                  Q_RETURN_ARG(QVariant, output),
+                                  arguments[0],
+                                  arguments[1],
+                                  arguments[2],
+                                  arguments[3],
+                                  arguments[4],
+                                  arguments[5],
+                                  arguments[6],
+                                  arguments[7],
+                                  arguments[8],
+                                  arguments[9]);
     }
     else if (dbusArguments.size() == 1) {
         QString activity = interface + "/" + QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
@@ -379,37 +396,119 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     intent.extras = {
         {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)}
     };
-//    ActivityManager::startActivity(intent);
+////    ActivityManager::startActivity(intent);
 
     QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
     qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
 
-    QList<Intent> optionIntents;
-    for (QSharedPointer<ResolveInfo> info : resolveInfo) {
-        Intent option;
-        option.action = intent.action;
-        option.type = intent.type;
-        ComponentInfo *componentInfo = info->getComponentInfo();
-        if (componentInfo) {
-            option.package = componentInfo->packageName;
+    QVariantList sharingList;
+
+    for (QSharedPointer<ResolveInfo> resolved : resolveInfo) {
+        const QString packageName = resolved->getComponentInfo()->packageName;
+        if ((packageName == QLatin1String("com.android.bluetooth"))
+                || (packageName == QLatin1String("com.myriadgroup.nativeapp.email"))
+                || (packageName == QLatin1String("com.myriadgroup.nativeapp.messages"))) {
+            continue;
         }
-        optionIntents.append(option);
+        const QString className = resolved->getComponentInfo()->name;
+
+        const int uid = PackageManager::getPackageUid(packageName);
+        qDebug() << packageName << uid;
+
+        const QString prettyName = AlienService::getPrettyName(uid);
+        qDebug() << prettyName;
+
+        QVariantMap sharing;
+        sharing.insert(QStringLiteral("mimetype"), mimetype);
+        sharing.insert(QStringLiteral("filename"), filename);
+        sharing.insert(QStringLiteral("data"), QString());
+        sharing.insert(QStringLiteral("packageName"), packageName);
+        sharing.insert(QStringLiteral("className"), className);
+        sharing.insert(QStringLiteral("uid"), uid);
+        sharing.insert(QStringLiteral("prettyName"), prettyName);
+        sharingList.append(sharing);
     }
 
-    Intent pickIntent;
-    pickIntent.action = QStringLiteral("android.intent.action.PICK_ACTIVITY");
-//    pickIntent.flags = 0x10400000;
-//    pickIntent.flags = 0x10000000;
-    pickIntent.classPackage = QStringLiteral("com.android.settings");
-    pickIntent.className = QStringLiteral(".ActivityPicker");
-//    pickIntent.type = intent.type;
-    pickIntent.extras = {
-        {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
-        {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
-        {"android.intent.extra.INITIAL_INTENTS", QVariant::fromValue(optionIntents)},
-    };
+    emitSignal(QStringLiteral("sharingListReady"), {sharingList});
+
+//    QList<Intent> optionIntents;
+//    for (QSharedPointer<ResolveInfo> info : resolveInfo) {
+//        Intent option;
+//        option.action = intent.action;
+//        option.type = intent.type;
+//        ComponentInfo *componentInfo = info->getComponentInfo();
+//        if (componentInfo) {
+//            option.package = componentInfo->packageName;
+//        }
+//        optionIntents.append(option);
+//    }
+
+//    if (!intentSender) {
+//        GBinderRemoteObject *target = ActivityManager::getIntentSender(intent);
+//        intentSender = new IntentSender(target);
+
+//        qDebug() << Q_FUNC_INFO << "New Intent sender:" << intentSender << target;
+
+//        Intent pickIntent;
+//        pickIntent.action = QStringLiteral("android.intent.action.CHOOSER");
+//        pickIntent.classPackage = QStringLiteral("com.android.settings");
+//        pickIntent.className = QStringLiteral(".ActivityPicker");
+//        pickIntent.extras = {
+//            {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
+//            {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
+//            {"android.intent.extra.CHOOSER_REFINEMENT_INTENT_SENDER", QVariant::fromValue(*intentSender)},
+//            {"android.intent.extra.CHOSEN_COMPONENT_INTENT_SENDER", QVariant::fromValue(*intentSender)},
+//        };
+//        ActivityManager::startActivity(pickIntent);
+//    } else {
+//        qDebug() << Q_FUNC_INFO << "Old Intent sender:" << intentSender;
+
+//        GBinderClient *client = gbinder_client_new(intentSender->target(), "android.content.IIntentSender");
+//        qWarning() << Q_FUNC_INFO << "Client:" << client;
+//        GBinderLocalRequest* req = gbinder_client_new_request(client);
+//        Parcel out(req);
+//        out.writeInt(123); // code
+//        out.writeInt(0); // new intent
+//    //    out.writeInt(1); // intent
+//    //    intent.writeToParcel(&out);
+//        out.writeString(QString()); // resolvedType
+//        out.writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // whitelistToken
+//        out.writeStrongBinder(ActivityManager::GetInstance()->m_receiver); // finishedReceiver
+//        out.writeString(QString()); // requiredPermission
+//        out.writeInt(0); // options
+
+//        int sstatus = gbinder_client_transact_sync_oneway(client, 1, req);
+//        qWarning() << Q_FUNC_INFO << "Status:" << sstatus;
+
+//        gbinder_client_unref(client);
+
+//        delete intentSender;
+//        intentSender = nullptr;
+//    }
+
+//    IntentSender intentSender(target);
+//    qDebug() << Q_FUNC_INFO << "Intent sender:" << target;
+
+//    Intent pickIntent;
+//    pickIntent.action = QStringLiteral("android.intent.action.CHOOSER");
+////    pickIntent.flags = 0x10400000;
+////    pickIntent.flags = 0x10000000;
+//    pickIntent.classPackage = QStringLiteral("com.android.settings");
+//    pickIntent.className = QStringLiteral(".ActivityPicker");
+////    pickIntent.type = intent.type;
+//    pickIntent.extras = {
+//        {"android.intent.extra.TITLE", QStringLiteral("Share to Android")},
+//        {"android.intent.extra.INTENT", QVariant::fromValue(intent)},
+////        {"android.intent.extra.CHOOSER_REFINEMENT_INTENT_SENDER", QVariant::fromValue(intentSender)},
+////        {"android.intent.extra.INITIAL_INTENTS", QVariant::fromValue(optionIntents)},
+//    };
 //    ActivityManager::startActivity(pickIntent);
-    ActivityManager::getIntentSender(pickIntent);
+
+//    qDebug() << Q_FUNC_INFO << "client token:" << AppOpsService::GetInstance()->localHandler();
+//    GBinderRemoteObject *token = AppOpsService::getToken(AppOpsService::GetInstance()->localHandler());
+//    qDebug() << Q_FUNC_INFO << "remote token:" << token;
+
+//    ActivityManager::getIntentSender(pickIntent, token);
 
     return QVariant();
 }
@@ -435,6 +534,38 @@ QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
     intent.extras = {
         {"android.intent.extra.TEXT", text.toString()}
     };
+    ActivityManager::startActivity(intent);
+
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::doShare(const QVariant &mimetype, const QVariant &filename, const QVariant &data, const QVariant &packageName, const QVariant &className)
+{
+    qDebug() << Q_FUNC_INFO << mimetype << filename << data << packageName << className;
+
+    forceStop(packageName.toString());
+    launchPackage(packageName.toString());
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(1000);
+    loop.exec();
+
+    Intent intent;
+    intent.action = QStringLiteral("android.intent.action.SEND");
+    intent.type = mimetype.toString();
+    intent.classPackage = packageName.toString();
+    intent.className = className.toString();
+    if (filename.toString().isEmpty()) {
+        intent.extras = {
+            {"android.intent.extra.TEXT", data.toString()}
+        };
+    } else {
+        intent.extras = {
+            {"android.intent.extra.STREAM", QUrl::fromLocalFile(filename.toString())}
+        };
+    }
     ActivityManager::startActivity(intent);
 
     return QVariant();
@@ -495,6 +626,12 @@ QVariant MimeHandlerAdaptor::setprop(const QVariant &key, const QVariant &value)
 QVariant MimeHandlerAdaptor::quit()
 {
     QTimer::singleShot(10, qApp, SLOT(quit()));
+    return QVariant();
+}
+
+QVariant MimeHandlerAdaptor::prepareSharing(const QVariant &data)
+{
+    qDebug() << Q_FUNC_INFO << data;
     return QVariant();
 }
 

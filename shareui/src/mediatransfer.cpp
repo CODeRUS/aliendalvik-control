@@ -85,7 +85,7 @@ void MediaTransfer::start()
             if (userData.isEmpty()) {
                 return;
             }
-            const QString data = userData.value(QStringLiteral("status"));
+            const QString data = userData.value(QStringLiteral("status")).toString();
             if (data.isEmpty()) {
                 return;
             }

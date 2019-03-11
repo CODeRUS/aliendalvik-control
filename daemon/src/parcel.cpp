@@ -1,4 +1,5 @@
 #include "intent.h"
+#include "intentsender.h"
 #include "parcel.h"
 
 #define LOGME LOGGING(Parcel)".parcel"
@@ -122,11 +123,15 @@ void Parcel::writeValue(const QVariant &value)
         writeInt(static_cast<int>(VAL_STRING));
         writeString(value.toString());
         break;
-    case QVariant::UserType:
+    case QVariant::UserType: {
         if (value.canConvert<Intent>()) {
             writeInt(static_cast<int>(VAL_PARCELABLE));
             Intent intent = value.value<Intent>();
             writeParcelable(intent);
+        } else if (value.canConvert<IntentSender>()) {
+            writeInt(static_cast<int>(VAL_PARCELABLE));
+            IntentSender intentSender = value.value<IntentSender>();
+            writeParcelable(intentSender);
         } else if (value.canConvert<QList<Intent>>()) {
             writeInt(static_cast<int>(VAL_PARCELABLEARRAY));
             QList<Intent> intentArray = value.value<QList<Intent>>();
@@ -138,6 +143,7 @@ void Parcel::writeValue(const QVariant &value)
             qCCritical(logging) << Q_FUNC_INFO << "Unsupported user value type:" << value.userType();
         }
         break;
+    }
     default:
         qCCritical(logging) << Q_FUNC_INFO << "Unsupported value type:" << QMetaType::typeName(value.type()) << value.type();
     }
@@ -306,7 +312,7 @@ float Parcel::readFloat() const
     return result;
 }
 
-GBinderRemoteObject *Parcel::readStrongBinder()
+GBinderRemoteObject *Parcel::readStrongBinder() const
 {
     GBinderRemoteObject* result = nullptr;
     if (!m_reader) {

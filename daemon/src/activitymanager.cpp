@@ -82,18 +82,20 @@ void ActivityManager::forceStopPackage(const QString &package)
     qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
 }
 
-void ActivityManager::getIntentSender(Intent intent)
+GBinderRemoteObject *ActivityManager::getIntentSender(Intent intent)
 {
+    GBinderRemoteObject *result = nullptr;
+
     ActivityManager *manager = ActivityManager::GetInstance();
     qCDebug(manager->logging) << Q_FUNC_INFO << intent.action;
 
     QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {
         qCCritical(manager->logging) << Q_FUNC_INFO << "Null Parcel!";
-        return;
+        return result;
     }
 
-    parcel->writeInt(INTENT_SENDER_ACTIVITY_RESULT); // intent sender type
+    parcel->writeInt(INTENT_SENDER_ACTIVITY); // intent sender type
     parcel->writeString(QString()); // packageName
     parcel->writeStrongBinder(static_cast<GBinderLocalObject*>(NULL)); // token
     parcel->writeString(QString()); // resultWho
@@ -111,14 +113,16 @@ void ActivityManager::getIntentSender(Intent intent)
     const int exception = in->readInt();
     qCDebug(manager->logging) << Q_FUNC_INFO << "Exception:" << exception;
     if (exception != 0) {
-        return;
+        return result;
     }
 
-    GBinderRemoteObject *object = in->readStrongBinder();
-    qCWarning(manager->logging) << Q_FUNC_INFO << "IntentSender:" << object;
+    result = in->readStrongBinder();
+    qCWarning(manager->logging) << Q_FUNC_INFO << "IntentSender:" << result;
 
-    if (!object) {
-        return;
+    return result;
+
+    if (!result) {
+        return result;
     }
 
 //    oneway interface IIntentSender {
@@ -126,7 +130,7 @@ void ActivityManager::getIntentSender(Intent intent)
 //                IIntentReceiver finishedReceiver, String requiredPermission, in Bundle options);
 //    }
 
-    GBinderClient *client = gbinder_client_new(object, "android.content.IIntentSender");
+    GBinderClient *client = gbinder_client_new(result, "android.content.IIntentSender");
     qCWarning(manager->logging) << Q_FUNC_INFO << "Client:" << client;
     GBinderLocalRequest* req = gbinder_client_new_request(client);
     Parcel out(req);

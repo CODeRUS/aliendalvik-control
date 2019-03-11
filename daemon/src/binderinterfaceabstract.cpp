@@ -231,13 +231,13 @@ void BinderInterfaceAbstract::registerManager()
                                                           BinderInterfaceAbstract::onTransact,
                                                           this);
 
-        char result[100];
-        strcpy(result, m_serviceName);
-        strcat(result, "_listener");
+//        char result[100];
+//        strcpy(result, m_serviceName);
+//        strcat(result, "_listener");
 
-        m_localHandler = gbinder_servicemanager_add_service_sync(m_serviceManager,
-                                                result,
-                                                m_local);
+//        m_localHandler = gbinder_servicemanager_add_service_sync(m_serviceManager,
+//                                                result,
+//                                                m_local);
 
         qCDebug(logging) << Q_FUNC_INFO << "Local handler created:" << m_localHandler << m_local;
     }

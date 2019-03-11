@@ -70,7 +70,7 @@ public:
     QHash<int, QVariant> readSparseArray() const;
     QVariant readValue() const;
     float readFloat() const;
-    GBinderRemoteObject *readStrongBinder();
+    GBinderRemoteObject *readStrongBinder() const;
     QVariant readParcelable() const;
     QVariantList readParcelableArray() const;
 

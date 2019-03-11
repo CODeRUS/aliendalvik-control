@@ -6,6 +6,8 @@ import Nemo.DBus 2.0
 ShareDialog {
     id: root
 
+    property bool ready: false
+
     // Hacka hacking hacky-hacky hacked hacku hacka hack.
     Connections {
         target: __silica_applicationwindow_instance
@@ -16,12 +18,47 @@ ShareDialog {
 
     Component.onCompleted: {
         if (aliendalvikServiceIface.isActive()) {
-//            shareItem.start()
-            control.call("prepareSharing", [root.content])
+            shareItem.start()
+//            control.call("prepareSharing", [root.content])
+//            console.log(root.content)
+//            console.log(root.source)
         }
     }
 
     canAccept: aliendalvikServiceIface.isActive()
+
+    SilicaListView {
+        id: sharingView
+        anchors.fill: parent
+        visible: aliendalvikServiceIface.isActive()
+        header: DialogHeader {
+            acceptText: qsTrId("Share to Android")
+        }
+        delegate: BackgroundItem {
+            id: content
+            contentHeight: Theme.itemSizeSmall
+            width: parent.width
+
+            Label {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.margins: Theme.horizontalPageMargin
+                anchors.verticalCenter: parent.verticalCenter
+                text: modelData.prettyName
+                color: parent.pressed && parent.down ? Theme.highlightColor : Theme.primaryColor
+            }
+
+            onClicked: {
+                control.call("doShare", [modelData.mimetype, modelData.filename, modelData.data, modelData.packageName, modelData.className])
+                accept()
+            }
+        }
+
+        ViewPlaceholder {
+            enabled: ready && sharingView.count == 0
+            text: "No candidates for sharing to"
+        }
+    }
 
     DBusInterface {
         id: control
@@ -31,10 +68,9 @@ ShareDialog {
         iface: "org.coderus.aliendalvikcontrol"
         signalsEnabled: true
 
-        function sharingListReady(data, sharing) {
-            console.log(root.content)
-            console.log(data)
-            console.log(JSON.stringify(sharing))
+        function sharingListReady(sharingList) {
+            ready = true
+            sharingView.model = sharingList
         }
     }
 
@@ -59,14 +95,11 @@ ShareDialog {
         userData: root.content
     }
 
-    DialogHeader {
-        acceptText: qsTrId("Share to Android")
-    }
-
     BusyIndicator {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
-        running: aliendalvikServiceIface.isActive()
+        running: !ready && aliendalvikServiceIface.isActive()
+        visible: running
     }
 
     Label {

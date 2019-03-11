@@ -24,7 +24,10 @@ SOURCES += \
     src/intentfilter.cpp \
     src/parcelable.cpp \
     src/parcel.cpp \
-    src/loggingclasswrapper.cpp
+    src/loggingclasswrapper.cpp \
+    src/appopsservice.cpp \
+    src/intentsender.cpp \
+    src/alienservice.cpp
 
 HEADERS += \
     src/dbusmain.h \
@@ -42,7 +45,10 @@ HEADERS += \
     src/intentfilter.h \
     src/parcelable.h \
     src/parcel.h \
-    src/loggingclasswrapper.h
+    src/loggingclasswrapper.h \
+    src/appopsservice.h \
+    src/intentsender.h \
+    src/alienservice.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/services
