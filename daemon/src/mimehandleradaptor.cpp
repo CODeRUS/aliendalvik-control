@@ -407,7 +407,7 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         qDebug() << prettyName;
 
         QVariantMap sharing;
-        sharing.insert(QStringLiteral("mimetype"), mimetype);
+        sharing.insert(QStringLiteral("mimetype"), intent.type);
         sharing.insert(QStringLiteral("filename"), filename);
         sharing.insert(QStringLiteral("data"), QString());
         sharing.insert(QStringLiteral("packageName"), packageName);
@@ -424,26 +424,47 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
 
 QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
 {
-    forceStop(QStringLiteral("com.android.documentsui"));
-    launchPackage(QStringLiteral("com.android.documentsui"));
-
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(2000);
-    loop.exec();
-
     qDebug() << Q_FUNC_INFO << text;
 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = QStringLiteral("text/*");
-    intent.classPackage = QStringLiteral("android");
-    intent.className = QStringLiteral("com.android.internal.app.ResolverActivity");
     intent.extras = {
         {"android.intent.extra.TEXT", text.toString()}
     };
-    ActivityManager::startActivity(intent);
+
+    QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
+    qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
+
+    QVariantList sharingList;
+
+    for (QSharedPointer<ResolveInfo> resolved : resolveInfo) {
+        const QString packageName = resolved->getComponentInfo()->packageName;
+        if ((packageName == QLatin1String("com.android.bluetooth"))
+                || (packageName == QLatin1String("com.myriadgroup.nativeapp.email"))
+                || (packageName == QLatin1String("com.myriadgroup.nativeapp.messages"))) {
+            continue;
+        }
+        const QString className = resolved->getComponentInfo()->name;
+
+        const int uid = PackageManager::getPackageUid(packageName);
+        qDebug() << packageName << uid;
+
+        const QString prettyName = AlienService::getPrettyName(uid);
+        qDebug() << prettyName;
+
+        QVariantMap sharing;
+        sharing.insert(QStringLiteral("mimetype"), intent.type);
+        sharing.insert(QStringLiteral("filename"), QString());
+        sharing.insert(QStringLiteral("data"), text.toString());
+        sharing.insert(QStringLiteral("packageName"), packageName);
+        sharing.insert(QStringLiteral("className"), className);
+        sharing.insert(QStringLiteral("uid"), uid);
+        sharing.insert(QStringLiteral("prettyName"), prettyName);
+        sharingList.append(sharing);
+    }
+
+    emitSignal(QStringLiteral("sharingListReady"), {sharingList});
 
     return QVariant();
 }
@@ -669,7 +690,6 @@ void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arg
 void MimeHandlerAdaptor::desktopChanged(const QString &path)
 {
     qDebug() << path;
-    return;
 
     QFile desktop(path);
     if (desktop.exists()) {
@@ -736,7 +756,7 @@ void MimeHandlerAdaptor::readApplications(const QString &)
 {
     qDebug() << "working";
     QDir appl(_watchDir);
-    foreach (const QString &desktoppath, appl.entryList(QStringList() << "apkd_launcher_*.desktop")) {
+    for (const QString &desktoppath : appl.entryList({QStringLiteral("apkd_launcher_*.desktop")})) {
         desktopChanged(_watchDir + desktoppath);
     }
 }

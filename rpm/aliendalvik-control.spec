@@ -45,8 +45,8 @@ systemctl-user stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
 fi
-#/usr/bin/aliendalvik-control restore ||:
-#/usr/bin/update-desktop-database ||:
+/usr/bin/aliendalvik-control restore ||:
+/usr/bin/update-desktop-database ||:
 
 %post
 systemctl-user restart aliendalvik-control ||:
@@ -56,8 +56,8 @@ systemctl-user stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
 fi
-#/usr/bin/aliendalvik-control restore ||:
-#/usr/bin/update-desktop-database ||:
+/usr/bin/aliendalvik-control restore ||:
+/usr/bin/update-desktop-database ||:
 
 %files
 %attr(4755, root, root) %{_bindir}/aliendalvik-control
