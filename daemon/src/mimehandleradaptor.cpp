@@ -373,8 +373,6 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     QString containerPath = QStringLiteral("/storage/emulated/0");
     if (filename.toString().startsWith(QStringLiteral("/home/nemo/"))) {
         containerPath.append(filename.toString().mid(5));
-    } else {
-        return QVariant();
     }
 
     qDebug() << Q_FUNC_INFO << containerPath;
@@ -408,7 +406,7 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
 
         QVariantMap sharing;
         sharing.insert(QStringLiteral("mimetype"), intent.type);
-        sharing.insert(QStringLiteral("filename"), filename);
+        sharing.insert(QStringLiteral("filename"), containerPath);
         sharing.insert(QStringLiteral("data"), QString());
         sharing.insert(QStringLiteral("packageName"), packageName);
         sharing.insert(QStringLiteral("className"), className);
