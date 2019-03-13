@@ -10,6 +10,7 @@ PKGCONFIG += libgbinder
 SOURCES += \
     src/main.cpp \
     src/dbusmain.cpp \
+    src/inotifywatcher.cpp \
     src/mimehandleradaptor.cpp \
     src/binderinterfaceabstract.cpp \
     src/activitymanager.cpp \
@@ -32,6 +33,7 @@ SOURCES += \
 HEADERS += \
     src/dbusmain.h \
     src/mimehandleradaptor.h \
+    src/inotifywatcher.h \
     src/binderinterfaceabstract.h \
     src/activitymanager.h \
     src/packagemanager.h \

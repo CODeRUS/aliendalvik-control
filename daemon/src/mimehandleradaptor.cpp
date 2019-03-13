@@ -1,4 +1,5 @@
 #include "mimehandleradaptor.h"
+#include "inotifywatcher.h"
 
 #include "activitymanager.h"
 #include "packagemanager.h"
@@ -19,13 +20,22 @@
 
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QDBusVirtualObject(parent)
-    , _watcher(new QFileSystemWatcher(this))
+    , _watcher(new INotifyWatcher(this))
 {
     _watchDir = QStringLiteral("/usr/share/applications/");
-    _watcher->addPath(_watchDir);
-
-    QObject::connect(_watcher, &QFileSystemWatcher::fileChanged, this, &MimeHandlerAdaptor::desktopChanged);
-    QObject::connect(_watcher, &QFileSystemWatcher::directoryChanged, this, &MimeHandlerAdaptor::readApplications);
+    _watcher->addPaths({ _watchDir });
+    connect(_watcher, &INotifyWatcher::contentChanged, [this](const QString &path, bool created) {
+        qDebug() << Q_FUNC_INFO << "contentChanged:" << path << "created:" << created;
+        if (created) {
+            desktopChanged(path);
+        }
+    });
+    connect(_watcher, &INotifyWatcher::fileChanged, [this](const QString &path, bool removed) {
+        qDebug() << Q_FUNC_INFO << "fileChanged:" << path << "removed:" << removed;
+        if (!removed) {
+            desktopChanged(path);
+        }
+    });
     readApplications(_watchDir);
 
     _isTopmostAndroid = false;
@@ -687,47 +697,40 @@ void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arg
 
 void MimeHandlerAdaptor::desktopChanged(const QString &path)
 {
-    qDebug() << path;
-
     QFile desktop(path);
-    if (desktop.exists()) {
-        if (!_watcher->files().contains(path)) {
-            qDebug() << "new desktop" << path;
-            _watcher->addPath(path);
-        }
-
-        if (desktop.open(QFile::ReadWrite | QFile::Text)) {
-            QString content = QString::fromUtf8(desktop.readAll());
-            if (!content.contains("X-Maemo-Service")) {
-                int off0 = content.indexOf("Exec=apkd-launcher ");
-                if (off0 > 0) {
-                    int off1 = content.indexOf(" ", off0 + 20) + 1;
-                    int off2 = content.indexOf("\n", off1) - 1;
-                    QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
-                    QString package = data[0];
-                    QString activity = data[1];
-                    activity = QString::fromLatin1(activity.toLatin1().toPercentEncoding(QByteArray(), QByteArray("-._~")).replace("%", "_"));
-                    qDebug() << path << package << activity;
-                    QTextStream out(&desktop);
-                    desktop.seek(desktop.size() - 1);
-                    QString sym = out.read(1);
-                    if (sym != "\n") {
-                        out << "\n";
-                    }
-                    out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
-                    out << "X-Maemo-Object-Path=/\n";
-                    out << "X-Maemo-Method=" + package + "." + activity + "\n";
-                }
-            }
-            desktop.close();
-        }
+    if (!desktop.exists()) {
+        return;
     }
-    else {
-        if (_watcher->files().contains(path)) {
-            qDebug() << "deleted desktop" << path;
-            _watcher->removePath(path);
-        }
+    if (!desktop.open(QFile::ReadWrite | QFile::Text)) {
+        return;
     }
+    QString content = QString::fromUtf8(desktop.readAll());
+    if (content.contains("X-Maemo-Service")) {
+        return;
+    }
+    int off0 = content.indexOf("Exec=apkd-launcher ");
+    if (off0 == -1) {
+        return;
+    }
+    int off1 = content.indexOf(" ", off0 + 20) + 1;
+    int off2 = content.indexOf("\n", off1) - 1;
+    QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
+    QString package = data[0];
+    QString activity = QStringLiteral("empty");
+    if (data.length() >= 2) {
+        activity = data[1];
+    }
+    activity = QString::fromLatin1(activity.toLatin1().toPercentEncoding(QByteArray(), QByteArray("-._~")).replace("%", "_"));
+    qDebug() << path << package << activity;
+    QTextStream out(&desktop);
+    desktop.seek(desktop.size() - 1);
+    QString sym = out.read(1);
+    if (sym != "\n") {
+        out << "\n";
+    }
+    out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
+    out << "X-Maemo-Object-Path=/\n";
+    out << "X-Maemo-Method=" + package + "." + activity + "\n";
 }
 
 void MimeHandlerAdaptor::topmostIdChanged(int pId)
