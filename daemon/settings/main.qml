@@ -1,6 +1,6 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import org.nemomobile.dbus 2.0
+import Nemo.DBus 2.0
 
 Page {
     id: page
@@ -8,7 +8,7 @@ Page {
     DBusInterface {
         id: dbus
 
-        bus: DBus.SessionBus
+        bus: DBus.SystemBus
         service: "org.coderus.aliendalvikcontrol"
         path: "/"
         iface: "org.coderus.aliendalvikcontrol"

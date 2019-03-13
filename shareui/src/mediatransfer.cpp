@@ -48,7 +48,7 @@ void MediaTransfer::shareFile(const QString &filename, const QString mimetype)
                                                             QStringLiteral("org.coderus.aliendalvikcontrol"),
                                                             QStringLiteral("shareFile"));
     shareFile.setArguments({filename, mimetype});
-    QDBusConnection::sessionBus().send(shareFile);
+    QDBusConnection::systemBus().send(shareFile);
 }
 
 void MediaTransfer::shareText(const QString &data)
@@ -58,7 +58,7 @@ void MediaTransfer::shareText(const QString &data)
                                                             QStringLiteral("org.coderus.aliendalvikcontrol"),
                                                             QStringLiteral("shareText"));
     shareText.setArguments({data});
-    QDBusConnection::sessionBus().send(shareText);
+    QDBusConnection::systemBus().send(shareText);
 }
 
 void MediaTransfer::cancel()

@@ -1,6 +1,4 @@
 [D-BUS Service]
 Name=org.coderus.aliendalvikcontrol
 Interface=org.coderus.aliendalvikcontrol
-Exec=/bin/false
-User=root
-SystemdService=aliendalvik-control.service
+Exec=/usr/bin/aliendalvik-control-proxy

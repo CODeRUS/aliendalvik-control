@@ -62,7 +62,7 @@ ShareDialog {
 
     DBusInterface {
         id: control
-        bus: DBus.SessionBus
+        bus: DBus.SystemBus
         service: "org.coderus.aliendalvikcontrol"
         path: "/"
         iface: "org.coderus.aliendalvikcontrol"

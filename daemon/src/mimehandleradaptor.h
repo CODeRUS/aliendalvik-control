@@ -4,7 +4,6 @@
 #include "intentsender.h"
 
 #include <QObject>
-#include <QDBusVirtualObject>
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
@@ -13,57 +12,58 @@
 #include <QDBusMessage>
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QDBusContext>
 
+class DBusAdaptor;
 class INotifyWatcher;
-class MimeHandlerAdaptor : public QDBusVirtualObject
+class MimeHandlerAdaptor : public QObject, public QDBusContext
 {
     Q_OBJECT
 
 public:
-    MimeHandlerAdaptor(QObject *parent = nullptr);
-    ~MimeHandlerAdaptor();
+    explicit MimeHandlerAdaptor(QObject *parent = nullptr);
+    virtual ~MimeHandlerAdaptor();
 
-    QString introspect(const QString &) const;
-    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection);
+public slots:
+    void start();
 
 private slots:
-    QVariant sendKeyevent(const QVariant &code);
-    QVariant sendInput(const QVariant &text);
-    QVariant broadcastIntent(const QVariant &intent);
-    QVariant startIntent(const QVariant &intent);
-    QVariant uriActivity(const QVariant &uri);
-    QVariant uriActivitySelector(const QVariant &uri);
-    QVariant hideNavBar();
-    QVariant showNavBar();
-    QVariant openDownloads(const QVariant & = QVariant());
-    QVariant openSettings(const QVariant & = QVariant());
-    QVariant openContacts(const QVariant & = QVariant());
-    QVariant openCamera(const QVariant & = QVariant());
-    QVariant openGallery(const QVariant & = QVariant());
-    QVariant openAppSettings(const QVariant &package);
-    QVariant launchApp(const QVariant &packageName);
-    QVariant forceStop(const QVariant &packageName);
-    QVariant getImeList();
-    QVariant triggerImeMethod(const QVariant &ime, const QVariant &enable);
-    QVariant setImeMethod(const QVariant &ime);
-    QVariant shareFile(const QVariant &filename, const QVariant &mimetype);
-    QVariant shareText(const QVariant &text);
-    QVariant doShare(const QVariant &mimetype, const QVariant &filename, const QVariant &data, const QVariant &packageName, const QVariant &className);
-    QVariant getFocusedApp();
-    QVariant isTopmostAndroid();
-    QVariant getSettings(const QVariant &nspace, const QVariant &key);
-    QVariant putSettings(const QVariant &nspace, const QVariant &key, const QVariant &value);
-    QVariant getprop(const QVariant &key);
-    QVariant setprop(const QVariant &key, const QVariant &value);
-    QVariant quit();
-
-    QVariant prepareSharing(const QVariant &data);
+    void sendKeyevent(int code);
+    void sendInput(const QString &text);
+    void broadcastIntent(const QString &intent);
+    void startIntent(const QString &intent);
+    void uriActivity(const QString &uri);
+    void uriActivitySelector(const QString &uri);
+    void hideNavBar();
+    void showNavBar();
+    void openDownloads();
+    void openSettings();
+    void openContacts();
+    void openCamera();
+    void openGallery();
+    void openAppSettings(const QString &package);
+    void launchApp(const QString &packageName);
+    void componentActivity(const QString &package, const QString &className, const QString &data);
+    void forceStop(const QString &packageName);
+    void getImeList();
+    void triggerImeMethod(const QString &ime, bool enable);
+    void setImeMethod(const QString &ime);
+    void shareFile(const QString &filename, const QString &mimetype);
+    void shareText(const QString &text);
+    void doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className);
+    QString getFocusedApp();
+    bool isTopmostAndroid();
+    QString getSettings(const QString &nspace, const QString &key);
+    void putSettings(const QString &nspace, const QString &key, const QString &value);
+    QString getprop(const QString &key);
+    void setprop(const QString &key, const QString &value);
+    void quit();
 
 private:
-    friend class DBusMain;
+    friend class DBusAdaptor;
     void launchPackage(const QString &packageName);
 
-    void componentActivity(const QString &component, const QString &data);
+    void checkSdcardMount();
 
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);
@@ -71,7 +71,7 @@ private:
     void runCommand(const QString &program, const QStringList &params);
     QString runCommandOutput(const QString &program, const QStringList &params);
 
-    void emitSignal(const QString &name, const QList<QVariant> &arguments);
+    DBusAdaptor *m_adaptor = nullptr;
 
     QString _watchDir;
     INotifyWatcher *_watcher;

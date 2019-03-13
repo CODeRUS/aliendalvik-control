@@ -11,6 +11,12 @@
 #include "parcel.h"
 #include "alienservice.h"
 
+#include "aliendalvikcontrol_adaptor.h"
+
+#include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
+
 #include <QDebug>
 #include <QCoreApplication>
 #include <QDBusReply>
@@ -18,8 +24,11 @@
 #include <QTimer>
 #include <QUrl>
 
+static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
+static const QString c_dbus_path = QStringLiteral("/");
+
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
-    : QDBusVirtualObject(parent)
+    : QObject(parent)
     , _watcher(new INotifyWatcher(this))
 {
     _watchDir = QStringLiteral("/usr/share/applications/");
@@ -66,281 +75,132 @@ MimeHandlerAdaptor::~MimeHandlerAdaptor()
 {
 }
 
-QString MimeHandlerAdaptor::introspect(const QString &) const
+void MimeHandlerAdaptor::start()
 {
-    QString xml;
-    xml  = "  <interface name=\"org.coderus.aliendalvikcontrol\">\n";
-    xml += "    <method name=\"sendKeyevent\">\n";
-    xml += "      <arg name=\"code\" type=\"i\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"sendInput\">\n";
-    xml += "      <arg name=\"text\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"broadcastIntent\">\n";
-    xml += "      <arg name=\"intent\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"startIntent\">\n";
-    xml += "      <arg name=\"intent\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"uriActivity\">\n";
-    xml += "      <arg name=\"uri\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"uriActivitySelector\">\n";
-    xml += "      <arg name=\"uri\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"hideNavBar\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"showNavBar\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"shareFile\">\n";
-    xml += "      <arg name=\"filename\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"mimetype\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"doShare\">\n";
-    xml += "      <arg name=\"mimetype\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"filename\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"data\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"packageName\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"className\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"prepareSharing\">\n";
-    xml += "      <arg name=\"data\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"shareText\">\n";
-    xml += "      <arg name=\"text\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"getFocusedApp\">\n";
-    xml += "      <arg name=\"package\" type=\"s\" direction=\"out\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"isTopmostAndroid\">\n";
-    xml += "      <arg name=\"value\" type=\"b\" direction=\"out\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"openDownloads\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"openSettings\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"openContacts\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"openCamera\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"openGallery\">\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"openAppSettings\">\n";
-    xml += "      <arg name=\"package\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"launchApp\">\n";
-    xml += "      <arg name=\"package\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"forceStop\">\n";
-    xml += "      <arg name=\"package\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"getImeList\">\n";
-    xml += "    </method>\n";
-    xml += "    <signal name=\"imeAvailable\">";
-    xml += "      <arg name=\"imeList\" type=\"a{sb}\" direction=\"out\"/>";
-    xml += "    </signal>";
-    xml += "    <method name=\"setImeMethod\">\n";
-    xml += "      <arg name=\"ime\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"triggerImeMethod\">\n";
-    xml += "      <arg name=\"ime\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"enable\" type=\"b\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"getSettings\">\n";
-    xml += "      <arg name=\"namespace\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"value\" type=\"s\" direction=\"out\"/>";
-    xml += "    </method>\n";
-    xml += "    <method name=\"putSettings\">\n";
-    xml += "      <arg name=\"namespace\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"value\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"getprop\">\n";
-    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"value\" type=\"s\" direction=\"out\"/>";
-    xml += "    </method>\n";
-    xml += "    <method name=\"setprop\">\n";
-    xml += "      <arg name=\"key\" type=\"s\" direction=\"in\"/>\n";
-    xml += "      <arg name=\"value\" type=\"s\" direction=\"in\"/>\n";
-    xml += "    </method>\n";
-    xml += "    <method name=\"quit\">\n";
-    xml += "    </method>\n";
-    xml += "    <signal name=\"sharingListReady\">";
-    xml += "      <arg name=\"list\" type=\"a{sv}\" direction=\"out\"/>";
-    xml += "    </signal>";
-    xml += "  </interface>\n";
-    return xml;
-}
+    QDBusConnection connection = QDBusConnection::systemBus();
 
-bool MimeHandlerAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnection &connection)
-{
-    const QVariantList dbusArguments = message.arguments();
-
-    QString member = message.member();
-    QString interface = message.interface();
-
-    qDebug() << interface << member << dbusArguments;
-
-    QVariant output;
-
-    if (interface == QLatin1String("org.freedesktop.DBus.Introspectable")) {
-        return false;
-    }
-    else if (interface == QLatin1String("org.coderus.aliendalvikcontrol") || interface.isEmpty()) {
-//        QDBusReply<bool> apkdReply = apkdIface->call(QStringLiteral("isRunning"));
-//        if (apkdReply.isValid() && !apkdReply.value()) {
-//            apkdIface->call(QStringLiteral("controlService"), QVariant::fromValue(true));
-//        }
-
-        QGenericArgument arguments[10] = { QGenericArgument() };
-        for (int i = 0; i < dbusArguments.size(); i++) {
-            arguments[i] = Q_ARG(QVariant, dbusArguments[i]);
-        }
-
-        QMetaObject::invokeMethod(this, member.toLatin1().constData(), Qt::DirectConnection,
-                                  Q_RETURN_ARG(QVariant, output),
-                                  arguments[0],
-                                  arguments[1],
-                                  arguments[2],
-                                  arguments[3],
-                                  arguments[4],
-                                  arguments[5],
-                                  arguments[6],
-                                  arguments[7],
-                                  arguments[8],
-                                  arguments[9]);
-    }
-    else if (dbusArguments.size() == 1) {
-        QString activity = interface + "/" + QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
-        componentActivity(activity, dbusArguments.first().toString());
+    if (connection.interface()->isServiceRegistered(c_dbus_service)) {
+        qWarning() << Q_FUNC_INFO << "Service already registered:" << c_dbus_service;
+        return;
     }
 
-    QVariantList dbusReply;
-    if (!output.isNull()) {
-        dbusReply << output;
+    if (!connection.registerObject(c_dbus_path, this)) {
+        qCritical() << Q_FUNC_INFO << "Cannot register object:" << c_dbus_path;
+        QCoreApplication::quit();
+        return;
     }
-    QDBusMessage reply = message.createReply(dbusReply);
-    connection.call(reply, QDBus::NoBlock);
-    return true;
+
+    qWarning() << Q_FUNC_INFO << "Object registered:" << c_dbus_path;
+
+    if (!connection.registerService(c_dbus_service)) {
+        qCritical() << Q_FUNC_INFO << "Cannot register D-Bus service:" << c_dbus_service;
+        QCoreApplication::quit();
+        return;
+    }
+
+    m_adaptor = new DBusAdaptor(this);
 }
 
-QVariant MimeHandlerAdaptor::sendKeyevent(const QVariant &code)
+void MimeHandlerAdaptor::sendKeyevent(int code)
 {
-    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code.toInt()));
-    return QVariant();
+    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code));
 }
 
-QVariant MimeHandlerAdaptor::sendInput(const QVariant &text)
+void MimeHandlerAdaptor::sendInput(const QString &text)
 {
-    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text.toString());
-    return QVariant();
+    appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
 }
 
-QVariant MimeHandlerAdaptor::broadcastIntent(const QVariant &intent)
+void MimeHandlerAdaptor::broadcastIntent(const QString &intent)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent.toString());
-    return QVariant();
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
 }
 
-QVariant MimeHandlerAdaptor::startIntent(const QVariant &intent)
+void MimeHandlerAdaptor::startIntent(const QString &intent)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.toString().split(" "));
-    return QVariant();
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.split(" "));
 }
 
-QVariant MimeHandlerAdaptor::uriActivity(const QVariant &uri)
+void MimeHandlerAdaptor::uriActivity(const QString &uri)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.VIEW");
-    intent.data = uri.toString();
+    intent.data = uri;
     ActivityManager::startActivity(intent);
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::uriActivitySelector(const QVariant &uri)
+void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
 {
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri.toString());
-    return QVariant();
+    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri);
 }
 
-QVariant MimeHandlerAdaptor::hideNavBar()
+void MimeHandlerAdaptor::hideNavBar()
 {
     appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,-144");
 //    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::showNavBar()
+void MimeHandlerAdaptor::showNavBar()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
     appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,0");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::openDownloads(const QVariant &)
+void MimeHandlerAdaptor::openDownloads()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
     launchPackage("com.android.documentsui");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::openSettings(const QVariant &)
+void MimeHandlerAdaptor::openSettings()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
     launchPackage("com.android.settings");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::openContacts(const QVariant &)
+void MimeHandlerAdaptor::openContacts()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
     launchPackage("com.android.contacts");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::openCamera(const QVariant &)
+void MimeHandlerAdaptor::openCamera()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
     launchPackage("com.android.camera2");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::openGallery(const QVariant &)
+void MimeHandlerAdaptor::openGallery()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
     launchPackage("com.android.gallery3d");
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::openAppSettings(const QVariant &package)
+void MimeHandlerAdaptor::openAppSettings(const QString &package)
 {
     qDebug() << Q_FUNC_INFO << package;
 
     Intent intent;
     intent.action = QStringLiteral("android.settings.APPLICATION_DETAILS_SETTINGS");
-    intent.data = QStringLiteral("package:%1").arg(package.toString());
+    intent.data = QStringLiteral("package:%1").arg(package);
 
     qDebug() << Q_FUNC_INFO << "startActivity" << ActivityManager::GetInstance();
 
     ActivityManager::startActivity(intent);
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::launchApp(const QVariant &packageName)
+void MimeHandlerAdaptor::launchApp(const QString &packageName)
 {
-    launchPackage(packageName.toString());
-    return QVariant();
+    launchPackage(packageName);
 }
 
-QVariant MimeHandlerAdaptor::forceStop(const QVariant &packageName)
+void MimeHandlerAdaptor::forceStop(const QString &packageName)
 {
-    ActivityManager::forceStopPackage(packageName.toString());
-    return QVariant();
+    ActivityManager::forceStopPackage(packageName);
 }
 
-QVariant MimeHandlerAdaptor::getImeList()
+void MimeHandlerAdaptor::getImeList()
 {
     QString fullOutput = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list" << "-s" << "-a");
     QStringList fullOutputLines = fullOutput.trimmed().split("\n");
@@ -351,47 +211,51 @@ QVariant MimeHandlerAdaptor::getImeList()
     qDebug() << enabledOutput.trimmed();
 
     QVariantList imeList;
-    foreach (const QString & imeName, fullOutputLines) {
+    for (const QString &imeName : fullOutputLines) {
         QVariantMap imeMethod;
         imeMethod["name"] = imeName;
         imeMethod["enabled"] = enabledOutputLines.contains(imeName);
         imeList.append(imeMethod);
     }
-    QVariantList args;
-    args.append(QVariant::fromValue(imeList));
 
-    emitSignal("imeAvailable", args);
-    return QVariant();
+    emit m_adaptor->imeAvailable(imeList);
 }
 
-QVariant MimeHandlerAdaptor::triggerImeMethod(const QVariant &ime, const QVariant &enable)
+void MimeHandlerAdaptor::triggerImeMethod(const QString &ime, bool enable)
 {
-    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << (enable.toBool() ? "enable" : "disable") << ime.toString());
-    return QVariant();
+    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << (enable ? "enable" : "disable") << ime);
 }
 
-QVariant MimeHandlerAdaptor::setImeMethod(const QVariant &ime)
+void MimeHandlerAdaptor::setImeMethod(const QString &ime)
 {
-    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime.toString());
-    return QVariant();
+    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime);
 }
 
-QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant &mimetype)
+void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimetype)
 {
     qDebug() << Q_FUNC_INFO << filename << mimetype;
 
     QString containerPath = QStringLiteral("/storage/emulated/0");
-    if (filename.toString().startsWith(QStringLiteral("/home/nemo/"))) {
-        containerPath.append(filename.toString().mid(5));
+    if (filename.startsWith(QStringLiteral("/home/nemo/"))) {
+        containerPath.append(filename.mid(5));
+    } else if (filename.startsWith(QStringLiteral("/run/media/nemo"))) {
+        checkSdcardMount();
+
+        containerPath = filename;
+        for (int i = 0; i < 5; i++) {
+            const int index = containerPath.indexOf(QChar(u'/'));
+            containerPath = containerPath.mid(index + 1);
+        }
+        containerPath.prepend(QStringLiteral("/storage/emulated/0/nemo/android_storage/sdcard_external/"));
     } else {
-        containerPath = filename.toString();
+        containerPath = filename;
     }
 
     qDebug() << Q_FUNC_INFO << containerPath;
 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
-    intent.type = mimetype.toString();
+    intent.type = mimetype;
     intent.extras = {
         {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)}
     };
@@ -431,12 +295,10 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
         sharingList.append(sharing);
     }
 
-    emitSignal(QStringLiteral("sharingListReady"), {sharingList});
-
-    return QVariant();
+    emit m_adaptor->sharingListReady(sharingList);
 }
 
-QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
+void MimeHandlerAdaptor::shareText(const QString &text)
 {
     qDebug() << Q_FUNC_INFO << text;
 
@@ -444,7 +306,7 @@ QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = QStringLiteral("text/*");
     intent.extras = {
-        {"android.intent.extra.TEXT", text.toString()}
+        {"android.intent.extra.TEXT", text}
     };
 
     QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
@@ -470,7 +332,7 @@ QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
         QVariantMap sharing;
         sharing.insert(QStringLiteral("mimetype"), intent.type);
         sharing.insert(QStringLiteral("filename"), QString());
-        sharing.insert(QStringLiteral("data"), text.toString());
+        sharing.insert(QStringLiteral("data"), text);
         sharing.insert(QStringLiteral("packageName"), packageName);
         sharing.insert(QStringLiteral("className"), className);
         sharing.insert(QStringLiteral("uid"), uid);
@@ -478,17 +340,15 @@ QVariant MimeHandlerAdaptor::shareText(const QVariant &text)
         sharingList.append(sharing);
     }
 
-    emitSignal(QStringLiteral("sharingListReady"), {sharingList});
-
-    return QVariant();
+    emit m_adaptor->sharingListReady(sharingList);
 }
 
-QVariant MimeHandlerAdaptor::doShare(const QVariant &mimetype, const QVariant &filename, const QVariant &data, const QVariant &packageName, const QVariant &className)
+void MimeHandlerAdaptor::doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className)
 {
     qDebug() << Q_FUNC_INFO << mimetype << filename << data << packageName << className;
 
-    forceStop(packageName.toString());
-    launchPackage(packageName.toString());
+    forceStop(packageName);
+    launchPackage(packageName);
 
     QEventLoop loop;
     QTimer timer;
@@ -498,24 +358,22 @@ QVariant MimeHandlerAdaptor::doShare(const QVariant &mimetype, const QVariant &f
 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
-    intent.type = mimetype.toString();
-    intent.classPackage = packageName.toString();
-    intent.className = className.toString();
-    if (filename.toString().isEmpty()) {
+    intent.type = mimetype;
+    intent.classPackage = packageName;
+    intent.className = className;
+    if (filename.isEmpty()) {
         intent.extras = {
-            {"android.intent.extra.TEXT", data.toString()}
+            {"android.intent.extra.TEXT", data}
         };
     } else {
         intent.extras = {
-            {"android.intent.extra.STREAM", QUrl::fromLocalFile(filename.toString())}
+            {"android.intent.extra.STREAM", QUrl::fromLocalFile(filename)}
         };
     }
     ActivityManager::startActivity(intent);
-
-    return QVariant();
 }
 
-QVariant MimeHandlerAdaptor::getFocusedApp()
+QString MimeHandlerAdaptor::getFocusedApp()
 {
     QProcess *proc = new QProcess(this);
     proc->start("/system/bin/dumpsys", QStringList() << "window" << "windows");
@@ -538,45 +396,36 @@ QVariant MimeHandlerAdaptor::getFocusedApp()
     return QString();
 }
 
-QVariant MimeHandlerAdaptor::isTopmostAndroid()
+bool MimeHandlerAdaptor::isTopmostAndroid()
 {
     return _isTopmostAndroid;
 }
 
-QVariant MimeHandlerAdaptor::getSettings(const QVariant &nspace, const QVariant &key)
+QString MimeHandlerAdaptor::getSettings(const QString &nspace, const QString &key)
 {
-    QString value = appProcessOutput("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "get" << nspace.toString() << key.toString());
+    QString value = appProcessOutput("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "get" << nspace << key);
     return value.trimmed();
 }
 
-QVariant MimeHandlerAdaptor::putSettings(const QVariant &nspace, const QVariant &key, const QVariant &value)
+void MimeHandlerAdaptor::putSettings(const QString &nspace, const QString &key, const QString &value)
 {
-    appProcess("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "put" << nspace.toString() << key.toString() << value.toString());
-    return QVariant();
+    appProcess("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "put" << nspace << key << value);
 }
 
-QVariant MimeHandlerAdaptor::getprop(const QVariant &key)
+QString MimeHandlerAdaptor::getprop(const QString &key)
 {
-    QString value = runCommandOutput("/system/bin/getprop", QStringList() << key.toString());
+    QString value = runCommandOutput("/system/bin/getprop", QStringList() << key);
     return value.trimmed();
 }
 
-QVariant MimeHandlerAdaptor::setprop(const QVariant &key, const QVariant &value)
+void MimeHandlerAdaptor::setprop(const QString &key, const QString &value)
 {
-    runCommand("/system/bin/setprop", QStringList() << key.toString() << value.toString());
-    return QVariant();
+    runCommand("/system/bin/setprop", QStringList() << key << value);
 }
 
-QVariant MimeHandlerAdaptor::quit()
+void MimeHandlerAdaptor::quit()
 {
     QTimer::singleShot(10, qApp, SLOT(quit()));
-    return QVariant();
-}
-
-QVariant MimeHandlerAdaptor::prepareSharing(const QVariant &data)
-{
-    qDebug() << Q_FUNC_INFO << data;
-    return QVariant();
 }
 
 void MimeHandlerAdaptor::launchPackage(const QString &packageName)
@@ -584,12 +433,45 @@ void MimeHandlerAdaptor::launchPackage(const QString &packageName)
     apkdIface->call(QStringLiteral("launchApp"), packageName);
 }
 
-void MimeHandlerAdaptor::componentActivity(const QString &component, const QString &data)
+void MimeHandlerAdaptor::checkSdcardMount()
 {
-    qDebug() << Q_FUNC_INFO << component << data;
+    const QString sdcardDev = QStringLiteral("/dev/mmcblk1p1");
+    if (!QFileInfo::exists(sdcardDev)) {
+        qWarning() << Q_FUNC_INFO << "No sdcard device found!";
+        return;
+    }
 
-    const QStringList componentParts = component.split(QChar(u'/'));
-    const QString package = componentParts.first();
+    const QString sdcardMountPath = QStringLiteral("/home/nemo/android_storage/sdcard_external");
+    QDir sdcardMount(sdcardMountPath);
+    if (!sdcardMount.exists()) {
+        sdcardMount.mkpath(QStringLiteral("."));
+
+        const struct passwd *nemo_pwd = getpwnam("nemo");
+        if (!nemo_pwd) {
+            qWarning() << Q_FUNC_INFO << "Can't get nemo uid";
+            return;
+        }
+
+        const struct group *nemo_grp = getgrnam("nemo");
+        if (!nemo_grp) {
+            qWarning() << Q_FUNC_INFO << "Can't get nemo gid";
+            return;
+        }
+
+        const int status = chown(sdcardMountPath.toLatin1().constData(), nemo_pwd->pw_uid, nemo_grp->gr_gid);
+        qDebug() << Q_FUNC_INFO << "Sdcard mount chown to nemo status:" << status;
+    }
+
+    const int status = QProcess::execute(QStringLiteral("/bin/mount"), {sdcardDev, sdcardMount.absolutePath()});
+
+    qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
+             << QString::number(status);
+}
+
+void MimeHandlerAdaptor::componentActivity(const QString &package, const QString &className, const QString &data)
+{
+    qDebug() << Q_FUNC_INFO << package << className << data;
+
     launchPackage(package);
 
     if (data.isEmpty()) {
@@ -683,22 +565,8 @@ QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStri
         process->deleteLater();
         return QString();
     }
-    QString output = QString::fromUtf8(process->readAll());
+    const QString output = QString::fromUtf8(process->readAll());
     return output;
-}
-
-void MimeHandlerAdaptor::emitSignal(const QString &name, const QVariantList &arguments)
-{
-    QDBusMessage signal = QDBusMessage::createSignal("/", "org.coderus.aliendalvikcontrol", name);
-    QDBusConnection conn = QDBusConnection::sessionBus();
-
-    if (!arguments.isEmpty()) {
-        signal.setArguments(arguments);
-    }
-
-    if (!conn.send(signal)) {
-        qWarning() << conn.lastError().message();
-    }
 }
 
 void MimeHandlerAdaptor::desktopChanged(const QString &path)
@@ -756,6 +624,9 @@ void MimeHandlerAdaptor::aliendalvikChanged(const QString &, const QVariantMap &
 {
     if (properties.value(QStringLiteral("ActiveState")).toString() == QLatin1String("active")) {
         ActivityManager::GetInstance()->reconnect();
+        PackageManager::GetInstance()->reconnect();
+        AppOpsService::GetInstance()->reconnect();
+        AlienService::GetInstance()->reconnect();
     }
 }
 

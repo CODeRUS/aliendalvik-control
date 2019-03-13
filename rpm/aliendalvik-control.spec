@@ -4,7 +4,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    8.1.2
+Version:    8.1.4
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -41,37 +41,52 @@ rm -rf %{buildroot}
 %qmake5_install
 
 %pre
-systemctl-user stop aliendalvik-control ||:
+systemctl stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
+fi
+if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
+killall aliendalvik-control-proxy ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
 /usr/bin/update-desktop-database ||:
 
 %post
-systemctl-user restart aliendalvik-control ||:
+systemctl restart aliendalvik-control ||:
 
 %preun
-systemctl-user stop aliendalvik-control ||:
+systemctl stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall aliendalvik-control ||:
+fi
+if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
+killall aliendalvik-control-proxy ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
 /usr/bin/update-desktop-database ||:
 
 %files
-%attr(4755, root, root) %{_bindir}/aliendalvik-control
-%defattr(644,root,root,-)
+%{_bindir}/aliendalvik-control
+%{_bindir}/aliendalvik-control-proxy
+
+%{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
+%{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
+/lib/systemd/system/aliendalvik-control.service
+
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
-%{_libdir}/systemd/user/aliendalvik-control.service
+
 %{_datadir}/applications/android-open-url.desktop
 %{_datadir}/applications/android-open-url-selector.desktop
+
 %{_datadir}/jolla-settings/entries/aliendalvikcontrol.json
+
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/main.qml
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/NavbarToggle.qml
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png
+
 %{_libdir}/nemo-transferengine/plugins/libaliendalvikshareplugin.so
 %{_datadir}/nemo-transferengine/plugins/AliendalvikShare.qml
+
 %{_datadir}/themes/%{theme}/meegotouch/z1.0/icons/*.png
 %{_datadir}/themes/%{theme}/meegotouch/z1.25/icons/*.png
 %{_datadir}/themes/%{theme}/meegotouch/z1.5/icons/*.png

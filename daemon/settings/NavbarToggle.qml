@@ -1,6 +1,6 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import org.nemomobile.dbus 2.0
+import Nemo.DBus 2.0
 
 Switch {
     id: root
@@ -9,13 +9,13 @@ Switch {
     DBusInterface {
         id: dbus
 
-        bus: DBus.SessionBus
+        bus: DBus.SystemBus
         service: "org.coderus.aliendalvikcontrol"
         path: "/"
         iface: "org.coderus.aliendalvikcontrol"
     }
 
-    icon.source: "/usr/share/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png"
+    iconSource: "/usr/share/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png"
     checked: true
     automaticCheck: true
     onClicked: {

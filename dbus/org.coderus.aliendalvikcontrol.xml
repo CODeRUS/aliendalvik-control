@@ -1,0 +1,134 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.coderus.aliendalvikcontrol">
+    <method name="sendKeyevent">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="code" type="i" direction="in"/>
+    </method>
+    <method name="sendInput">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="text" type="s" direction="in"/>
+    </method>
+    <method name="broadcastIntent">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="intent" type="s" direction="in"/>
+    </method>
+    <method name="startIntent">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="intent" type="s" direction="in"/>
+    </method>
+    <method name="uriActivity">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="uri" type="s" direction="in"/>
+    </method>
+    <method name="uriActivitySelector">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="uri" type="s" direction="in"/>
+    </method>
+    <method name="hideNavBar">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="showNavBar">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="shareFile">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="filename" type="s" direction="in"/>
+      <arg name="mimetype" type="s" direction="in"/>
+    </method>
+    <method name="doShare">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="mimetype" type="s" direction="in"/>
+      <arg name="filename" type="s" direction="in"/>
+      <arg name="data" type="s" direction="in"/>
+      <arg name="packageName" type="s" direction="in"/>
+      <arg name="className" type="s" direction="in"/>
+    </method>
+    <method name="shareText">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="text" type="s" direction="in"/>
+    </method>
+    <method name="getFocusedApp">
+      <arg name="package" type="s" direction="out"/>
+    </method>
+    <method name="isTopmostAndroid">
+      <arg name="value" type="b" direction="out"/>
+    </method>
+    <method name="openDownloads">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="openSettings">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="openContacts">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="openCamera">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="openGallery">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="openAppSettings">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="package" type="s" direction="in"/>
+    </method>
+    <method name="launchApp">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="package" type="s" direction="in"/>
+    </method>
+    <method name="componentActivity">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="package" type="s" direction="in"/>
+      <arg name="className" type="s" direction="in"/>
+      <arg name="data" type="s" direction="in"/>
+    </method>
+    <method name="forceStop">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="package" type="s" direction="in"/>
+    </method>
+    <method name="getImeList">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <signal name="imeAvailable">
+        <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
+      <arg name="imeList" type="a(v)" direction="out"/>
+    </signal>
+    <method name="setImeMethod">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="ime" type="s" direction="in"/>
+    </method>
+    <method name="triggerImeMethod">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="ime" type="s" direction="in"/>
+      <arg name="enable" type="b" direction="in"/>
+    </method>
+    <method name="getSettings">
+      <arg name="ns" type="s" direction="in"/>
+      <arg name="key" type="s" direction="in"/>
+      <arg name="value" type="s" direction="out"/>
+    </method>
+    <method name="putSettings">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="ns" type="s" direction="in"/>
+      <arg name="key" type="s" direction="in"/>
+      <arg name="value" type="s" direction="in"/>
+    </method>
+    <method name="getprop">
+      <arg name="key" type="s" direction="in"/>
+      <arg name="value" type="s" direction="out"/>
+    </method>
+    <method name="setprop">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="key" type="s" direction="in"/>
+      <arg name="value" type="s" direction="in"/>
+    </method>
+    <method name="quit">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <signal name="sharingListReady">
+        <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
+      <arg name="list" type="a(v)" direction="out"/>
+    </signal>
+  </interface>
+</node>

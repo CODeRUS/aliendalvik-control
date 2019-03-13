@@ -6,16 +6,10 @@
 #include <QDebug>
 #include <QTextStream>
 
-#include <sys/types.h>
-#include <unistd.h>
-
-#include "dbusmain.h"
+#include "mimehandleradaptor.h"
 
 int main(int argc, char *argv[])
 {
-    ::setgid(0);
-    ::setuid(0);
-
     if (argc > 1 && strcmp(argv[1], "restore") == 0) {
         QString appsDir = QStringLiteral("/usr/share/applications/");
         QDir appl(appsDir);
@@ -68,10 +62,10 @@ int main(int argc, char *argv[])
                              "/system/framework/android.hidl.manager-V1.0-java.jar");
 
 
-    QScopedPointer<QCoreApplication> app(new QCoreApplication(argc, argv));
-    QScopedPointer<DBusMain> dbus(new DBusMain(app.data()));
-    QTimer::singleShot(100, dbus.data(), SLOT(start()));
+    QCoreApplication app(argc, argv);
+    MimeHandlerAdaptor context;
+    QTimer::singleShot(0, &context, &MimeHandlerAdaptor::start);
 
-    return app->exec();
+    return app.exec();
 }
 
