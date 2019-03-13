@@ -59,6 +59,23 @@ QString AlienService::getPrettyName(int uid)
     return prettyName;
 }
 
+void AlienService::startApp(const QString &packageName)
+{
+    AlienService *service = AlienService::GetInstance();
+    qCDebug(service->logging) << Q_FUNC_INFO << packageName;
+
+    QSharedPointer<Parcel> parcel = service->createTransaction();
+    if (!parcel) {
+        qCCritical(service->logging) << Q_FUNC_INFO << "Null Parcel!";
+        return;
+    }
+
+    parcel->writeString(packageName);
+    int status = 0;
+    service->sendTransaction(TRANSACTION_startApp, parcel, &status);
+    qCDebug(service->logging) << Q_FUNC_INFO << "Status:" << status;
+}
+
 void AlienService::registrationCompleted()
 {
     qCDebug(logging) << Q_FUNC_INFO;

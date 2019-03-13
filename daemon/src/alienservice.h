@@ -7,6 +7,7 @@
 #include <QSharedPointer>
 
 enum {
+    TRANSACTION_startApp = 1,
     TRANSACTION_getPrettyName = 7,
 };
 
@@ -20,6 +21,7 @@ public:
     static AlienService *GetInstance();
 
     static QString getPrettyName(int uid);
+    static void startApp(const QString &packageName);
 
 protected:
     void registrationCompleted() override;

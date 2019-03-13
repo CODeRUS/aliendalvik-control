@@ -77,16 +77,17 @@ void MediaTransfer::start()
             QFile tmp(QStringLiteral("/home/nemo/.aliendalvik-control-share.vcf"));
             if (tmp.open(QFile::WriteOnly)) {
                 tmp.write(content.toUtf8());
-
                 shareFile(tmp.fileName(), mimeType);
             }
         } else if (mimeType == QLatin1String("text/x-url")) {
             const QVariantMap userData = mediaItem()->value(MediaItem::UserData).toMap();
             if (userData.isEmpty()) {
+                setStatus(MediaTransferInterface::TransferInterrupted);
                 return;
             }
             const QString data = userData.value(QStringLiteral("status")).toString();
             if (data.isEmpty()) {
+                setStatus(MediaTransferInterface::TransferInterrupted);
                 return;
             }
             shareText(data);
@@ -99,4 +100,6 @@ void MediaTransfer::start()
 
         shareFile(url.toString(QUrl::PreferLocalFile), mimeType.name());
     }
+
+    setStatus(MediaTransferInterface::TransferFinished);
 }
