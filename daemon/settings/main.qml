@@ -126,26 +126,6 @@ Page {
 
             TextSwitch {
                 width: parent.width
-                text: "Touch sounds"
-                checked: false
-                enabled: false
-                onClicked: {
-                    dbus.typedCall("putSettings", [{"type": "s", "value": "system"},
-                                                   {"type": "s", "value": "sound_effects_enabled"},
-                                                   {"type": "s", "value": checked ? "1" : "0"}])
-                }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "system"},
-                                                   {"type": "s", "value": "sound_effects_enabled"}],
-                                   function(value) {
-                                       checked = value == 1
-                                       enabled = true
-                                   })
-                }
-            }
-
-            TextSwitch {
-                width: parent.width
                 text: "Allow mock location"
                 checked: false
                 enabled: false

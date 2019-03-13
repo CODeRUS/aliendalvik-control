@@ -5,7 +5,6 @@
 
 #include <QObject>
 #include <QDBusVirtualObject>
-#include <QFileSystemWatcher>
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
@@ -15,6 +14,7 @@
 #include <QDBusConnection>
 #include <QDBusInterface>
 
+class INotifyWatcher;
 class MimeHandlerAdaptor : public QDBusVirtualObject
 {
     Q_OBJECT
@@ -74,7 +74,7 @@ private:
     void emitSignal(const QString &name, const QList<QVariant> &arguments);
 
     QString _watchDir;
-    QFileSystemWatcher *_watcher;
+    INotifyWatcher *_watcher;
 
     bool _isTopmostAndroid;
 

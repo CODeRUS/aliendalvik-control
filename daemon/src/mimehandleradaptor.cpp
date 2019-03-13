@@ -383,6 +383,8 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     QString containerPath = QStringLiteral("/storage/emulated/0");
     if (filename.toString().startsWith(QStringLiteral("/home/nemo/"))) {
         containerPath.append(filename.toString().mid(5));
+    } else {
+        containerPath = filename.toString();
     }
 
     qDebug() << Q_FUNC_INFO << containerPath;
@@ -400,7 +402,11 @@ QVariant MimeHandlerAdaptor::shareFile(const QVariant &filename, const QVariant 
     QVariantList sharingList;
 
     for (QSharedPointer<ResolveInfo> resolved : resolveInfo) {
-        const QString packageName = resolved->getComponentInfo()->packageName;
+        ComponentInfo *info = resolved->getComponentInfo();
+        if (!info) {
+            continue;
+        }
+        const QString packageName = info->packageName;
         if ((packageName == QLatin1String("com.android.bluetooth"))
                 || (packageName == QLatin1String("com.myriadgroup.nativeapp.email"))
                 || (packageName == QLatin1String("com.myriadgroup.nativeapp.messages"))) {

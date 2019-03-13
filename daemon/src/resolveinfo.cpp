@@ -82,6 +82,6 @@ ComponentInfo *ResolveInfo::getComponentInfo()
     if (activityInfo) {
         return activityInfo;
     }
-    qCritical() << Q_FUNC_INFO << "Missing ComponentInfo!";
+    qCritical() << Q_FUNC_INFO << "Missing ComponentInfo for" << resolvePackageName;
     return nullptr;
 }
