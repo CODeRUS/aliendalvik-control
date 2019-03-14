@@ -264,7 +264,7 @@ void MimeHandlerAdaptor::shareContent(const QVariantMap &content, const QString 
         }
     } else {
         const QMimeType mimeType = QMimeDatabase().mimeTypeForFile(source);
-        const QUrl url = QUrl::fromLocalFile(source);
+        const QUrl url = QUrl(source);
 
         shareFile(url.toString(QUrl::PreferLocalFile), mimeType.name());
     }

@@ -11,14 +11,6 @@ ShareDialog {
 
     property bool ready: false
 
-    // Hacka hacking hacky-hacky hacked hacku hacka hack.
-    Connections {
-        target: __silica_applicationwindow_instance
-        onApplicationActiveChanged: {
-            accept()
-        }
-    }
-
     Component.onCompleted: {
         if (aliendalvikServiceIface.isActive()) {
             control.call("shareContent", [root.contentVariant, root.sourceString])
@@ -50,7 +42,7 @@ ShareDialog {
 
             onClicked: {
                 control.call("doShare", [modelData.mimetype, modelData.filename, modelData.data, modelData.packageName, modelData.className])
-                accept()
+                pageStack.pop()
             }
         }
 
