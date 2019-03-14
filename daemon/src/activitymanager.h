@@ -26,9 +26,6 @@ public:
 
 protected:
     void registrationCompleted() override;
-
-private:
-
 };
 
 #endif // ACTIVITYMANAGER_H

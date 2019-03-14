@@ -27,7 +27,8 @@ SOURCES += \
     src/loggingclasswrapper.cpp \
     src/appopsservice.cpp \
     src/intentsender.cpp \
-    src/alienservice.cpp
+    src/alienservice.cpp \
+    src/binderlocalobject.cpp
 
 HEADERS += \
     src/mimehandleradaptor.h \
@@ -48,7 +49,8 @@ HEADERS += \
     src/loggingclasswrapper.h \
     src/appopsservice.h \
     src/intentsender.h \
-    src/alienservice.h
+    src/alienservice.h \
+    src/binderlocalobject.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/
