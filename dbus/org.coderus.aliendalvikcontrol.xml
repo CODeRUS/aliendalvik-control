@@ -31,6 +31,12 @@
     <method name="showNavBar">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
+    <method name="shareContent">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+      <arg name="content" type="a{sv}" direction="in"/>
+      <arg name="source" type="s" direction="in"/>
+    </method>
     <method name="shareFile">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="filename" type="s" direction="in"/>

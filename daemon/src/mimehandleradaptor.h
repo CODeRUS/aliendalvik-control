@@ -48,6 +48,7 @@ private slots:
     void getImeList();
     void triggerImeMethod(const QString &ime, bool enable);
     void setImeMethod(const QString &ime);
+    void shareContent(const QVariantMap &content, const QString &source);
     void shareFile(const QString &filename, const QString &mimetype);
     void shareText(const QString &text);
     void doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className);

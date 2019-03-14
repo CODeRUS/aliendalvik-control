@@ -6,6 +6,7 @@
 #include "intent.h"
 #include "resolveinfo.h"
 #include "componentinfo.h"
+#include "applicationinfo.h"
 #include "appopsservice.h"
 #include "intentsender.h"
 #include "parcel.h"
@@ -231,6 +232,44 @@ void MimeHandlerAdaptor::setImeMethod(const QString &ime)
     appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime);
 }
 
+void MimeHandlerAdaptor::shareContent(const QVariantMap &content, const QString &source)
+{
+    qDebug() << Q_FUNC_INFO << content << source;
+
+    if (source.isEmpty()) {
+        const QString mimeType = content.value(QStringLiteral("type")).toString();
+        if (mimeType == QLatin1String("text/vcard")) {
+            const QString data = content.value(QStringLiteral("data")).toString();
+            QFile tmp(QStringLiteral("/home/nemo/.aliendalvik-control-share.vcf"));
+            if (tmp.open(QFile::WriteOnly)) {
+                tmp.write(data.toUtf8());
+                shareFile(tmp.fileName(), mimeType);
+            }
+        } else if (mimeType == QLatin1String("text/x-vcalendar")) {
+            const QString data = content.value(QStringLiteral("data")).toString();
+            QFile tmp(QStringLiteral("/home/nemo/.aliendalvik-control-share.vcs"));
+            if (tmp.open(QFile::WriteOnly)) {
+                tmp.write(data.toUtf8());
+                shareFile(tmp.fileName(), mimeType);
+            }
+        } else {
+            const QString data = content.value(QStringLiteral("content")).toString();
+            if (!data.isEmpty()) {
+                shareText(data);
+            }
+            const QString status = content.value(QStringLiteral("status")).toString();
+            if (!status.isEmpty()) {
+                shareText(status);
+            }
+        }
+    } else {
+        const QMimeType mimeType = QMimeDatabase().mimeTypeForFile(source);
+        const QUrl url = QUrl::fromLocalFile(source);
+
+        shareFile(url.toString(QUrl::PreferLocalFile), mimeType.name());
+    }
+}
+
 void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimetype)
 {
     qDebug() << Q_FUNC_INFO << filename << mimetype;
@@ -278,7 +317,10 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
         }
         const QString className = resolved->getComponentInfo()->name;
 
-        const int uid = PackageManager::getPackageUid(packageName);
+        int uid = info->applicationInfo->uid;
+        if (uid < 0) {
+            uid = PackageManager::getPackageUid(packageName);
+        }
         qDebug() << packageName << uid;
 
         const QString prettyName = AlienService::getPrettyName(uid);

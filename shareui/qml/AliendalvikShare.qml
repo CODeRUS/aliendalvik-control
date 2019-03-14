@@ -6,6 +6,9 @@ import Nemo.DBus 2.0
 ShareDialog {
     id: root
 
+    property string sourceString: source
+    property var contentVariant: root.content || {}
+
     property bool ready: false
 
     // Hacka hacking hacky-hacky hacked hacku hacka hack.
@@ -18,21 +21,18 @@ ShareDialog {
 
     Component.onCompleted: {
         if (aliendalvikServiceIface.isActive()) {
-            shareItem.start()
-//            control.call("prepareSharing", [root.content])
-//            console.log(root.content)
-//            console.log(root.source)
+            control.call("shareContent", [root.contentVariant, root.sourceString])
         }
     }
 
-    canAccept: aliendalvikServiceIface.isActive()
+    canAccept: false
 
     SilicaListView {
         id: sharingView
         anchors.fill: parent
         visible: aliendalvikServiceIface.isActive()
-        header: DialogHeader {
-            acceptText: qsTrId("Share to Android")
+        header: PageHeader {
+            title: qsTrId("Share to Android")
         }
         delegate: BackgroundItem {
             id: content
@@ -85,14 +85,6 @@ ShareDialog {
             var activeProperty = getProperty("ActiveState")
             return activeProperty === "active"
         }
-    }
-
-    SailfishShare {
-        id: shareItem
-        source: root.source
-        content: root.content
-        serviceId: root.methodId
-        userData: root.content
     }
 
     BusyIndicator {
