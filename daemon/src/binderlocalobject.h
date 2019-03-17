@@ -7,13 +7,11 @@
 
 #include <QObject>
 
-class BinderInterfaceAbstract;
 class BinderLocalObject : public QObject , public LoggingClassWrapper
 {
     Q_OBJECT
 public:
     explicit BinderLocalObject(const char *name,
-                               BinderInterfaceAbstract *interface,
                                QObject *parent = nullptr,
                                const char *loggingCategoryName = LOGGING(BinderLocalObject)".interface");
     virtual ~BinderLocalObject();
@@ -29,7 +27,7 @@ public:
             void *user_data);
 
 private:
-    BinderInterfaceAbstract *m_interface = nullptr;
+    GBinderServiceManager *m_serviceManager = nullptr;
     GBinderLocalObject *m_localHandler = nullptr;
 };
 

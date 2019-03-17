@@ -24,9 +24,13 @@
 #include <QMetaObject>
 #include <QTimer>
 #include <QUrl>
+#include <QLocalSocket>
+#include <QLocalServer>
 
 static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
 static const QString c_dbus_path = QStringLiteral("/");
+
+static const QString s_localSocket = QStringLiteral("/home/.android/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
 
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QObject(parent)
@@ -70,6 +74,33 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     PackageManager::GetInstance();
     AppOpsService::GetInstance();
     AlienService::GetInstance();
+
+    m_localServer = new QLocalServer(nullptr); // controlled by separate thread
+    m_localServer->setSocketOptions(QLocalServer::WorldAccessOption);
+    m_localServer->setMaxPendingConnections(2147483647);
+
+    m_serverThread = new QThread(this);
+    connect(m_serverThread, &QThread::finished, this, [this](){
+        m_localServer->close();
+    });
+    connect(m_localServer, &QLocalServer::newConnection, this, &MimeHandlerAdaptor::startReadingLocalServer, Qt::DirectConnection);
+    connect(m_serverThread, &QThread::started, this, [this](){
+        bool listening = m_localServer->listen(s_localSocket);
+        if (!listening // not listening
+                && m_localServer->serverError() == QAbstractSocket::AddressInUseError // because of AddressInUseError
+                && QFileInfo::exists(s_localSocket) // socket file already exists
+                && QFile::remove(s_localSocket)) { // and successfully removed it
+            qWarning() << Q_FUNC_INFO << "Removed old stuck socket";
+            listening = m_localServer->listen(s_localSocket); // try to start lisening again
+        }
+        qDebug() << Q_FUNC_INFO << "Server listening:" << listening;
+        if (!listening) {
+            qWarning() << Q_FUNC_INFO << "Server error:" << m_localServer->serverError() << m_localServer->errorString();
+        }
+    }, Qt::DirectConnection);
+    m_localServer->moveToThread(m_serverThread);
+
+    m_serverThread->start();
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -468,6 +499,35 @@ void MimeHandlerAdaptor::setprop(const QString &key, const QString &value)
 void MimeHandlerAdaptor::quit()
 {
     QTimer::singleShot(10, qApp, SLOT(quit()));
+}
+
+void MimeHandlerAdaptor::startReadingLocalServer()
+{
+
+    QLocalSocket *clientConnection = m_localServer->nextPendingConnection();
+    if (!clientConnection) {
+        qWarning() << Q_FUNC_INFO << "Got empty connection!";
+        return;
+    }
+    if (clientConnection->state() != QLocalSocket::ConnectedState) {
+        clientConnection->waitForConnected();
+    }
+    connect(clientConnection, &QLocalSocket::disconnected, this, [clientConnection](){
+        clientConnection->deleteLater();
+    }, Qt::DirectConnection);
+    connect(clientConnection, &QLocalSocket::readyRead, this, [this, clientConnection](){
+        if (!clientConnection) {
+            qWarning() << Q_FUNC_INFO << "Can not get socket!";
+            return;
+        }
+        const qint64 bytes = clientConnection->bytesAvailable();
+        if (bytes <= 0) {
+            clientConnection->disconnectFromServer();
+            return;
+        }
+        const QByteArray request = clientConnection->readAll();
+        qDebug().noquote() << request;
+    }, Qt::DirectConnection);
 }
 
 void MimeHandlerAdaptor::launchPackage(const QString &packageName)

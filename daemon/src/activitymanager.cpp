@@ -21,7 +21,9 @@ ActivityManager::ActivityManager(QObject *parent, const char *loggingCategoryNam
 
 ActivityManager::~ActivityManager()
 {
-    s_instance = nullptr;
+    if (s_instance == this) {
+        s_instance = nullptr;
+    }
 }
 
 ActivityManager *ActivityManager::GetInstance()

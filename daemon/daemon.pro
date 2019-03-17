@@ -3,7 +3,7 @@ target.path = /usr/bin
 
 INSTALLS += target
 
-QT += dbus
+QT += dbus network
 CONFIG += link_pkgconfig
 PKGCONFIG += libgbinder
 
@@ -28,7 +28,8 @@ SOURCES += \
     src/appopsservice.cpp \
     src/intentsender.cpp \
     src/alienservice.cpp \
-    src/binderlocalobject.cpp
+    src/binderlocalobject.cpp \
+    src/binderlocalservice.cpp
 
 HEADERS += \
     src/mimehandleradaptor.h \
@@ -50,7 +51,8 @@ HEADERS += \
     src/appopsservice.h \
     src/intentsender.h \
     src/alienservice.h \
-    src/binderlocalobject.h
+    src/binderlocalobject.h \
+    src/binderlocalservice.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/

@@ -16,6 +16,7 @@
 
 class DBusAdaptor;
 class INotifyWatcher;
+class QLocalServer;
 class MimeHandlerAdaptor : public QObject, public QDBusContext
 {
     Q_OBJECT
@@ -60,6 +61,8 @@ private slots:
     void setprop(const QString &key, const QString &value);
     void quit();
 
+    void startReadingLocalServer();
+
 private:
     friend class DBusAdaptor;
     void launchPackage(const QString &packageName);
@@ -80,6 +83,9 @@ private:
     bool _isTopmostAndroid;
 
     QDBusInterface *apkdIface;
+
+    QThread *m_serverThread = nullptr;
+    QLocalServer *m_localServer = nullptr;
 
 private slots:
     void readApplications(const QString &);

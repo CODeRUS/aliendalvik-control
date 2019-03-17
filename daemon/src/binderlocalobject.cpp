@@ -1,13 +1,20 @@
 #include "binderlocalobject.h"
 #include "binderinterfaceabstract.h"
 
-BinderLocalObject::BinderLocalObject(const char *name, BinderInterfaceAbstract *interface, QObject *parent, const char *loggingCategoryName)
+BinderLocalObject::BinderLocalObject(const char *name, QObject *parent, const char *loggingCategoryName)
     : QObject(parent)
     , LoggingClassWrapper(loggingCategoryName)
-    , m_interface(interface)
 {
+    qCDebug(logging) << Q_FUNC_INFO << "Creating service manager";
+    m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
+
+    if (!m_serviceManager) {
+        qCCritical(logging) << Q_FUNC_INFO << "Can't create service manager!";
+        return;
+    }
+
     m_localHandler = gbinder_servicemanager_new_local_object(
-                m_interface->manager(),
+                m_serviceManager,
                 name,
                 &BinderLocalObject::onTransact,
                 this);
