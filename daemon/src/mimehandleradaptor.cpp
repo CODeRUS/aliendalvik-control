@@ -309,13 +309,11 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     if (filename.startsWith(QStringLiteral("/home/nemo/"))) {
         containerPath.append(filename.mid(5));
     } else if (filename.startsWith(QStringLiteral("/run/media/nemo"))) {
-        checkSdcardMount();
+        const QString sdcardPath = filename.section(QChar(u'/'), 0, 4);
+        const QString filePath = filename.section(QChar(u'/'), 5, -1);
+        checkSdcardMount(sdcardPath);
 
-        containerPath = filename;
-        for (int i = 0; i < 5; i++) {
-            const int index = containerPath.indexOf(QChar(u'/'));
-            containerPath = containerPath.mid(index + 1);
-        }
+        containerPath = filePath;
         containerPath.prepend(QStringLiteral("/storage/emulated/0/nemo/android_storage/sdcard_external/"));
     } else {
         containerPath = filename;
@@ -327,8 +325,14 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = mimetype;
     intent.extras = {
-        {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)}
+        {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)},
+        {"command", QStringLiteral("sharing")},
     };
+    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+
+    ActivityManager::startActivity(intent);
+    return;
 
     QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
     qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
@@ -503,7 +507,6 @@ void MimeHandlerAdaptor::quit()
 
 void MimeHandlerAdaptor::startReadingLocalServer()
 {
-
     QLocalSocket *clientConnection = m_localServer->nextPendingConnection();
     if (!clientConnection) {
         qWarning() << Q_FUNC_INFO << "Got empty connection!";
@@ -512,7 +515,13 @@ void MimeHandlerAdaptor::startReadingLocalServer()
     if (clientConnection->state() != QLocalSocket::ConnectedState) {
         clientConnection->waitForConnected();
     }
-    connect(clientConnection, &QLocalSocket::disconnected, this, [clientConnection](){
+    connect(clientConnection, &QLocalSocket::disconnected, this, [this, clientConnection](){
+        if (m_pendingRequests.contains(clientConnection)) {
+            const QByteArray data = m_pendingRequests.take(clientConnection);
+            QTimer::singleShot(0, this, [this, data](){
+                processHelperResult(data);
+            });
+        }
         clientConnection->deleteLater();
     }, Qt::DirectConnection);
     connect(clientConnection, &QLocalSocket::readyRead, this, [this, clientConnection](){
@@ -526,6 +535,12 @@ void MimeHandlerAdaptor::startReadingLocalServer()
             return;
         }
         const QByteArray request = clientConnection->readAll();
+        if (!m_pendingRequests.contains(clientConnection)) {
+            m_pendingRequests.insert(clientConnection, request);
+        } else {
+            m_pendingRequests[clientConnection] = m_pendingRequests[clientConnection] + request;
+        }
+        qWarning() << Q_FUNC_INFO << "Available:" << bytes << "Read:" << request.size();
         qDebug().noquote() << request;
     }, Qt::DirectConnection);
 }
@@ -535,14 +550,8 @@ void MimeHandlerAdaptor::launchPackage(const QString &packageName)
     apkdIface->call(QStringLiteral("launchApp"), packageName);
 }
 
-void MimeHandlerAdaptor::checkSdcardMount()
+void MimeHandlerAdaptor::checkSdcardMount(const QString mountPath)
 {
-    const QString sdcardDev = QStringLiteral("/dev/mmcblk1p1");
-    if (!QFileInfo::exists(sdcardDev)) {
-        qWarning() << Q_FUNC_INFO << "No sdcard device found!";
-        return;
-    }
-
     const QString sdcardMountPath = QStringLiteral("/home/nemo/android_storage/sdcard_external");
     QDir sdcardMount(sdcardMountPath);
     if (!sdcardMount.exists()) {
@@ -564,10 +573,28 @@ void MimeHandlerAdaptor::checkSdcardMount()
         qDebug() << Q_FUNC_INFO << "Sdcard mount chown to nemo status:" << status;
     }
 
-    const int status = QProcess::execute(QStringLiteral("/bin/mount"), {sdcardDev, sdcardMount.absolutePath()});
+    const int status = QProcess::execute(QStringLiteral("/bin/mount"), {QStringLiteral("--bind"), mountPath, sdcardMount.absolutePath()});
 
     qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
              << QString::number(status);
+}
+
+void MimeHandlerAdaptor::processHelperResult(const QByteArray &data)
+{
+    qDebug() << Q_FUNC_INFO << data;
+    QJsonParseError error;
+    error.error = QJsonParseError::NoError;
+    const QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError) {
+        qDebug() << Q_FUNC_INFO << error.errorString();
+        return;
+    }
+    const QJsonObject object = doc.object();
+    const QString command = object.value(QStringLiteral("command")).toString();
+    if (command == QLatin1String("sharing")) {
+        const QVariantList sharingList = object.value(QStringLiteral("candidates")).toArray().toVariantList();
+        emit m_adaptor->sharingListReady(sharingList);
+    }
 }
 
 void MimeHandlerAdaptor::componentActivity(const QString &package, const QString &className, const QString &data)

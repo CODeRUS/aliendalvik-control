@@ -17,6 +17,7 @@
 class DBusAdaptor;
 class INotifyWatcher;
 class QLocalServer;
+class QLocalSocket;
 class MimeHandlerAdaptor : public QObject, public QDBusContext
 {
     Q_OBJECT
@@ -62,12 +63,13 @@ private slots:
     void quit();
 
     void startReadingLocalServer();
+    void processHelperResult(const QByteArray &data);
 
 private:
     friend class DBusAdaptor;
     void launchPackage(const QString &packageName);
 
-    void checkSdcardMount();
+    void checkSdcardMount(const QString mountPath);
 
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);
@@ -86,6 +88,8 @@ private:
 
     QThread *m_serverThread = nullptr;
     QLocalServer *m_localServer = nullptr;
+
+    QHash<QLocalSocket*, QByteArray> m_pendingRequests;
 
 private slots:
     void readApplications(const QString &);

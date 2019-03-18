@@ -28,20 +28,31 @@ ShareDialog {
         }
         delegate: BackgroundItem {
             id: content
-            contentHeight: Theme.itemSizeSmall
+            contentHeight: Theme.itemSizeSmall + Theme.paddingMedium
             width: parent.width
 
-            Label {
+            Image {
+                id: icon
                 anchors.left: parent.left
+                anchors.leftMargin: Theme.horizontalPageMargin
+                anchors.verticalCenter: parent.verticalCenter123
+                height: Theme.itemSizeSmall
+                width: height
+                source: "data:image/png;base64," + modelData.icon
+            }
+
+            Label {
+                anchors.left: icon.right
+                anchors.leftMargin: Theme.paddingMedium
                 anchors.right: parent.right
-                anchors.margins: Theme.horizontalPageMargin
+                anchors.rightMargin: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 text: modelData.prettyName
                 color: parent.pressed && parent.down ? Theme.highlightColor : Theme.primaryColor
             }
 
             onClicked: {
-                control.call("doShare", [modelData.mimetype, modelData.filename, modelData.data, modelData.packageName, modelData.className])
+                control.call("doShare", [modelData.mimeType, modelData.fileName, modelData.data, modelData.packageName, modelData.className])
                 pageStack.pop()
             }
         }
