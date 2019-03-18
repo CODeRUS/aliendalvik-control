@@ -52,7 +52,7 @@ ShareDialog {
             }
 
             onClicked: {
-                control.call("doShare", [modelData.mimeType, modelData.fileName, modelData.data, modelData.packageName, modelData.className])
+                control.call("doShare", [modelData.mimeType, modelData.fileName, modelData.data, modelData.packageName, modelData.className, modelData.launcherClass])
                 pageStack.pop()
             }
         }

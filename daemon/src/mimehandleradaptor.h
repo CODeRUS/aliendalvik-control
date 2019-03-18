@@ -18,6 +18,7 @@ class DBusAdaptor;
 class INotifyWatcher;
 class QLocalServer;
 class QLocalSocket;
+class QTimer;
 class MimeHandlerAdaptor : public QObject, public QDBusContext
 {
     Q_OBJECT
@@ -53,7 +54,12 @@ private slots:
     void shareContent(const QVariantMap &content, const QString &source);
     void shareFile(const QString &filename, const QString &mimetype);
     void shareText(const QString &text);
-    void doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className);
+    void doShare(const QString &mimetype,
+                 const QString &filename,
+                 const QString &data,
+                 const QString &packageName,
+                 const QString &className,
+                 const QString &launcherClass);
     QString getFocusedApp();
     bool isTopmostAndroid();
     QString getSettings(const QString &nspace, const QString &key);
@@ -69,7 +75,7 @@ private:
     friend class DBusAdaptor;
     void launchPackage(const QString &packageName);
 
-    void checkSdcardMount(const QString mountPath);
+    void mountSdcard(const QString mountPath);
 
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);
@@ -86,10 +92,13 @@ private:
 
     QDBusInterface *apkdIface;
 
-    QThread *m_serverThread = nullptr;
+    QThread *   m_serverThread = nullptr;
     QLocalServer *m_localServer = nullptr;
 
     QHash<QLocalSocket*, QByteArray> m_pendingRequests;
+
+    QTimer *m_sessionBusConnector = nullptr;
+    QDBusConnection m_sbus;
 
 private slots:
     void readApplications(const QString &);

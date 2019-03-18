@@ -29,12 +29,14 @@
 
 static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
 static const QString c_dbus_path = QStringLiteral("/");
+static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
 static const QString s_localSocket = QStringLiteral("/home/.android/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
 
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     : QObject(parent)
     , _watcher(new INotifyWatcher(this))
+    , m_sbus(s_sessionBusConnection)
 {
     _watchDir = QStringLiteral("/usr/share/applications/");
     _watcher->addPaths({ _watchDir });
@@ -69,6 +71,22 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                    QStringLiteral("/com/jolla/apkd"),
                                    QStringLiteral("com.jolla.apkd"),
                                    QDBusConnection::systemBus(), this);
+
+    m_sessionBusConnector = new QTimer(this);
+    connect(m_sessionBusConnector, &QTimer::timeout, this, [this]() {
+        QDBusConnection test = QDBusConnection::connectToBus(QDBusConnection::SessionBus, s_sessionBusConnection);
+        if (!test.isConnected()) {
+            QDBusConnection::disconnectFromBus(s_sessionBusConnection);
+        } else {
+            m_sbus = test;
+            m_sessionBusConnector->stop();
+            qDebug() << Q_FUNC_INFO << "Connected to session bus!";
+        }
+    });
+    m_sessionBusConnector->setSingleShot(false);
+    m_sessionBusConnector->setTimerType(Qt::VeryCoarseTimer);
+    m_sessionBusConnector->setInterval(1000); // 1 second
+    m_sessionBusConnector->start();
 
     ActivityManager::GetInstance();
     PackageManager::GetInstance();
@@ -311,7 +329,10 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     } else if (filename.startsWith(QStringLiteral("/run/media/nemo"))) {
         const QString sdcardPath = filename.section(QChar(u'/'), 0, 4);
         const QString filePath = filename.section(QChar(u'/'), 5, -1);
-        checkSdcardMount(sdcardPath);
+
+        if (!QFileInfo::exists(QStringLiteral("/home/nemo/android_storage/sdcard_external/%1").arg(filePath))) {
+            mountSdcard(sdcardPath);
+        }
 
         containerPath = filePath;
         containerPath.prepend(QStringLiteral("/storage/emulated/0/nemo/android_storage/sdcard_external/"));
@@ -332,47 +353,6 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
 
     ActivityManager::startActivity(intent);
-    return;
-
-    QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
-    qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
-
-    QVariantList sharingList;
-
-    for (QSharedPointer<ResolveInfo> resolved : resolveInfo) {
-        ComponentInfo *info = resolved->getComponentInfo();
-        if (!info) {
-            continue;
-        }
-        const QString packageName = info->packageName;
-        if ((packageName == QLatin1String("com.android.bluetooth"))
-                || (packageName == QLatin1String("com.myriadgroup.nativeapp.email"))
-                || (packageName == QLatin1String("com.myriadgroup.nativeapp.messages"))) {
-            continue;
-        }
-        const QString className = resolved->getComponentInfo()->name;
-
-        int uid = info->applicationInfo->uid;
-        if (uid < 0) {
-            uid = PackageManager::getPackageUid(packageName);
-        }
-        qDebug() << packageName << uid;
-
-        const QString prettyName = AlienService::getPrettyName(uid);
-        qDebug() << prettyName;
-
-        QVariantMap sharing;
-        sharing.insert(QStringLiteral("mimetype"), intent.type);
-        sharing.insert(QStringLiteral("filename"), containerPath);
-        sharing.insert(QStringLiteral("data"), QString());
-        sharing.insert(QStringLiteral("packageName"), packageName);
-        sharing.insert(QStringLiteral("className"), className);
-        sharing.insert(QStringLiteral("uid"), uid);
-        sharing.insert(QStringLiteral("prettyName"), prettyName);
-        sharingList.append(sharing);
-    }
-
-    emit m_adaptor->sharingListReady(sharingList);
 }
 
 void MimeHandlerAdaptor::shareText(const QString &text)
@@ -383,49 +363,43 @@ void MimeHandlerAdaptor::shareText(const QString &text)
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = QStringLiteral("text/*");
     intent.extras = {
-        {"android.intent.extra.TEXT", text}
+        {"android.intent.extra.TEXT", text},
+        {"command", QStringLiteral("sharing")},
     };
+    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
 
-    QList<QSharedPointer<ResolveInfo>> resolveInfo = PackageManager::queryIntentActivities(intent);
-    qDebug() << Q_FUNC_INFO << "resolveInfo size:" << resolveInfo.size();
-
-    QVariantList sharingList;
-
-    for (QSharedPointer<ResolveInfo> resolved : resolveInfo) {
-        const QString packageName = resolved->getComponentInfo()->packageName;
-        if ((packageName == QLatin1String("com.android.bluetooth"))
-                || (packageName == QLatin1String("com.myriadgroup.nativeapp.email"))
-                || (packageName == QLatin1String("com.myriadgroup.nativeapp.messages"))) {
-            continue;
-        }
-        const QString className = resolved->getComponentInfo()->name;
-
-        const int uid = PackageManager::getPackageUid(packageName);
-        qDebug() << packageName << uid;
-
-        const QString prettyName = AlienService::getPrettyName(uid);
-        qDebug() << prettyName;
-
-        QVariantMap sharing;
-        sharing.insert(QStringLiteral("mimetype"), intent.type);
-        sharing.insert(QStringLiteral("filename"), QString());
-        sharing.insert(QStringLiteral("data"), text);
-        sharing.insert(QStringLiteral("packageName"), packageName);
-        sharing.insert(QStringLiteral("className"), className);
-        sharing.insert(QStringLiteral("uid"), uid);
-        sharing.insert(QStringLiteral("prettyName"), prettyName);
-        sharingList.append(sharing);
-    }
-
-    emit m_adaptor->sharingListReady(sharingList);
+    ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className)
+void MimeHandlerAdaptor::doShare(
+        const QString &mimetype,
+        const QString &filename,
+        const QString &data,
+        const QString &packageName,
+        const QString &className,
+        const QString &launcherClass)
 {
-    qDebug() << Q_FUNC_INFO << mimetype << filename << data << packageName << className;
+    qDebug() << Q_FUNC_INFO << mimetype << filename << data << packageName << className << launcherClass;
 
-    forceStop(packageName);
-    launchPackage(packageName);
+    const QString packageNameReplaced = QString(packageName).replace(QChar(u'.'), QChar(u'_'));
+    const QString launcherClassReplaced = QString(launcherClass).replace(QChar(u'.'), QChar(u'_'));
+    const QString desktopFile = QStringLiteral("/usr/share/applications/apkd_launcher_%1-%2.desktop").arg(packageNameReplaced, launcherClassReplaced);
+
+    if (QFileInfo::exists(desktopFile)) {
+        qDebug() << Q_FUNC_INFO << "Activating desktop" << desktopFile;
+        launchPackage(packageName);
+        QDBusMessage activateDesktop = QDBusMessage::createMethodCall(QStringLiteral("com.jolla.lipstick"),
+                                                                      QStringLiteral("/LauncherModel"),
+                                                                      QStringLiteral("org.nemomobile.lipstick.LauncherModel"),
+                                                                      QStringLiteral("notifyLaunching"));
+        activateDesktop.setArguments({desktopFile});
+        m_sbus.send(activateDesktop);
+    } else {
+        qDebug() << Q_FUNC_INFO << "Force stopping" << packageName;
+        forceStop(packageName);
+        launchPackage(packageName);
+    }
 
     QEventLoop loop;
     QTimer timer;
@@ -444,7 +418,7 @@ void MimeHandlerAdaptor::doShare(const QString &mimetype, const QString &filenam
         };
     } else {
         intent.extras = {
-            {"android.intent.extra.STREAM", QUrl::fromLocalFile(filename)}
+            {"android.intent.extra.STREAM", QUrl(filename)}
         };
     }
     ActivityManager::startActivity(intent);
@@ -550,7 +524,7 @@ void MimeHandlerAdaptor::launchPackage(const QString &packageName)
     apkdIface->call(QStringLiteral("launchApp"), packageName);
 }
 
-void MimeHandlerAdaptor::checkSdcardMount(const QString mountPath)
+void MimeHandlerAdaptor::mountSdcard(const QString mountPath)
 {
     const QString sdcardMountPath = QStringLiteral("/home/nemo/android_storage/sdcard_external");
     QDir sdcardMount(sdcardMountPath);
@@ -756,6 +730,10 @@ void MimeHandlerAdaptor::aliendalvikChanged(const QString &, const QVariantMap &
         PackageManager::GetInstance()->reconnect();
         AppOpsService::GetInstance()->reconnect();
         AlienService::GetInstance()->reconnect();
+
+        m_serverThread->terminate();
+        m_serverThread->wait();
+        m_serverThread->start();
     }
 }
 

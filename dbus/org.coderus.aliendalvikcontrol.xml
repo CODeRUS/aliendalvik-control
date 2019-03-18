@@ -49,6 +49,7 @@
       <arg name="data" type="s" direction="in"/>
       <arg name="packageName" type="s" direction="in"/>
       <arg name="className" type="s" direction="in"/>
+      <arg name="launcherClass" type="s" direction="in"/>
     </method>
     <method name="shareText">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>

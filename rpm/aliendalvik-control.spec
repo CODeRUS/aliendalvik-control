@@ -4,8 +4,8 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    8.1.4
-Release:    3
+Version:    8.1.5
+Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
@@ -53,6 +53,7 @@ fi
 
 %post
 systemctl restart aliendalvik-control ||:
+apkd-install /usr/share/aliendalvik-control/apk/app-release.apk ||:
 
 %preun
 systemctl stop aliendalvik-control ||:
@@ -64,6 +65,7 @@ killall aliendalvik-control-proxy ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
 /usr/bin/update-desktop-database ||:
+apkd-uninstall org.coderus.aliendalvikcontrol ||:
 
 %files
 %{_bindir}/aliendalvik-control
@@ -86,6 +88,8 @@ fi
 
 %{_libdir}/nemo-transferengine/plugins/libaliendalvikshareplugin.so
 %{_datadir}/nemo-transferengine/plugins/AliendalvikShare.qml
+
+%{_datadir}/aliendalvik-control/apk/app-release.apk
 
 %{_datadir}/themes/%{theme}/meegotouch/z1.0/icons/*.png
 %{_datadir}/themes/%{theme}/meegotouch/z1.25/icons/*.png

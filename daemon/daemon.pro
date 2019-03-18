@@ -94,6 +94,11 @@ settingspng.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
 
 INSTALLS += settingspng
 
+apk.files = apk/app-release.apk
+apk.path = /usr/share/aliendalvik-control/apk
+
+INSTALLS += apk
+
 ad_dbus_adaptor.files = ../dbus/org.coderus.aliendalvikcontrol.xml
 ad_dbus_adaptor.source_flags = -c DBusAdaptor
 ad_dbus_adaptor.header_flags = -c DBusAdaptor
