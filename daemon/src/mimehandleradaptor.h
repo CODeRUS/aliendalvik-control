@@ -76,6 +76,7 @@ private:
     void launchPackage(const QString &packageName);
 
     void mountSdcard(const QString mountPath);
+    bool checkHelperSocket();
 
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);

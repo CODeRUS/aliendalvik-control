@@ -322,6 +322,9 @@ void MimeHandlerAdaptor::shareContent(const QVariantMap &content, const QString 
 void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimetype)
 {
     qDebug() << Q_FUNC_INFO << filename << mimetype;
+    if (!checkHelperSocket()) {
+        return;
+    }
 
     QString containerPath = QStringLiteral("/storage/emulated/0");
     if (filename.startsWith(QStringLiteral("/home/nemo/"))) {
@@ -551,6 +554,26 @@ void MimeHandlerAdaptor::mountSdcard(const QString mountPath)
 
     qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
              << QString::number(status);
+}
+
+bool MimeHandlerAdaptor::checkHelperSocket()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    const QFileInfo helperSocket(s_localSocket);
+    if (!helperSocket.dir().exists()) {
+        qWarning() << Q_FUNC_INFO << "Helper not installed!";
+        return false;
+    }
+    if (helperSocket.exists()) {
+        return true;
+    }
+
+    m_serverThread->terminate();
+    m_serverThread->wait();
+    m_serverThread->start();
+
+    return true;
 }
 
 void MimeHandlerAdaptor::processHelperResult(const QByteArray &data)
