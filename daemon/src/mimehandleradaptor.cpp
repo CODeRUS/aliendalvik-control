@@ -99,10 +99,13 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
 
     m_serverThread = new QThread(this);
     connect(m_serverThread, &QThread::finished, this, [this](){
+        qWarning() << Q_FUNC_INFO << "QThread::finished";
         m_localServer->close();
+        m_serverThread->start();
     });
     connect(m_localServer, &QLocalServer::newConnection, this, &MimeHandlerAdaptor::startReadingLocalServer, Qt::DirectConnection);
     connect(m_serverThread, &QThread::started, this, [this](){
+        qWarning() << Q_FUNC_INFO << "QThread::started";
         bool listening = m_localServer->listen(s_localSocket);
         if (!listening // not listening
                 && m_localServer->serverError() == QAbstractSocket::AddressInUseError // because of AddressInUseError
@@ -118,7 +121,8 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     }, Qt::DirectConnection);
     m_localServer->moveToThread(m_serverThread);
 
-    m_serverThread->start();
+    qDebug() << Q_FUNC_INFO << "Java helper ready:"
+             << checkHelperSocket();
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -569,9 +573,14 @@ bool MimeHandlerAdaptor::checkHelperSocket()
         return true;
     }
 
-    m_serverThread->terminate();
-    m_serverThread->wait();
-    m_serverThread->start();
+    QEventLoop loop;
+    connect(m_serverThread, &QThread::started, &loop, &QEventLoop::quit);
+    if (m_serverThread->isRunning()) {
+        m_serverThread->exit(0);
+    } else {
+        m_serverThread->start();
+    }
+    loop.exec();
 
     return true;
 }
@@ -753,10 +762,6 @@ void MimeHandlerAdaptor::aliendalvikChanged(const QString &, const QVariantMap &
         PackageManager::GetInstance()->reconnect();
         AppOpsService::GetInstance()->reconnect();
         AlienService::GetInstance()->reconnect();
-
-        m_serverThread->terminate();
-        m_serverThread->wait();
-        m_serverThread->start();
     }
 }
 
