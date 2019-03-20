@@ -1,6 +1,7 @@
 #ifndef BINDERINTERFACEABSTRACT_H
 #define BINDERINTERFACEABSTRACT_H
 
+#include "aliendalvikcontroller.h"
 #include "loggingclasswrapper.h"
 
 #include <QObject>
@@ -9,7 +10,7 @@
 #include <gbinder.h>
 
 class Parcel;
-class BinderInterfaceAbstract : public QObject, public LoggingClassWrapper
+class BinderInterfaceAbstract : public AliendalvikController, public LoggingClassWrapper
 {
     Q_OBJECT
 public:
@@ -34,8 +35,9 @@ public:
             int *status,
             void *user_data);
 
-public slots:
-    void reconnect();
+private slots:
+    void serviceStopped();
+    void serviceStarted();
 
 protected:
     virtual void registrationCompleted() = 0;

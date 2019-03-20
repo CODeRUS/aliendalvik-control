@@ -34,7 +34,7 @@ static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 static const QString s_localSocket = QStringLiteral("/home/.android/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
 
 MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
-    : QObject(parent)
+    : AliendalvikController(parent)
     , _watcher(new INotifyWatcher(this))
     , m_sbus(s_sessionBusConnection)
 {
@@ -60,12 +60,6 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                          QStringLiteral("org.nemomobile.compositor"),
                                          QStringLiteral("privateTopmostWindowProcessIdChanged"),
                                          this, SLOT(topmostIdChanged(int)));
-
-    QDBusConnection::systemBus().connect(QString(),
-                                         QStringLiteral("/org/freedesktop/systemd1/unit/aliendalvik_2eservice"),
-                                         QStringLiteral("org.freedesktop.DBus.Properties"),
-                                         QStringLiteral("PropertiesChanged"),
-                                         this, SLOT(aliendalvikChanged(QString, QVariantMap, QStringList)));
 
     apkdIface = new QDBusInterface(QStringLiteral("com.jolla.apkd"),
                                    QStringLiteral("/com/jolla/apkd"),
@@ -122,7 +116,7 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     m_localServer->moveToThread(m_serverThread);
 
     qDebug() << Q_FUNC_INFO << "Java helper ready:"
-             << checkHelperSocket();
+             << checkHelperSocket(true);
 }
 
 MimeHandlerAdaptor::~MimeHandlerAdaptor()
@@ -337,7 +331,7 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
         const QString sdcardPath = filename.section(QChar(u'/'), 0, 4);
         const QString filePath = filename.section(QChar(u'/'), 5, -1);
 
-        if (!QFileInfo::exists(QStringLiteral("/home/nemo/android_storage/sdcard_external/%1").arg(filePath))) {
+        if (!QFileInfo::exists(QStringLiteral("/home/.android/data/media/0/sdcard_external/%1").arg(filePath))) {
             mountSdcard(sdcardPath);
         }
 
@@ -533,7 +527,9 @@ void MimeHandlerAdaptor::launchPackage(const QString &packageName)
 
 void MimeHandlerAdaptor::mountSdcard(const QString mountPath)
 {
-    const QString sdcardMountPath = QStringLiteral("/home/nemo/android_storage/sdcard_external");
+    qDebug() << Q_FUNC_INFO << mountPath;
+
+    const QString sdcardMountPath = QStringLiteral("/home/.android/data/media/0/sdcard_external");
     QDir sdcardMount(sdcardMountPath);
     if (!sdcardMount.exists()) {
         sdcardMount.mkpath(QStringLiteral("."));
@@ -560,7 +556,23 @@ void MimeHandlerAdaptor::mountSdcard(const QString mountPath)
              << QString::number(status);
 }
 
-bool MimeHandlerAdaptor::checkHelperSocket()
+void MimeHandlerAdaptor::umountSdcard()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    const QString sdcardMountPath = QStringLiteral("/home/.android/data/media/0/sdcard_external");
+    QDir sdcardMount(sdcardMountPath);
+    if (!sdcardMount.exists()) {
+        return;
+    }
+
+    const int status = QProcess::execute(QStringLiteral("/bin/umount"), {sdcardMount.absolutePath()});
+
+    qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
+             << QString::number(status);
+}
+
+bool MimeHandlerAdaptor::checkHelperSocket(bool remove)
 {
     qDebug() << Q_FUNC_INFO;
 
@@ -570,7 +582,11 @@ bool MimeHandlerAdaptor::checkHelperSocket()
         return false;
     }
     if (helperSocket.exists()) {
-        return true;
+        if (remove) {
+            QFile::remove(s_localSocket);
+        } else {
+            return true;
+        }
     }
 
     QEventLoop loop;
@@ -755,14 +771,16 @@ void MimeHandlerAdaptor::topmostIdChanged(int pId)
     _isTopmostAndroid = (out == "system_server");
 }
 
-void MimeHandlerAdaptor::aliendalvikChanged(const QString &, const QVariantMap &properties, const QStringList &)
+void MimeHandlerAdaptor::serviceStopped()
 {
-    if (properties.value(QStringLiteral("ActiveState")).toString() == QLatin1String("active")) {
-        ActivityManager::GetInstance()->reconnect();
-        PackageManager::GetInstance()->reconnect();
-        AppOpsService::GetInstance()->reconnect();
-        AlienService::GetInstance()->reconnect();
-    }
+    qDebug() << Q_FUNC_INFO;
+
+    umountSdcard();
+}
+
+void MimeHandlerAdaptor::serviceStarted()
+{
+    qDebug() << Q_FUNC_INFO;
 }
 
 void MimeHandlerAdaptor::readApplications(const QString &)

@@ -1,13 +1,14 @@
 #ifndef BINDERLOCALOBJECT_H
 #define BINDERLOCALOBJECT_H
 
+#include "aliendalvikcontroller.h"
 #include "loggingclasswrapper.h"
 
 #include <gbinder.h>
 
 #include <QObject>
 
-class BinderLocalObject : public QObject , public LoggingClassWrapper
+class BinderLocalObject : public AliendalvikController , public LoggingClassWrapper
 {
     Q_OBJECT
 public:
@@ -26,9 +27,19 @@ public:
             int *status,
             void *user_data);
 
+private slots:
+    void serviceStopped();
+    void serviceStarted();
+
 private:
+    void binderConnect();
+    void binderDisconnect();
+
+    const char *m_serviceName;
+
     GBinderServiceManager *m_serviceManager = nullptr;
     GBinderLocalObject *m_localHandler = nullptr;
+
 };
 
 #endif // BINDERLOCALOBJECT_H

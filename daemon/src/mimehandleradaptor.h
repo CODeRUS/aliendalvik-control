@@ -1,6 +1,7 @@
 #ifndef MIMEHANDLERADAPTOR_H
 #define MIMEHANDLERADAPTOR_H
 
+#include "aliendalvikcontroller.h"
 #include "intentsender.h"
 
 #include <QObject>
@@ -19,7 +20,7 @@ class INotifyWatcher;
 class QLocalServer;
 class QLocalSocket;
 class QTimer;
-class MimeHandlerAdaptor : public QObject, public QDBusContext
+class MimeHandlerAdaptor : public AliendalvikController, public QDBusContext
 {
     Q_OBJECT
 
@@ -76,7 +77,8 @@ private:
     void launchPackage(const QString &packageName);
 
     void mountSdcard(const QString mountPath);
-    bool checkHelperSocket();
+    void umountSdcard();
+    bool checkHelperSocket(bool remove = false);
 
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);
@@ -106,7 +108,9 @@ private slots:
     void desktopChanged(const QString &path);
 
     void topmostIdChanged(int pId);
-    void aliendalvikChanged(const QString &, const QVariantMap &properties, const QStringList &);
+
+    void serviceStopped() override;
+    void serviceStarted() override;
 
 };
 

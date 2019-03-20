@@ -25,13 +25,12 @@ BinderInterfaceAbstract::BinderInterfaceAbstract(const char *serviceName,
                                                  const char *listenInterface,
                                                  QObject *parent,
                                                  const char *loggingCategoryName)
-    : QObject(parent)
+    : AliendalvikController(parent)
     , LoggingClassWrapper(loggingCategoryName)
     , m_serviceName(serviceName)
     , m_interfaceName(interfaceName)
     , m_listenInterface(listenInterface)
 {
-    binderConnect();
 }
 
 BinderInterfaceAbstract::~BinderInterfaceAbstract()
@@ -106,14 +105,15 @@ GBinderLocalReply *BinderInterfaceAbstract::onTransact(GBinderLocalObject *obj, 
     return reply;
 }
 
-void BinderInterfaceAbstract::reconnect()
+void BinderInterfaceAbstract::serviceStopped()
 {
     qCDebug(logging) << Q_FUNC_INFO;
+    binderDisconnect();
+}
 
-    if (m_client) {
-        return;
-    }
-
+void BinderInterfaceAbstract::serviceStarted()
+{
+    qCDebug(logging) << Q_FUNC_INFO;
     binderConnect();
 }
 

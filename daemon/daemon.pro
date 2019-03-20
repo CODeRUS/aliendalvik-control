@@ -29,7 +29,8 @@ SOURCES += \
     src/intentsender.cpp \
     src/alienservice.cpp \
     src/binderlocalobject.cpp \
-    src/binderlocalservice.cpp
+    src/binderlocalservice.cpp \
+    src/aliendalvikcontroller.cpp
 
 HEADERS += \
     src/mimehandleradaptor.h \
@@ -52,7 +53,8 @@ HEADERS += \
     src/intentsender.h \
     src/alienservice.h \
     src/binderlocalobject.h \
-    src/binderlocalservice.h
+    src/binderlocalservice.h \
+    src/aliendalvikcontroller.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/

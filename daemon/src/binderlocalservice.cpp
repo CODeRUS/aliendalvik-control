@@ -6,13 +6,11 @@ BinderLocalService::BinderLocalService(const char *serviceName,
                                        const char *interfaceName,
                                        QObject *parent,
                                        const char *loggingCategoryName)
-    : QObject(parent)
+    : AliendalvikController(parent)
     , LoggingClassWrapper(loggingCategoryName)
     , m_serviceName(serviceName)
     , m_interfaceName(interfaceName)
 {
-    // workaroud for "pure virtual method called" on registrationCompleted since we're still in constructor
-    QTimer::singleShot(0, this, &BinderLocalService::binderConnect);
 }
 
 BinderLocalService::~BinderLocalService()
@@ -20,8 +18,15 @@ BinderLocalService::~BinderLocalService()
     binderDisconnect();
 }
 
-void BinderLocalService::reconnect()
+void BinderLocalService::serviceStopped()
 {
+    qCDebug(logging) << Q_FUNC_INFO;
+    binderDisconnect();
+}
+
+void BinderLocalService::serviceStarted()
+{
+    qCDebug(logging) << Q_FUNC_INFO;
     binderConnect();
 }
 

@@ -1,13 +1,14 @@
 #ifndef BINDERLOCALSERVICE_H
 #define BINDERLOCALSERVICE_H
 
+#include "aliendalvikcontroller.h"
 #include "loggingclasswrapper.h"
 
 #include <QObject>
 
 #include <gbinder.h>
 
-class BinderLocalService: public QObject, public LoggingClassWrapper
+class BinderLocalService: public AliendalvikController, public LoggingClassWrapper
 {
     Q_OBJECT
 public:
@@ -17,12 +18,9 @@ public:
                                 const char *loggingCategoryName = LOGGING(BinderLocalService)".interface");
     virtual ~BinderLocalService();
 
-public slots:
-    void reconnect();
-
 private slots:
-    void binderConnect();
-    void binderDisconnect();
+    void serviceStopped();
+    void serviceStarted();
 
 protected:
     virtual void registrationCompleted() = 0;
@@ -34,6 +32,9 @@ protected:
             int *status) = 0;
 
 private:
+    void binderConnect();
+    void binderDisconnect();
+
     static GBinderLocalReply *handler(
             GBinderLocalObject *obj,
             GBinderRemoteRequest *req,
@@ -49,6 +50,7 @@ private:
     GBinderServiceName *m_binderServiceName = nullptr;
     GBinderLocalObject *m_localObject = nullptr;
     GBinderRemoteObject *m_remoteObject = nullptr;
+
 };
 
 #endif // BINDERLOCALSERVICE_H

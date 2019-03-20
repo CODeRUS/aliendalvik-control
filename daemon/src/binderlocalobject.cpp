@@ -2,33 +2,15 @@
 #include "binderinterfaceabstract.h"
 
 BinderLocalObject::BinderLocalObject(const char *name, QObject *parent, const char *loggingCategoryName)
-    : QObject(parent)
+    : AliendalvikController(parent)
     , LoggingClassWrapper(loggingCategoryName)
+    , m_serviceName(name)
 {
-    qCDebug(logging) << Q_FUNC_INFO << "Creating service manager";
-    m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
-
-    if (!m_serviceManager) {
-        qCCritical(logging) << Q_FUNC_INFO << "Can't create service manager!";
-        return;
-    }
-
-    m_localHandler = gbinder_servicemanager_new_local_object(
-                m_serviceManager,
-                name,
-                &BinderLocalObject::onTransact,
-                this);
-
-    qCDebug(logging) << Q_FUNC_INFO << "Creating handler for" << name << m_localHandler;
 }
 
 BinderLocalObject::~BinderLocalObject()
 {
-    if (m_localHandler) {
-        qCDebug(logging) << Q_FUNC_INFO << "Dropping handler" << m_localHandler;
-        gbinder_local_object_drop(m_localHandler);
-        m_localHandler = nullptr;
-    }
+    binderDisconnect();
 }
 
 GBinderLocalObject *BinderLocalObject::localObject() const
@@ -46,4 +28,44 @@ GBinderLocalReply *BinderLocalObject::onTransact(GBinderLocalObject *, GBinderRe
 
     GBinderLocalReply *reply = nullptr;
     return reply;
+}
+
+void BinderLocalObject::serviceStopped()
+{
+    qCDebug(logging) << Q_FUNC_INFO;
+    binderDisconnect();
+}
+
+void BinderLocalObject::serviceStarted()
+{
+    qCDebug(logging) << Q_FUNC_INFO;
+    binderConnect();
+}
+
+void BinderLocalObject::binderConnect()
+{
+    qCDebug(logging) << Q_FUNC_INFO << "Creating service manager";
+    m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
+
+    if (!m_serviceManager) {
+        qCCritical(logging) << Q_FUNC_INFO << "Can't create service manager!";
+        return;
+    }
+
+    m_localHandler = gbinder_servicemanager_new_local_object(
+                m_serviceManager,
+                m_serviceName,
+                &BinderLocalObject::onTransact,
+                this);
+
+    qCDebug(logging) << Q_FUNC_INFO << "Creating handler for" << m_serviceName << m_localHandler;
+}
+
+void BinderLocalObject::binderDisconnect()
+{
+    if (m_localHandler) {
+        qCDebug(logging) << Q_FUNC_INFO << "Dropping handler" << m_localHandler;
+        gbinder_local_object_drop(m_localHandler);
+        m_localHandler = nullptr;
+    }
 }
