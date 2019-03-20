@@ -43,27 +43,29 @@ rm -rf %{buildroot}
 %pre
 systemctl stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
-killall aliendalvik-control ||:
+killall -9 aliendalvik-control ||:
 fi
 if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
-killall aliendalvik-control-proxy ||:
+killall -9 aliendalvik-control-proxy ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
 /usr/bin/update-desktop-database ||:
 
 %post
-systemctl restart aliendalvik-control ||:
+systemctl daemon-reload
 apkd-install /usr/share/aliendalvik-control/apk/app-release.apk ||:
+systemctl restart aliendalvik-control ||:
 
 %preun
 systemctl stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
-killall aliendalvik-control ||:
+killall -9 aliendalvik-control ||:
 fi
 if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
-killall aliendalvik-control-proxy ||:
+killall -9 aliendalvik-control-proxy ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
+umount /home/.android/data/media/0/sdcard_external ||:
 /usr/bin/update-desktop-database ||:
 apkd-uninstall org.coderus.aliendalvikcontrol ||:
 
