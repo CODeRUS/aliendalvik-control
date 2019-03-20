@@ -159,16 +159,6 @@ void MimeHandlerAdaptor::sendInput(const QString &text)
     appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
 }
 
-void MimeHandlerAdaptor::broadcastIntent(const QString &intent)
-{
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "broadcast" << "-a" << intent);
-}
-
-void MimeHandlerAdaptor::startIntent(const QString &intent)
-{
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << intent.split(" "));
-}
-
 void MimeHandlerAdaptor::uriActivity(const QString &uri)
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
@@ -185,7 +175,8 @@ void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
 
 void MimeHandlerAdaptor::hideNavBar()
 {
-    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,-144");
+    const QString navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), QStringLiteral("144")).toString();
+    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << QStringLiteral("0,0,0,-%1").arg(navbarHeight));
 //    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
 }
 
@@ -614,6 +605,18 @@ bool MimeHandlerAdaptor::checkHelperSocket(bool remove)
     return true;
 }
 
+void MimeHandlerAdaptor::requestDeviceInfo()
+{
+    Intent intent;
+    intent.extras = {
+        {QStringLiteral("command"), QStringLiteral("deviceInfo")},
+    };
+    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+
+    ActivityManager::startActivity(intent);
+}
+
 void MimeHandlerAdaptor::processHelperResult(const QByteArray &data)
 {
     qDebug() << Q_FUNC_INFO << data;
@@ -629,6 +632,9 @@ void MimeHandlerAdaptor::processHelperResult(const QByteArray &data)
     if (command == QLatin1String("sharing")) {
         const QVariantList sharingList = object.value(QStringLiteral("candidates")).toArray().toVariantList();
         emit m_adaptor->sharingListReady(sharingList);
+    } else if (command == QLatin1String("deviceInfo")) {
+        const QJsonObject devicePropertiesJson = object.value(QStringLiteral("deviceProperties")).toObject();
+        m_deviceProperties = devicePropertiesJson.toVariantHash();
     }
 }
 
@@ -799,6 +805,8 @@ void MimeHandlerAdaptor::serviceStopped()
 void MimeHandlerAdaptor::serviceStarted()
 {
     qDebug() << Q_FUNC_INFO;
+
+    requestDeviceInfo();
 }
 
 void MimeHandlerAdaptor::readApplications(const QString &)

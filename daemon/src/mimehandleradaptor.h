@@ -37,8 +37,6 @@ signals:
 private slots:
     void sendKeyevent(int code);
     void sendInput(const QString &text);
-    void broadcastIntent(const QString &intent);
-    void startIntent(const QString &intent);
     void uriActivity(const QString &uri);
     void uriActivitySelector(const QString &uri);
     void hideNavBar();
@@ -83,6 +81,8 @@ private:
     void umountSdcard();
     bool checkHelperSocket(bool remove = false);
 
+    void requestDeviceInfo();
+
     void appProcess(const QString &jar, const QStringList &params);
     QString appProcessOutput(const QString &jar, const QStringList &params);
     QString packageName(const QString &package);
@@ -102,6 +102,8 @@ private:
     QLocalServer *m_localServer = nullptr;
 
     QHash<QLocalSocket*, QByteArray> m_pendingRequests;
+
+    QVariantHash m_deviceProperties;
 
     QTimer *m_sessionBusConnector = nullptr;
     QDBusConnection m_sbus;

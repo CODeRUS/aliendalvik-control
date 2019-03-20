@@ -6,7 +6,6 @@ Requires=dbus.socket
 [Service]
 Type=dbus
 ExecStart=/usr/bin/aliendalvik-control
-ExecStop=/bin/dbus-send --system --type=method_call --print-reply --dest=org.coderus.aliendalvikcontrol / org.coderus.aliendalvikcontrol.quit
 EnvironmentFile=-/var/lib/environment/aliendalvik-control/*.conf
 BusName=org.coderus.aliendalvikcontrol
 Restart=on-failure
