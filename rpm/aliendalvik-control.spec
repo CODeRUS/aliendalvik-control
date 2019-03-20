@@ -80,7 +80,6 @@ apkd-uninstall org.coderus.aliendalvikcontrol ||:
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
 
 %{_datadir}/applications/android-open-url.desktop
-%{_datadir}/applications/android-open-url-selector.desktop
 
 %{_datadir}/jolla-settings/entries/aliendalvikcontrol.json
 

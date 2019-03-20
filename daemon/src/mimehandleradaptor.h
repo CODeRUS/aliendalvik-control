@@ -92,7 +92,7 @@ private:
 
     QDBusInterface *apkdIface;
 
-    QThread *   m_serverThread = nullptr;
+    QThread *m_serverThread = nullptr;
     QLocalServer *m_localServer = nullptr;
 
     QHash<QLocalSocket*, QByteArray> m_pendingRequests;
