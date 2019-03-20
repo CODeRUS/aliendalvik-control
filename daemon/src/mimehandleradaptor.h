@@ -31,6 +31,9 @@ public:
 public slots:
     void start();
 
+signals:
+    void isTopmostAndroidChanged(bool isAndroid);
+
 private slots:
     void sendKeyevent(int code);
     void sendInput(const QString &text);

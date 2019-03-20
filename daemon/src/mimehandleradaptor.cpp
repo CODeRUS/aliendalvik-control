@@ -198,31 +198,31 @@ void MimeHandlerAdaptor::showNavBar()
 void MimeHandlerAdaptor::openDownloads()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
-    launchPackage("com.android.documentsui");
+    launchPackage(QStringLiteral("com.android.documentsui"));
 }
 
 void MimeHandlerAdaptor::openSettings()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
-    launchPackage("com.android.settings");
+    launchPackage(QStringLiteral("com.android.settings"));
 }
 
 void MimeHandlerAdaptor::openContacts()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
-    launchPackage("com.android.contacts");
+    launchPackage(QStringLiteral("com.android.contacts"));
 }
 
 void MimeHandlerAdaptor::openCamera()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
-    launchPackage("com.android.camera2");
+    launchPackage(QStringLiteral("com.android.camera2"));
 }
 
 void MimeHandlerAdaptor::openGallery()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
-    launchPackage("com.android.gallery3d");
+    launchPackage(QStringLiteral("com.android.gallery3d"));
 }
 
 void MimeHandlerAdaptor::openAppSettings(const QString &package)
@@ -325,9 +325,9 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     }
 
     QString containerPath = QStringLiteral("/storage/emulated/0");
-    if (filename.startsWith(QStringLiteral("/home/nemo/"))) {
+    if (filename.startsWith(QLatin1String("/home/nemo/"))) {
         containerPath.append(filename.mid(5));
-    } else if (filename.startsWith(QStringLiteral("/run/media/nemo"))) {
+    } else if (filename.startsWith(QLatin1String("/run/media/nemo"))) {
         const QString sdcardPath = filename.section(QChar(u'/'), 0, 4);
         const QString filePath = filename.section(QChar(u'/'), 5, -1);
 
@@ -347,8 +347,8 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = mimetype;
     intent.extras = {
-        {"android.intent.extra.STREAM", QUrl::fromLocalFile(containerPath)},
-        {"command", QStringLiteral("sharing")},
+        {QStringLiteral("android.intent.extra.STREAM"), QUrl::fromLocalFile(containerPath)},
+        {QStringLiteral("command"), QStringLiteral("sharing")},
     };
     intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
     intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
@@ -364,8 +364,8 @@ void MimeHandlerAdaptor::shareText(const QString &text)
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = QStringLiteral("text/*");
     intent.extras = {
-        {"android.intent.extra.TEXT", text},
-        {"command", QStringLiteral("sharing")},
+        {QStringLiteral("android.intent.extra.TEXT"), text},
+        {QStringLiteral("command"), QStringLiteral("sharing")},
     };
     intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
     intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
@@ -390,10 +390,11 @@ void MimeHandlerAdaptor::doShare(
     if (QFileInfo::exists(desktopFile)) {
         qDebug() << Q_FUNC_INFO << "Activating desktop" << desktopFile;
         launchPackage(packageName);
-        QDBusMessage activateDesktop = QDBusMessage::createMethodCall(QStringLiteral("com.jolla.lipstick"),
-                                                                      QStringLiteral("/LauncherModel"),
-                                                                      QStringLiteral("org.nemomobile.lipstick.LauncherModel"),
-                                                                      QStringLiteral("notifyLaunching"));
+        QDBusMessage activateDesktop = QDBusMessage::createMethodCall(
+                QStringLiteral("com.jolla.lipstick"),
+                QStringLiteral("/LauncherModel"),
+                QStringLiteral("org.nemomobile.lipstick.LauncherModel"),
+                QStringLiteral("notifyLaunching"));
         activateDesktop.setArguments({desktopFile});
         m_sbus.send(activateDesktop);
     } else {
@@ -402,11 +403,23 @@ void MimeHandlerAdaptor::doShare(
         launchPackage(packageName);
     }
 
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(1000);
-    loop.exec();
+    if (!_isTopmostAndroid) {
+        QEventLoop loop;
+        QTimer timer;
+        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        QMetaObject::Connection connection = connect(this, &MimeHandlerAdaptor::isTopmostAndroidChanged, [&loop](bool isTopmostAndroid){
+            if (isTopmostAndroid) {
+                loop.quit();
+            }
+        });
+        timer.start(5000);
+        loop.exec();
+        if (!timer.isActive()) {
+            qDebug() << Q_FUNC_INFO << "Timer expired. Cancel share!";
+            return;
+        }
+        disconnect(connection);
+    }
 
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
@@ -415,11 +428,11 @@ void MimeHandlerAdaptor::doShare(
     intent.className = className;
     if (filename.isEmpty()) {
         intent.extras = {
-            {"android.intent.extra.TEXT", data}
+            {QStringLiteral("android.intent.extra.TEXT"), data}
         };
     } else {
         intent.extras = {
-            {"android.intent.extra.STREAM", QUrl(filename)}
+            {QStringLiteral("android.intent.extra.STREAM"), QUrl(filename)}
         };
     }
     ActivityManager::startActivity(intent);
@@ -729,46 +742,51 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
     if (!desktop.open(QFile::ReadWrite | QFile::Text)) {
         return;
     }
-    QString content = QString::fromUtf8(desktop.readAll());
-    if (content.contains("X-Maemo-Service")) {
+    const QString content = QString::fromUtf8(desktop.readAll());
+    if (content.contains(QLatin1String("X-Maemo-Service"))) {
         return;
     }
-    int off0 = content.indexOf("Exec=apkd-launcher ");
+    const int off0 = content.indexOf(QLatin1String("Exec=apkd-launcher "));
     if (off0 == -1) {
         return;
     }
-    int off1 = content.indexOf(" ", off0 + 20) + 1;
-    int off2 = content.indexOf("\n", off1) - 1;
-    QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
-    QString package = data[0];
+    const int off1 = content.indexOf(QChar(u' '), off0 + 20) + 1;
+    const int off2 = content.indexOf(QChar(u'\n'), off1) - 1;
+    const QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
+    const QString package = data.first();
     QString activity = QStringLiteral("empty");
     if (data.length() >= 2) {
-        activity = data[1];
+        activity = data.at(1);
     }
     activity = QString::fromLatin1(activity.toLatin1().toPercentEncoding(QByteArray(), QByteArray("-._~")).replace("%", "_"));
     qDebug() << path << package << activity;
     QTextStream out(&desktop);
     desktop.seek(desktop.size() - 1);
-    QString sym = out.read(1);
-    if (sym != "\n") {
-        out << "\n";
+    const QString sym = out.read(1);
+    if (sym != QLatin1String("\n")) {
+        out << QChar(u'\n');
     }
-    out << "X-Maemo-Service=org.coderus.aliendalvikcontrol\n";
-    out << "X-Maemo-Object-Path=/\n";
-    out << "X-Maemo-Method=" + package + "." + activity + "\n";
+    out << QLatin1String("X-Maemo-Service=org.coderus.aliendalvikcontrol\n");
+    out << QLatin1String("X-Maemo-Object-Path=/\n");
+    out << QLatin1String("X-Maemo-Method=") << package << QChar(u'.') << activity << QChar(u'\n');
 }
 
 void MimeHandlerAdaptor::topmostIdChanged(int pId)
 {
-    QProcess *proc = new QProcess(this);
-    proc->start("/bin/ps", QStringList() << "-p" << QString::number(pId) << "-o" << "comm=");
-    proc->waitForFinished(1000);
-    if (proc->state() != QProcess::NotRunning) {
+    QProcess proc;
+    proc.start(QStringLiteral("/bin/ps"), {
+                    QStringLiteral("-p"),
+                    QString::number(pId),
+                    QStringLiteral("-o"),
+                    QStringLiteral("comm=")});
+    proc.waitForFinished(1000);
+    if (proc.state() != QProcess::NotRunning) {
         _isTopmostAndroid = false;
         return;
     }
-    QByteArray out = proc->readAll().trimmed();
-    _isTopmostAndroid = (out == "system_server");
+    const QByteArray out = proc.readAll().trimmed();
+    _isTopmostAndroid = (out == QByteArrayLiteral("system_server"));
+    emit isTopmostAndroidChanged(_isTopmostAndroid);
 }
 
 void MimeHandlerAdaptor::serviceStopped()
