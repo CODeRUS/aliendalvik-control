@@ -64,7 +64,7 @@ void ActivityManager::startActivity(Intent intent)
 void ActivityManager::forceStopPackage(const QString &package)
 {
     ActivityManager *manager = ActivityManager::GetInstance();
-    qCDebug(manager->logging) << Q_FUNC_INFO << package << TRANSACTION_forceStopPackage;
+    qCDebug(manager->logging) << Q_FUNC_INFO << package;
 
     QSharedPointer<Parcel> parcel = manager->createTransaction();
     if (!parcel) {

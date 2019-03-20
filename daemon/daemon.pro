@@ -30,7 +30,8 @@ SOURCES += \
     src/alienservice.cpp \
     src/binderlocalobject.cpp \
     src/binderlocalservice.cpp \
-    src/aliendalvikcontroller.cpp
+    src/aliendalvikcontroller.cpp \
+    src/windowmanager.cpp
 
 HEADERS += \
     src/mimehandleradaptor.h \
@@ -54,7 +55,8 @@ HEADERS += \
     src/alienservice.h \
     src/binderlocalobject.h \
     src/binderlocalservice.h \
-    src/aliendalvikcontroller.h
+    src/aliendalvikcontroller.h \
+    src/windowmanager.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/
@@ -67,8 +69,7 @@ dbusConf.path = /etc/dbus-1/system.d/
 INSTALLS += dbusConf
 
 desktop.files = \
-    desktop/android-open-url.desktop \
-    desktop/android-open-url-selector.desktop
+    desktop/android-open-url.desktop
 desktop.path = /usr/share/applications
 
 INSTALLS += desktop

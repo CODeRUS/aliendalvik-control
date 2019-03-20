@@ -11,6 +11,7 @@
 #include "intentsender.h"
 #include "parcel.h"
 #include "alienservice.h"
+#include "windowmanager.h"
 
 #include "aliendalvikcontrol_adaptor.h"
 
@@ -60,6 +61,21 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
                                          QStringLiteral("org.nemomobile.compositor"),
                                          QStringLiteral("privateTopmostWindowProcessIdChanged"),
                                          this, SLOT(topmostIdChanged(int)));
+    QDBusMessage pidMsg = QDBusMessage::createMethodCall(
+                QStringLiteral("org.nemomobile.lipstick"),
+                QStringLiteral("/"),
+                QStringLiteral("org.nemomobile.compositor"),
+                QStringLiteral("privateTopmostWindowProcessId"));
+    QDBusPendingReply<int> pidMsgPending = QDBusConnection::systemBus().asyncCall(pidMsg);
+    QDBusPendingCallWatcher *pidMsgWatcher =new QDBusPendingCallWatcher(pidMsgPending);
+    connect(pidMsgWatcher, &QDBusPendingCallWatcher::finished, [this](QDBusPendingCallWatcher *watcher){
+        watcher->deleteLater();
+        QDBusPendingReply<int> reply = *watcher;
+        if (reply.isError()) {
+            return;
+        }
+        topmostIdChanged(reply.value());
+    });
 
     apkdIface = new QDBusInterface(QStringLiteral("com.jolla.apkd"),
                                    QStringLiteral("/com/jolla/apkd"),
@@ -86,6 +102,7 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     PackageManager::GetInstance();
     AppOpsService::GetInstance();
     AlienService::GetInstance();
+    WindowManager::GetInstance();
 
     m_localServer = new QLocalServer(nullptr); // controlled by separate thread
     m_localServer->setSocketOptions(QLocalServer::WorldAccessOption);
@@ -168,22 +185,24 @@ void MimeHandlerAdaptor::uriActivity(const QString &uri)
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::uriActivitySelector(const QString &uri)
-{
-    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "--selector" << "-d" << uri);
-}
-
 void MimeHandlerAdaptor::hideNavBar()
 {
-    const QString navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), QStringLiteral("144")).toString();
-    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << QStringLiteral("0,0,0,-%1").arg(navbarHeight));
+    const QString navbarHeightString = m_deviceProperties.value(QStringLiteral("navbarHeight"), QStringLiteral("144")).toString();
+//    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << QStringLiteral("0,0,0,-%1").arg(navbarHeight));
 //    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
+    bool ok = false;
+    int navbarHeight = navbarHeightString.toInt(&ok);
+    if (!ok) {
+        navbarHeight = 144;
+    }
+    WindowManager::setOverscan(0, 0, 0, 0, -navbarHeight);
 }
 
 void MimeHandlerAdaptor::showNavBar()
 {
 //    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
-    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,0");
+//    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,0");
+    WindowManager::setOverscan(0, 0, 0, 0, 0);
 }
 
 void MimeHandlerAdaptor::openDownloads()
@@ -237,37 +256,6 @@ void MimeHandlerAdaptor::launchApp(const QString &packageName)
 void MimeHandlerAdaptor::forceStop(const QString &packageName)
 {
     ActivityManager::forceStopPackage(packageName);
-}
-
-void MimeHandlerAdaptor::getImeList()
-{
-    QString fullOutput = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list" << "-s" << "-a");
-    QStringList fullOutputLines = fullOutput.trimmed().split("\n");
-    qDebug() << fullOutput.trimmed();
-
-    QString enabledOutput = appProcessOutput("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "list" << "-s");
-    QStringList enabledOutputLines = enabledOutput.trimmed().split("\n");
-    qDebug() << enabledOutput.trimmed();
-
-    QVariantList imeList;
-    for (const QString &imeName : fullOutputLines) {
-        QVariantMap imeMethod;
-        imeMethod["name"] = imeName;
-        imeMethod["enabled"] = enabledOutputLines.contains(imeName);
-        imeList.append(imeMethod);
-    }
-
-    emit m_adaptor->imeAvailable(imeList);
-}
-
-void MimeHandlerAdaptor::triggerImeMethod(const QString &ime, bool enable)
-{
-    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << (enable ? "enable" : "disable") << ime);
-}
-
-void MimeHandlerAdaptor::setImeMethod(const QString &ime)
-{
-    appProcess("ime.jar", QStringList() << "com.android.commands.ime.Ime" << "set" << ime);
 }
 
 void MimeHandlerAdaptor::shareContent(const QVariantMap &content, const QString &source)
@@ -455,17 +443,6 @@ QString MimeHandlerAdaptor::getFocusedApp()
 bool MimeHandlerAdaptor::isTopmostAndroid()
 {
     return _isTopmostAndroid;
-}
-
-QString MimeHandlerAdaptor::getSettings(const QString &nspace, const QString &key)
-{
-    QString value = appProcessOutput("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "get" << nspace << key);
-    return value.trimmed();
-}
-
-void MimeHandlerAdaptor::putSettings(const QString &nspace, const QString &key, const QString &value)
-{
-    appProcess("settings.jar", QStringList() << "com.android.commands.settings.SettingsCmd" << "put" << nspace << key << value);
 }
 
 QString MimeHandlerAdaptor::getprop(const QString &key)

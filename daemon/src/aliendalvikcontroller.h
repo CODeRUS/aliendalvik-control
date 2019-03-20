@@ -8,7 +8,6 @@ class AliendalvikController : public QObject
     Q_OBJECT
 public:
     explicit AliendalvikController(QObject *parent = nullptr);
-    bool isServiceRunning() const;
 
 private slots:
     void aliendalvikChanged(const QString &, const QVariantMap &properties, const QStringList &);
