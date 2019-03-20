@@ -27,17 +27,15 @@ ShareDialog {
             title: qsTrId("Share to Android")
         }
         delegate: BackgroundItem {
-            id: content
-            contentHeight: Theme.itemSizeSmall + Theme.paddingMedium
-            width: parent.width
+            width: ListView.view.width
 
             Image {
                 id: icon
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.horizontalPageMargin
-                anchors.verticalCenter: parent.verticalCenter123
-                height: Theme.itemSizeSmall
-                width: height
+                anchors.verticalCenter: parent.verticalCenter
+                sourceSize.width: Theme.itemSizeSmall - Theme.paddingMedium
+                sourceSize.height: Theme.itemSizeSmall - Theme.paddingMedium
                 source: "data:image/png;base64," + modelData.icon
             }
 
