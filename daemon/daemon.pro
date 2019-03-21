@@ -93,12 +93,6 @@ settingsqml.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
 
 INSTALLS += settingsqml
 
-settingspng.files = \
-    settings/icon-m-aliendalvik-back.png
-settingspng.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
-
-INSTALLS += settingspng
-
 apk.files = apk/app-release.apk
 apk.path = /usr/share/aliendalvik-control/apk
 

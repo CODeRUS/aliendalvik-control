@@ -22,7 +22,7 @@ void PluginInfo::query()
     info.methodId        = QStringLiteral("AliendalvikSharePlugin");
     info.shareUIPath     = QStringLiteral("/usr/share/nemo-transferengine/plugins/AliendalvikShare.qml");
     info.capabilitities  = QStringList({QStringLiteral("*")});
-    info.accountIcon     = QStringLiteral("image://theme/icon-m-android");
+    info.accountIcon     = QStringLiteral("image://theme/icon-m-share-aliendalvik");
     m_infoList.clear();
     m_infoList << info;
 

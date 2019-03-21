@@ -1,10 +1,10 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import Nemo.DBus 2.0
+import com.jolla.settings 1.0
 
-Switch {
+SettingsToggle {
     id: root
-    property string entryPath
 
     DBusInterface {
         id: dbus
@@ -15,17 +15,16 @@ Switch {
         iface: "org.coderus.aliendalvikcontrol"
     }
 
-    iconSource: "/usr/share/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png"
+    name: "NavBar"
+    icon.source: "image://theme/icon-m-aliendalvik-back"
     checked: true
-    automaticCheck: true
-    onClicked: {
+
+    onToggled: {
+        checked = !checked
         if (checked) {
             dbus.typedCall("showNavBar", [])
-        }
-        else {
+        } else {
             dbus.typedCall("hideNavBar", [])
         }
     }
-
-    Behavior on opacity { FadeAnimation { } }
 }

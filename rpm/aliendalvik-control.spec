@@ -85,7 +85,6 @@ apkd-uninstall org.coderus.aliendalvikcontrol ||:
 
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/main.qml
 %{_datadir}/jolla-settings/pages/aliendalvikcontrol/NavbarToggle.qml
-%{_datadir}/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png
 
 %{_libdir}/nemo-transferengine/plugins/libaliendalvikshareplugin.so
 %{_datadir}/nemo-transferengine/plugins/AliendalvikShare.qml

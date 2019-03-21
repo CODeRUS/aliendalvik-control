@@ -15,7 +15,7 @@
             "path": "system_settings/look_and_feel/aliendalvikcontrol/toggle_navbar",
             "title": "Toggle android navbar",
             "type": "custom",
-            "icon": "/usr/share/jolla-settings/pages/aliendalvikcontrol/icon-m-aliendalvik-back.png",
+            "icon": "image://theme/icon-m-aliendalvik-back",
             "params": {
                 "source": "/usr/share/jolla-settings/pages/aliendalvikcontrol/NavbarToggle.qml",
                 "type": "grid"
