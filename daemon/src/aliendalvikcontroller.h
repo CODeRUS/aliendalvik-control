@@ -10,8 +10,6 @@ public:
     explicit AliendalvikController(QObject *parent = nullptr);
 
 private slots:
-    void aliendalvikChanged(const QString &, const QVariantMap &properties, const QStringList &);
-
     virtual void serviceStopped() = 0;
     virtual void serviceStarted() = 0;
 };

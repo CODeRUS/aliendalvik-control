@@ -31,7 +31,8 @@ SOURCES += \
     src/binderlocalobject.cpp \
     src/binderlocalservice.cpp \
     src/aliendalvikcontroller.cpp \
-    src/windowmanager.cpp
+    src/windowmanager.cpp \
+    src/systemdcontroller.cpp
 
 HEADERS += \
     src/mimehandleradaptor.h \
@@ -56,7 +57,8 @@ HEADERS += \
     src/binderlocalobject.h \
     src/binderlocalservice.h \
     src/aliendalvikcontroller.h \
-    src/windowmanager.h
+    src/windowmanager.h \
+    src/systemdcontroller.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/
