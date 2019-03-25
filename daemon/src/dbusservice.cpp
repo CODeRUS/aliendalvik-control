@@ -50,6 +50,7 @@ DBusService::DBusService(QObject *parent)
             QString line = in.readLine();
             if (line.startsWith(QLatin1String("export BOOTCLASSPATH="))) {
                 line=line.mid(21).replace(QLatin1String("$FRAMEWORK"), QLatin1String("/system/framework"));
+                qDebug() << "BOOTCLASSPATH:" << line;
                 m_alienEnvironment.insert(QStringLiteral("BOOTCLASSPATH"), line);
                 break;
             }
@@ -63,6 +64,7 @@ DBusService::DBusService(QObject *parent)
             QString line = in.readLine();
             if (line.startsWith(QLatin1String("export ALIEN_ID="))) {
                 line=line.mid(16);
+                qDebug() << "ALIEN_ID:" << line;
                 m_alienEnvironment.insert(QStringLiteral("ALIEN_ID"), line);
                 break;
             }
@@ -199,57 +201,78 @@ void DBusService::sendInput(const QString &text)
 
 void DBusService::uriActivity(const QString &uri)
 {
-
+    qDebug() << Q_FUNC_INFO << uri;
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-a"),
+                   QStringLiteral("android.intent.action.VIEW"),
+                   QStringLiteral("-d"),
+                   uri
+               });
 }
 
 void DBusService::hideNavBar()
 {
-
+    const QString navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), QStringLiteral("144")).toString();
+    runCommand(QStringLiteral("wm"), {
+                   QStringLiteral("overscan"),
+                   QStringLiteral("0,0,0,-%1").arg(navbarHeight)
+               });
 }
 
 void DBusService::showNavBar()
 {
-
+    runCommand(QStringLiteral("wm"), {
+                   QStringLiteral("overscan"),
+                   QStringLiteral("0,0,0,0")
+               });
 }
 
 void DBusService::openDownloads()
 {
-    launchPackage(QStringLiteral("com.android.documentsui"));
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-a"),
+                   QStringLiteral("android.intent.action.VIEW_DOWNLOADS")
+               });
 }
 
 void DBusService::openSettings()
 {
-    launchPackage(QStringLiteral("com.android.settings"));
+
 }
 
 void DBusService::openContacts()
 {
-    launchPackage(QStringLiteral("com.android.contacts"));
+
 }
 
 void DBusService::openCamera()
 {
-    launchPackage(QStringLiteral("com.android.camera2"));
+
 }
 
 void DBusService::openGallery()
 {
-    launchPackage(QStringLiteral("com.android.gallery3d"));
+
 }
 
 void DBusService::openAppSettings(const QString &package)
 {
-    qDebug() << Q_FUNC_INFO << package;
+
 }
 
 void DBusService::launchApp(const QString &packageName)
 {
-    launchPackage(packageName);
+
 }
 
 void DBusService::forceStop(const QString &packageName)
 {
-
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("force-stop"),
+                   packageName
+               });
 }
 
 void DBusService::shareContent(const QVariantMap &content, const QString &source)
@@ -297,19 +320,19 @@ void DBusService::shareFile(const QString &filename, const QString &mimetype)
         return;
     }
 
-    runCommand("am", {
-                   "start",
-                   "-n",
-                   "org.coderus.aliendalvikcontrol/.MainActivity",
-                   "--es",
-                   "command",
-                   "sharing",
-                   "-a",
-                   "android.intent.action.SEND",
-                   "-t",
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-n"),
+                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("command"),
+                   QStringLiteral("sharing"),
+                   QStringLiteral("-a"),
+                   QStringLiteral("android.intent.action.SEND"),
+                   QStringLiteral("-t"),
                    mimetype,
-                   "--eu",
-                   "android.intent.extra.STREAM",
+                   QStringLiteral("--eu"),
+                   QStringLiteral("android.intent.extra.STREAM"),
                    filename
                });
 }
@@ -317,6 +340,25 @@ void DBusService::shareFile(const QString &filename, const QString &mimetype)
 void DBusService::shareText(const QString &text)
 {
     qDebug() << Q_FUNC_INFO << text;
+    if (!checkHelperSocket()) {
+        return;
+    }
+
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-n"),
+                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("command"),
+                   QStringLiteral("sharing"),
+                   QStringLiteral("-a"),
+                   QStringLiteral("android.intent.action.SEND"),
+                   QStringLiteral("-t"),
+                   QStringLiteral("text/*"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("android.intent.extra.TEXT"),
+                   text
+               });
 }
 
 void DBusService::doShare(
@@ -366,31 +408,30 @@ void DBusService::doShare(
         }
         disconnect(connection);
     }
-
     QStringList options = {
-        "start",
-        "-a",
-        "android.intent.action.SEND",
-        "-n",
+        QStringLiteral("start"),
+        QStringLiteral("-a"),
+        QStringLiteral("android.intent.action.SEND"),
+        QStringLiteral("-n"),
         QStringLiteral("%1/%2").arg(packageName, className),
-        "-t",
+        QStringLiteral("-t"),
         mimetype
     };
     if (filename.isEmpty()) {
         options.append({
-                           "--es",
-                           "android.intent.extra.TEXT",
+                           QStringLiteral("--es"),
+                           QStringLiteral("android.intent.extra.TEXT"),
                            data
                        });
     } else {
         options.append({
-                           "--eu",
-                           "android.intent.extra.STREAM",
-                           filename
+                           QStringLiteral("--eu"),
+                           QStringLiteral("android.intent.extra.STREAM"),
+                           QStringLiteral("file://%1").arg(filename)
                        });
     }
 
-    runCommand("am", options);
+    runCommand(QStringLiteral("am"), options);
 }
 
 QString DBusService::getFocusedApp()
@@ -421,15 +462,82 @@ bool DBusService::isTopmostAndroid()
     return _isTopmostAndroid;
 }
 
+void DBusService::getImeList()
+{
+    QString fullOutput = runCommandOutput(QStringLiteral("ime"), {
+                                              QStringLiteral("list"),
+                                              QStringLiteral("-s"),
+                                              QStringLiteral("-a")
+                                          });
+    QStringList fullOutputLines = fullOutput.trimmed().split("\n");
+    qDebug() << fullOutput.trimmed();
+
+    QString enabledOutput = runCommandOutput(QStringLiteral("ime"), {
+                                                 QStringLiteral("list"),
+                                                 QStringLiteral("-s")
+                                             });
+    QStringList enabledOutputLines = enabledOutput.trimmed().split("\n");
+    qDebug() << enabledOutput.trimmed();
+
+    QVariantList imeList;
+    for (const QString &imeName : fullOutputLines) {
+        QVariantMap imeMethod;
+        imeMethod["name"] = imeName;
+        imeMethod["enabled"] = enabledOutputLines.contains(imeName);
+        imeList.append(imeMethod);
+    }
+
+    emit m_adaptor->imeAvailable(imeList);
+}
+
+void DBusService::triggerImeMethod(const QString &ime, bool enable)
+{
+    runCommand(QStringLiteral("ime"), {
+                   enable ? QStringLiteral("enable") : QStringLiteral("disable"),
+                   ime
+               });
+}
+
+void DBusService::setImeMethod(const QString &ime)
+{
+    runCommand(QStringLiteral("ime"), {
+                   QStringLiteral("set"),
+                   ime
+               });
+}
+
+QString DBusService::getSettings(const QString &nspace, const QString &key)
+{
+    QString value = runCommandOutput(QStringLiteral("settings"), {
+                                         QStringLiteral("get"),
+                                         nspace,
+                                         key
+                                     });
+    return value.trimmed();
+}
+
+void DBusService::putSettings(const QString &nspace, const QString &key, const QString &value)
+{
+    runCommand(QStringLiteral("settings"), {
+                   QStringLiteral("put"),
+                   nspace,
+                   key,
+                   value
+               });
+}
+
 QString DBusService::getprop(const QString &key)
 {
-    QString value = runCommandOutput("/system/bin/getprop", QStringList() << key);
+    QString value = runCommandOutput(QStringLiteral("/system/bin/getprop"), {key});
     return value.trimmed();
 }
 
 void DBusService::setprop(const QString &key, const QString &value)
 {
-    runCommand("/system/bin/setprop", QStringList() << key << value);
+    runCommand(QStringLiteral("/system/bin/setprop"), {
+                   key,
+                   value
+               });
 }
 
 void DBusService::quit()
@@ -477,58 +585,6 @@ void DBusService::startReadingLocalServer()
     }, Qt::DirectConnection);
 }
 
-void DBusService::launchPackage(const QString &packageName)
-{
-//    apkdIface->call(QStringLiteral("launchApp"), packageName);
-}
-
-void DBusService::mountSdcard(const QString mountPath)
-{
-    qDebug() << Q_FUNC_INFO << mountPath;
-
-    const QString sdcardMountPath = QStringLiteral("/home/.android/data/media/0/sdcard_external");
-    QDir sdcardMount(sdcardMountPath);
-    if (!sdcardMount.exists()) {
-        sdcardMount.mkpath(QStringLiteral("."));
-
-        const struct passwd *nemo_pwd = getpwnam("nemo");
-        if (!nemo_pwd) {
-            qWarning() << Q_FUNC_INFO << "Can't get nemo uid";
-            return;
-        }
-
-        const struct group *nemo_grp = getgrnam("nemo");
-        if (!nemo_grp) {
-            qWarning() << Q_FUNC_INFO << "Can't get nemo gid";
-            return;
-        }
-
-        const int status = chown(sdcardMountPath.toLatin1().constData(), nemo_pwd->pw_uid, nemo_grp->gr_gid);
-        qDebug() << Q_FUNC_INFO << "Sdcard mount chown to nemo status:" << status;
-    }
-
-    const int status = QProcess::execute(QStringLiteral("/bin/mount"), {QStringLiteral("--bind"), mountPath, sdcardMount.absolutePath()});
-
-    qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
-             << QString::number(status);
-}
-
-void DBusService::umountSdcard()
-{
-    qDebug() << Q_FUNC_INFO;
-
-    const QString sdcardMountPath = QStringLiteral("/home/.android/data/media/0/sdcard_external");
-    QDir sdcardMount(sdcardMountPath);
-    if (!sdcardMount.exists()) {
-        return;
-    }
-
-    const int status = QProcess::execute(QStringLiteral("/bin/umount"), {sdcardMount.absolutePath()});
-
-    qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
-             << QString::number(status);
-}
-
 bool DBusService::checkHelperSocket(bool remove)
 {
     qDebug() << Q_FUNC_INFO;
@@ -536,7 +592,24 @@ bool DBusService::checkHelperSocket(bool remove)
     const QFileInfo helperSocket(s_localSocket);
     if (!helperSocket.dir().exists()) {
         qWarning() << Q_FUNC_INFO << "Helper not installed!";
-        return false;
+
+        if (remove) {
+            QEventLoop loop;
+            QTimer timer;
+            QFileSystemWatcher watcher({QStringLiteral("/home/.android/data/data")});
+            connect(&watcher, &QFileSystemWatcher::directoryChanged, [helperSocket, &loop](const QString &) {
+                if (!helperSocket.dir().exists()) {
+                    return;
+                }
+                loop.quit();
+            });
+            connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+            timer.start(5000);
+            loop.exec();
+            timer.stop();
+        } else {
+            return false;
+        }
     }
     if (helperSocket.exists()) {
         if (remove) {
@@ -547,13 +620,17 @@ bool DBusService::checkHelperSocket(bool remove)
     }
 
     QEventLoop loop;
+    QMetaObject::Connection conn =
     connect(m_serverThread, &QThread::started, &loop, &QEventLoop::quit);
     if (m_serverThread->isRunning()) {
-        m_serverThread->exit(0);
+        QTimer::singleShot(2000, m_serverThread, &QThread::quit);
     } else {
-        m_serverThread->start();
+        QTimer::singleShot(2000, this, [this](){
+            m_serverThread->start();
+        });
     }
     loop.exec();
+    disconnect(conn);
 
     return true;
 }
@@ -562,7 +639,7 @@ void DBusService::requestDeviceInfo()
 {
     qDebug() << Q_FUNC_INFO;
 
-    runCommand(QStringLiteral("/system/bin/am"), {
+    runCommand(QStringLiteral("am"), {
                    QStringLiteral("start"),
                    QStringLiteral("-n"),
                    QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
@@ -598,20 +675,20 @@ void DBusService::componentActivity(const QString &package, const QString &class
     qDebug() << Q_FUNC_INFO << package << className << data;
 
     QStringList options = {
-        "start",
-        "-n",
+        QStringLiteral("start"),
+        QStringLiteral("-n"),
         QStringLiteral("%1/%2").arg(package, className)
     };
     if (data.isEmpty()) {
         options.append({
-                           "-a",
-                           "android.intent.action.MAIN"
+                           QStringLiteral("-a"),
+                           QStringLiteral("android.intent.action.MAIN")
                        });
     } else {
         options.append({
-                           "-a",
-                           "android.intent.action.VIEW",
-                           "-d",
+                           QStringLiteral("-a"),
+                           QStringLiteral("android.intent.action.VIEW"),
+                           QStringLiteral("-d"),
                            data
                        });
     }
@@ -730,15 +807,13 @@ void DBusService::topmostIdChanged(int pId)
 void DBusService::serviceStopped()
 {
     qDebug() << Q_FUNC_INFO;
-
-    umountSdcard();
 }
 
 void DBusService::serviceStarted()
 {
-    checkHelperSocket(true);
-
-    requestDeviceInfo();
+    if (checkHelperSocket(true)) {
+        requestDeviceInfo();
+    }
 }
 
 void DBusService::readApplications(const QString &)

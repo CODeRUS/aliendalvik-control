@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     }
 
     qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/100000/dbus/user_bus_socket");
+    qputenv("LC_ALL", "en_US.utf8");
 
     QCoreApplication app(argc, argv);
     DBusService context;

@@ -78,6 +78,33 @@
       <arg name="className" type="s" direction="in"/>
       <arg name="data" type="s" direction="in"/>
     </method>
+    <method name="getImeList">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <signal name="imeAvailable">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
+      <arg name="imeList" type="a(v)" direction="out"/>
+    </signal>
+    <method name="setImeMethod">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="ime" type="s" direction="in"/>
+    </method>
+    <method name="triggerImeMethod">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="ime" type="s" direction="in"/>
+      <arg name="enable" type="b" direction="in"/>
+    </method>
+    <method name="getSettings">
+      <arg name="ns" type="s" direction="in"/>
+      <arg name="key" type="s" direction="in"/>
+      <arg name="value" type="s" direction="out"/>
+    </method>
+    <method name="putSettings">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="ns" type="s" direction="in"/>
+      <arg name="key" type="s" direction="in"/>
+      <arg name="value" type="s" direction="in"/>
+    </method>
     <method name="forceStop">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="package" type="s" direction="in"/>

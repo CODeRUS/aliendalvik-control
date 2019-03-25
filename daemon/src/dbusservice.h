@@ -59,6 +59,11 @@ private slots:
                  const QString &launcherClass);
     QString getFocusedApp();
     bool isTopmostAndroid();
+    void getImeList();
+    void triggerImeMethod(const QString &ime, bool enable);
+    void setImeMethod(const QString &ime);
+    QString getSettings(const QString &nspace, const QString &key);
+    void putSettings(const QString &nspace, const QString &key, const QString &value);
     QString getprop(const QString &key);
     void setprop(const QString &key, const QString &value);
     void quit();
@@ -68,10 +73,6 @@ private slots:
 
 private:
     friend class DBusAdaptor;
-    void launchPackage(const QString &packageName);
-
-    void mountSdcard(const QString mountPath);
-    void umountSdcard();
 
     bool checkHelperSocket(bool remove = false);
 
