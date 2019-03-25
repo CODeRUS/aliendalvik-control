@@ -11,7 +11,7 @@ License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   aliendalvik
+Requires:   aliendalvik < 8
 Conflicts:  android-shareui
 Obsoletes:  android-shareui
 Requires:   nemo-transferengine-qt5 >= 0.3.1
@@ -66,7 +66,7 @@ fi
 /usr/bin/aliendalvik-control restore ||:
 umount /home/.android/data/media/0/sdcard_external ||:
 /usr/bin/update-desktop-database ||:
-apkd-uninstall org.coderus.aliendalvikcontrol ||:
+apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 
 %files
 %{_bindir}/aliendalvik-control
