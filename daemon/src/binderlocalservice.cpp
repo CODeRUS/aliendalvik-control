@@ -35,8 +35,8 @@ void BinderLocalService::binderConnect()
     qCDebug(logging) << Q_FUNC_INFO << "Binder connect" << m_serviceName << m_interfaceName;
 
     if (!m_serviceManager) {
-        qCWarning(logging) << Q_FUNC_INFO << "Creating service manager";
-        m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
+        qCWarning(logging) << Q_FUNC_INFO << "Creating service manager for" << binderDevice();
+        m_serviceManager = gbinder_servicemanager_new(binderDevice());
     }
 
     if (!m_serviceManager) {
@@ -58,7 +58,7 @@ void BinderLocalService::binderConnect()
         m_binderServiceName = gbinder_servicename_new(m_serviceManager, m_localObject, m_serviceName);
     }
 
-    registrationCompleted();
+    emit binderConnected();
 }
 
 void BinderLocalService::binderDisconnect()
@@ -82,6 +82,8 @@ void BinderLocalService::binderDisconnect()
         gbinder_servicemanager_unref(m_serviceManager);
         m_serviceManager = nullptr;
     }
+
+    emit binderDisconnected();
 }
 
 GBinderLocalReply *BinderLocalService::handler(GBinderLocalObject *obj,

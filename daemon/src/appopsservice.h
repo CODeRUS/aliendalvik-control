@@ -17,9 +17,6 @@ public:
     static AppOpsService *GetInstance();
 
     static GBinderRemoteObject *getToken(GBinderLocalObject *clientToken = nullptr);
-
-protected:
-    void registrationCompleted() override;
 };
 
 #endif // APPOPSSERVICE_H

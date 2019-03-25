@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QTextStream>
 
-#include "mimehandleradaptor.h"
+#include "dbusservice.h"
 
 int main(int argc, char *argv[])
 {
@@ -39,32 +39,11 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // Hacka hacking hacky-hacky hacked hacku hacka hack.
     qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/100000/dbus/user_bus_socket");
 
-    qputenv("ANDROID_ROOT", "/system");
-    qputenv("ANDROID_DATA", "/data");
-
-    qputenv("BOOTCLASSPATH", "/system/framework/core-oj.jar:"
-                             "/system/framework/core-libart.jar:"
-                             "/system/framework/conscrypt.jar:"
-                             "/system/framework/okhttp.jar:"
-                             "/system/framework/bouncycastle.jar:"
-                             "/system/framework/apache-xml.jar:"
-                             "/system/framework/legacy-test.jar:"
-                             "/system/framework/ext.jar:"
-                             "/system/framework/framework.jar:"
-                             "/system/framework/telephony-common.jar:"
-                             "/system/framework/voip-common.jar:"
-                             "/system/framework/ims-common.jar:"
-                             "/system/framework/org.apache.http.legacy.boot.jar:"
-                             "/system/framework/android.hidl.base-V1.0-java.jar:"
-                             "/system/framework/android.hidl.manager-V1.0-java.jar");
-
-
     QCoreApplication app(argc, argv);
-    MimeHandlerAdaptor context;
-    QTimer::singleShot(0, &context, &MimeHandlerAdaptor::start);
+    DBusService context;
+    QTimer::singleShot(0, &context, &DBusService::start);
 
     return app.exec();
 }

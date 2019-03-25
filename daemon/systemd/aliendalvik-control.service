@@ -8,5 +8,5 @@ Type=dbus
 ExecStart=/usr/bin/aliendalvik-control
 EnvironmentFile=-/var/lib/environment/aliendalvik-control/*.conf
 BusName=org.coderus.aliendalvikcontrol
-Restart=on-failure
+Restart=always
 RestartSec=15

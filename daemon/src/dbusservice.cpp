@@ -1,4 +1,4 @@
-#include "mimehandleradaptor.h"
+#include "dbusservice.h"
 #include "inotifywatcher.h"
 
 #include "activitymanager.h"
@@ -34,7 +34,7 @@ static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
 static const QString s_localSocket = QStringLiteral("/home/.android/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
 
-MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
+DBusService::DBusService(QObject *parent)
     : AliendalvikController(parent)
     , _watcher(new INotifyWatcher(this))
     , m_sbus(s_sessionBusConnection)
@@ -98,12 +98,6 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
     m_sessionBusConnector->setInterval(1000); // 1 second
     m_sessionBusConnector->start();
 
-    ActivityManager::GetInstance();
-    PackageManager::GetInstance();
-    AppOpsService::GetInstance();
-    AlienService::GetInstance();
-    WindowManager::GetInstance();
-
     m_localServer = new QLocalServer(nullptr); // controlled by separate thread
     m_localServer->setSocketOptions(QLocalServer::WorldAccessOption);
     m_localServer->setMaxPendingConnections(2147483647);
@@ -114,7 +108,7 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
         m_localServer->close();
         m_serverThread->start();
     });
-    connect(m_localServer, &QLocalServer::newConnection, this, &MimeHandlerAdaptor::startReadingLocalServer, Qt::DirectConnection);
+    connect(m_localServer, &QLocalServer::newConnection, this, &DBusService::startReadingLocalServer, Qt::DirectConnection);
     connect(m_serverThread, &QThread::started, this, [this](){
         qWarning() << Q_FUNC_INFO << "QThread::started";
         bool listening = m_localServer->listen(s_localSocket);
@@ -136,11 +130,11 @@ MimeHandlerAdaptor::MimeHandlerAdaptor(QObject *parent)
              << checkHelperSocket(true);
 }
 
-MimeHandlerAdaptor::~MimeHandlerAdaptor()
+DBusService::~DBusService()
 {
 }
 
-void MimeHandlerAdaptor::start()
+void DBusService::start()
 {
     QDBusConnection connection = QDBusConnection::systemBus();
 
@@ -166,30 +160,27 @@ void MimeHandlerAdaptor::start()
     m_adaptor = new DBusAdaptor(this);
 }
 
-void MimeHandlerAdaptor::sendKeyevent(int code)
+void DBusService::sendKeyevent(int code)
 {
     appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "keyevent" << QString::number(code));
 }
 
-void MimeHandlerAdaptor::sendInput(const QString &text)
+void DBusService::sendInput(const QString &text)
 {
     appProcess("input.jar", QStringList() << "com.android.commands.input.Input" << "text" << text);
 }
 
-void MimeHandlerAdaptor::uriActivity(const QString &uri)
+void DBusService::uriActivity(const QString &uri)
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.intent.action.VIEW" << "-d" << uri.toString());
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.VIEW");
     intent.data = uri;
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::hideNavBar()
+void DBusService::hideNavBar()
 {
     const QString navbarHeightString = m_deviceProperties.value(QStringLiteral("navbarHeight"), QStringLiteral("144")).toString();
-//    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << QStringLiteral("0,0,0,-%1").arg(navbarHeight));
-//    runCommand("/system/bin/service", QStringList() << "call" << "activity" << "42" << "s16" << "com.android.systemui");
     bool ok = false;
     int navbarHeight = navbarHeightString.toInt(&ok);
     if (!ok) {
@@ -198,44 +189,37 @@ void MimeHandlerAdaptor::hideNavBar()
     WindowManager::setOverscan(0, 0, 0, 0, -navbarHeight);
 }
 
-void MimeHandlerAdaptor::showNavBar()
+void DBusService::showNavBar()
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "startservice" << "-n" << "com.android.systemui/.SystemUIService");
-//    appProcess("wm.jar", QStringList() << "com.android.commands.wm.Wm" << "overscan" << "0,0,0,0");
     WindowManager::setOverscan(0, 0, 0, 0, 0);
 }
 
-void MimeHandlerAdaptor::openDownloads()
+void DBusService::openDownloads()
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.documentsui/.LauncherActivity");
     launchPackage(QStringLiteral("com.android.documentsui"));
 }
 
-void MimeHandlerAdaptor::openSettings()
+void DBusService::openSettings()
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.settings.SETTINGS");
     launchPackage(QStringLiteral("com.android.settings"));
 }
 
-void MimeHandlerAdaptor::openContacts()
+void DBusService::openContacts()
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.contacts/com.android.contacts.activities.PeopleActivity");
     launchPackage(QStringLiteral("com.android.contacts"));
 }
 
-void MimeHandlerAdaptor::openCamera()
+void DBusService::openCamera()
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-a" << "android.media.action.IMAGE_CAPTURE");
     launchPackage(QStringLiteral("com.android.camera2"));
 }
 
-void MimeHandlerAdaptor::openGallery()
+void DBusService::openGallery()
 {
-//    appProcess("am.jar", QStringList() << "com.android.commands.am.Am" << "start" << "-n" << "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity");
     launchPackage(QStringLiteral("com.android.gallery3d"));
 }
 
-void MimeHandlerAdaptor::openAppSettings(const QString &package)
+void DBusService::openAppSettings(const QString &package)
 {
     qDebug() << Q_FUNC_INFO << package;
 
@@ -243,22 +227,22 @@ void MimeHandlerAdaptor::openAppSettings(const QString &package)
     intent.action = QStringLiteral("android.settings.APPLICATION_DETAILS_SETTINGS");
     intent.data = QStringLiteral("package:%1").arg(package);
 
-    qDebug() << Q_FUNC_INFO << "startActivity" << ActivityManager::GetInstance();
+    qDebug() << Q_FUNC_INFO << "startActivity";
 
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::launchApp(const QString &packageName)
+void DBusService::launchApp(const QString &packageName)
 {
     launchPackage(packageName);
 }
 
-void MimeHandlerAdaptor::forceStop(const QString &packageName)
+void DBusService::forceStop(const QString &packageName)
 {
     ActivityManager::forceStopPackage(packageName);
 }
 
-void MimeHandlerAdaptor::shareContent(const QVariantMap &content, const QString &source)
+void DBusService::shareContent(const QVariantMap &content, const QString &source)
 {
     qDebug() << Q_FUNC_INFO << content << source;
 
@@ -296,7 +280,7 @@ void MimeHandlerAdaptor::shareContent(const QVariantMap &content, const QString 
     }
 }
 
-void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimetype)
+void DBusService::shareFile(const QString &filename, const QString &mimetype)
 {
     qDebug() << Q_FUNC_INFO << filename << mimetype;
     if (!checkHelperSocket()) {
@@ -335,7 +319,7 @@ void MimeHandlerAdaptor::shareFile(const QString &filename, const QString &mimet
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::shareText(const QString &text)
+void DBusService::shareText(const QString &text)
 {
     qDebug() << Q_FUNC_INFO << text;
 
@@ -352,7 +336,7 @@ void MimeHandlerAdaptor::shareText(const QString &text)
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::doShare(
+void DBusService::doShare(
         const QString &mimetype,
         const QString &filename,
         const QString &data,
@@ -386,7 +370,7 @@ void MimeHandlerAdaptor::doShare(
         QEventLoop loop;
         QTimer timer;
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        QMetaObject::Connection connection = connect(this, &MimeHandlerAdaptor::isTopmostAndroidChanged, [&loop](bool isTopmostAndroid){
+        QMetaObject::Connection connection = connect(this, &DBusService::isTopmostAndroidChanged, [&loop](bool isTopmostAndroid){
             if (isTopmostAndroid) {
                 loop.quit();
             }
@@ -417,7 +401,7 @@ void MimeHandlerAdaptor::doShare(
     ActivityManager::startActivity(intent);
 }
 
-QString MimeHandlerAdaptor::getFocusedApp()
+QString DBusService::getFocusedApp()
 {
     QProcess *proc = new QProcess(this);
     proc->start("/system/bin/dumpsys", QStringList() << "window" << "windows");
@@ -440,28 +424,28 @@ QString MimeHandlerAdaptor::getFocusedApp()
     return QString();
 }
 
-bool MimeHandlerAdaptor::isTopmostAndroid()
+bool DBusService::isTopmostAndroid()
 {
     return _isTopmostAndroid;
 }
 
-QString MimeHandlerAdaptor::getprop(const QString &key)
+QString DBusService::getprop(const QString &key)
 {
     QString value = runCommandOutput("/system/bin/getprop", QStringList() << key);
     return value.trimmed();
 }
 
-void MimeHandlerAdaptor::setprop(const QString &key, const QString &value)
+void DBusService::setprop(const QString &key, const QString &value)
 {
     runCommand("/system/bin/setprop", QStringList() << key << value);
 }
 
-void MimeHandlerAdaptor::quit()
+void DBusService::quit()
 {
     QTimer::singleShot(10, qApp, SLOT(quit()));
 }
 
-void MimeHandlerAdaptor::startReadingLocalServer()
+void DBusService::startReadingLocalServer()
 {
     QLocalSocket *clientConnection = m_localServer->nextPendingConnection();
     if (!clientConnection) {
@@ -501,12 +485,12 @@ void MimeHandlerAdaptor::startReadingLocalServer()
     }, Qt::DirectConnection);
 }
 
-void MimeHandlerAdaptor::launchPackage(const QString &packageName)
+void DBusService::launchPackage(const QString &packageName)
 {
     apkdIface->call(QStringLiteral("launchApp"), packageName);
 }
 
-void MimeHandlerAdaptor::mountSdcard(const QString mountPath)
+void DBusService::mountSdcard(const QString mountPath)
 {
     qDebug() << Q_FUNC_INFO << mountPath;
 
@@ -537,7 +521,7 @@ void MimeHandlerAdaptor::mountSdcard(const QString mountPath)
              << QString::number(status);
 }
 
-void MimeHandlerAdaptor::umountSdcard()
+void DBusService::umountSdcard()
 {
     qDebug() << Q_FUNC_INFO;
 
@@ -553,7 +537,7 @@ void MimeHandlerAdaptor::umountSdcard()
              << QString::number(status);
 }
 
-bool MimeHandlerAdaptor::checkHelperSocket(bool remove)
+bool DBusService::checkHelperSocket(bool remove)
 {
     qDebug() << Q_FUNC_INFO;
 
@@ -582,7 +566,7 @@ bool MimeHandlerAdaptor::checkHelperSocket(bool remove)
     return true;
 }
 
-void MimeHandlerAdaptor::requestDeviceInfo()
+void DBusService::requestDeviceInfo()
 {
     Intent intent;
     intent.extras = {
@@ -594,7 +578,7 @@ void MimeHandlerAdaptor::requestDeviceInfo()
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::processHelperResult(const QByteArray &data)
+void DBusService::processHelperResult(const QByteArray &data)
 {
     qDebug() << Q_FUNC_INFO << data;
     QJsonParseError error;
@@ -615,7 +599,7 @@ void MimeHandlerAdaptor::processHelperResult(const QByteArray &data)
     }
 }
 
-void MimeHandlerAdaptor::componentActivity(const QString &package, const QString &className, const QString &data)
+void DBusService::componentActivity(const QString &package, const QString &className, const QString &data)
 {
     qDebug() << Q_FUNC_INFO << package << className << data;
 
@@ -638,7 +622,7 @@ void MimeHandlerAdaptor::componentActivity(const QString &package, const QString
     ActivityManager::startActivity(intent);
 }
 
-void MimeHandlerAdaptor::appProcess(const QString &jar, const QStringList &params)
+void DBusService::appProcess(const QString &jar, const QStringList &params)
 {
     qputenv("CLASSPATH", QString("/system/framework/%1").arg(jar).toUtf8());
 
@@ -652,7 +636,7 @@ void MimeHandlerAdaptor::appProcess(const QString &jar, const QStringList &param
     QProcess::startDetached(lxc, arguments);
 }
 
-QString MimeHandlerAdaptor::appProcessOutput(const QString &jar, const QStringList &params)
+QString DBusService::appProcessOutput(const QString &jar, const QStringList &params)
 {
     qputenv("CLASSPATH", QString("/system/framework/%1").arg(jar).toUtf8());
 
@@ -675,7 +659,7 @@ QString MimeHandlerAdaptor::appProcessOutput(const QString &jar, const QStringLi
     return output;
 }
 
-QString MimeHandlerAdaptor::packageName(const QString &package)
+QString DBusService::packageName(const QString &package)
 {
     QProcess *proc = new QProcess(this);
     proc->start("/system/bin/dumpsys", QStringList() << "package" << package);
@@ -689,7 +673,7 @@ QString MimeHandlerAdaptor::packageName(const QString &package)
     return output;
 }
 
-void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &params)
+void DBusService::runCommand(const QString &program, const QStringList &params)
 {
     qDebug() << "Executing" << program << params;
 
@@ -699,7 +683,7 @@ void MimeHandlerAdaptor::runCommand(const QString &program, const QStringList &p
     QProcess::startDetached(lxc, arguments);
 }
 
-QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStringList &params)
+QString DBusService::runCommandOutput(const QString &program, const QStringList &params)
 {
     QProcess *process = new QProcess(this);
     QString lxc = "/usr/bin/lxc-attach";
@@ -716,7 +700,7 @@ QString MimeHandlerAdaptor::runCommandOutput(const QString &program, const QStri
     return output;
 }
 
-void MimeHandlerAdaptor::desktopChanged(const QString &path)
+void DBusService::desktopChanged(const QString &path)
 {
     QFile desktop(path);
     if (!desktop.exists()) {
@@ -754,7 +738,7 @@ void MimeHandlerAdaptor::desktopChanged(const QString &path)
     out << QLatin1String("X-Maemo-Method=") << package << QChar(u'.') << activity << QChar(u'\n');
 }
 
-void MimeHandlerAdaptor::topmostIdChanged(int pId)
+void DBusService::topmostIdChanged(int pId)
 {
     QProcess proc;
     proc.start(QStringLiteral("/bin/ps"), {
@@ -772,21 +756,21 @@ void MimeHandlerAdaptor::topmostIdChanged(int pId)
     emit isTopmostAndroidChanged(_isTopmostAndroid);
 }
 
-void MimeHandlerAdaptor::serviceStopped()
+void DBusService::serviceStopped()
 {
     qDebug() << Q_FUNC_INFO;
 
     umountSdcard();
 }
 
-void MimeHandlerAdaptor::serviceStarted()
+void DBusService::serviceStarted()
 {
     qDebug() << Q_FUNC_INFO;
 
     requestDeviceInfo();
 }
 
-void MimeHandlerAdaptor::readApplications(const QString &)
+void DBusService::readApplications(const QString &)
 {
     qDebug() << "working";
     QDir appl(_watchDir);

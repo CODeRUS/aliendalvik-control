@@ -22,9 +22,6 @@ public:
 
     static QString getPrettyName(int uid);
     static void startApp(const QString &packageName);
-
-protected:
-    void registrationCompleted() override;
 };
 
 #endif // ALIENSERVICE_H

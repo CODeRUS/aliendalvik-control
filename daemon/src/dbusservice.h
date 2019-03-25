@@ -1,5 +1,5 @@
-#ifndef MIMEHANDLERADAPTOR_H
-#define MIMEHANDLERADAPTOR_H
+#ifndef DBUSSERVICE_H
+#define DBUSSERVICE_H
 
 #include "aliendalvikcontroller.h"
 #include "intentsender.h"
@@ -20,13 +20,13 @@ class INotifyWatcher;
 class QLocalServer;
 class QLocalSocket;
 class QTimer;
-class MimeHandlerAdaptor : public AliendalvikController, public QDBusContext
+class DBusService : public AliendalvikController, public QDBusContext
 {
     Q_OBJECT
 
 public:
-    explicit MimeHandlerAdaptor(QObject *parent = nullptr);
-    virtual ~MimeHandlerAdaptor();
+    explicit DBusService(QObject *parent = nullptr);
+    virtual ~DBusService();
 
 public slots:
     void start();
@@ -113,4 +113,4 @@ private slots:
 
 };
 
-#endif // MIMEHANDLERADAPTOR_H
+#endif // DBUSSERVICE_H

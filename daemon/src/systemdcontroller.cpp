@@ -78,6 +78,11 @@ SystemdController *SystemdController::GetInstance(const QString &unit)
     return instance;
 }
 
+bool SystemdController::isActive() const
+{
+    return m_activeState == s_valueStateActive;
+}
+
 void SystemdController::propertiesChanged(const QString &, const QVariantMap &properties, const QStringList &)
 {
     const QString activeState = properties.value(s_propertyActiveState, QString()).toString();

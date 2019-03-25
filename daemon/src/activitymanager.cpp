@@ -13,7 +13,6 @@ static ActivityManager *s_instance = nullptr;
 ActivityManager::ActivityManager(QObject *parent, const char *loggingCategoryName)
     : BinderInterfaceAbstract(AM_SERVICE_NAME,
                               AM_INTERFACE_NAME,
-                              "",
                               parent,
                               loggingCategoryName)
 {
@@ -77,9 +76,4 @@ void ActivityManager::forceStopPackage(const QString &package)
     int status = 0;
     manager->sendTransaction(TRANSACTION_forceStopPackage, parcel, &status);
     qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
-}
-
-void ActivityManager::registrationCompleted()
-{
-    qCDebug(logging) << Q_FUNC_INFO;
 }

@@ -11,7 +11,6 @@ static AlienService *s_instance = nullptr;
 AlienService::AlienService(QObject *parent, const char *loggingCategoryName)
     : BinderInterfaceAbstract(PM_SERVICE_NAME,
                               PM_INTERFACE_NAME,
-                              "",
                               parent,
                               loggingCategoryName)
 {
@@ -33,10 +32,10 @@ AlienService *AlienService::GetInstance()
 
 QString AlienService::getPrettyName(int uid)
 {
+    QString prettyName;
+
     AlienService *service = AlienService::GetInstance();
     qCDebug(service->logging) << Q_FUNC_INFO << uid;
-
-    QString prettyName;
 
     QSharedPointer<Parcel> parcel = service->createTransaction();
     if (!parcel) {
@@ -74,9 +73,4 @@ void AlienService::startApp(const QString &packageName)
     int status = 0;
     service->sendTransaction(TRANSACTION_startApp, parcel, &status);
     qCDebug(service->logging) << Q_FUNC_INFO << "Status:" << status;
-}
-
-void AlienService::registrationCompleted()
-{
-    qCDebug(logging) << Q_FUNC_INFO;
 }

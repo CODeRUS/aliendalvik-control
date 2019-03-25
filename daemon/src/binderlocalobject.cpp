@@ -44,8 +44,8 @@ void BinderLocalObject::serviceStarted()
 
 void BinderLocalObject::binderConnect()
 {
-    qCDebug(logging) << Q_FUNC_INFO << "Creating service manager";
-    m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
+    qCDebug(logging) << Q_FUNC_INFO << "Creating service manager for" << binderDevice();
+    m_serviceManager = gbinder_servicemanager_new(binderDevice());
 
     if (!m_serviceManager) {
         qCCritical(logging) << Q_FUNC_INFO << "Can't create service manager!";

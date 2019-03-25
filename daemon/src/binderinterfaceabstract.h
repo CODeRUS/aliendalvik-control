@@ -16,16 +16,17 @@ class BinderInterfaceAbstract : public AliendalvikController, public LoggingClas
 public:
     explicit BinderInterfaceAbstract(const char *serviceName,
                                      const char *interfaceName,
-                                     const char *listenInterface = "",
                                      QObject *parent = nullptr,
                                      const char *loggingCategoryName = LOGGING(BinderInterfaceAbstract)".interface");
     virtual ~BinderInterfaceAbstract();
+
+    bool isBinderReady() const;
+    bool wait(quint64 timeout = 10000);
 
     QSharedPointer<Parcel> createTransaction();
     QSharedPointer<Parcel> sendTransaction(int code, QSharedPointer<Parcel> parcel, int *status);
 
     GBinderServiceManager *manager();
-    GBinderLocalObject *localHandler();
 
     static GBinderLocalReply* onTransact(
             GBinderLocalObject *obj,
@@ -39,8 +40,9 @@ private slots:
     void serviceStopped();
     void serviceStarted();
 
-protected:
-    virtual void registrationCompleted() = 0;
+signals:
+    void binderConnected();
+    void binderDisconnected();
 
 private:
     void binderConnect();
@@ -53,7 +55,6 @@ private:
 
     const char *m_serviceName;
     const char *m_interfaceName;
-    const char *m_listenInterface;
 
     GBinderRemoteObject *m_remote = nullptr;
     GBinderLocalObject *m_local = nullptr;

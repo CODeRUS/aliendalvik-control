@@ -13,7 +13,6 @@ static PackageManager *s_instance = nullptr;
 PackageManager::PackageManager(QObject *parent, const char *loggingCategoryName)
     : BinderInterfaceAbstract(PM_SERVICE_NAME,
                               PM_INTERFACE_NAME,
-                              "",
                               parent,
                               loggingCategoryName)
 {
@@ -36,8 +35,8 @@ PackageManager *PackageManager::GetInstance()
 QList<QSharedPointer<ResolveInfo> > PackageManager::queryIntentActivities(Intent intent)
 {
     PackageManager *manager = PackageManager::GetInstance();
-
     qCDebug(manager->logging) << Q_FUNC_INFO << intent.action;
+
     QList<QSharedPointer<ResolveInfo> > resolveInfoList;
 
     QSharedPointer<Parcel> parcel = manager->createTransaction();
@@ -107,9 +106,4 @@ int PackageManager::getPackageUid(const QString &packageName)
     qCDebug(manager->logging) << Q_FUNC_INFO << "Result:" << uid;
 
     return uid;
-}
-
-void PackageManager::registrationCompleted()
-{
-    qCDebug(logging) << Q_FUNC_INFO;
 }

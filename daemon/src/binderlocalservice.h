@@ -18,12 +18,15 @@ public:
                                 const char *loggingCategoryName = LOGGING(BinderLocalService)".interface");
     virtual ~BinderLocalService();
 
+signals:
+    void binderConnected();
+    void binderDisconnected();
+
 private slots:
     void serviceStopped();
     void serviceStarted();
 
 protected:
-    virtual void registrationCompleted() = 0;
     virtual GBinderLocalReply *onTransact(
             GBinderLocalObject *obj,
             GBinderRemoteRequest *req,

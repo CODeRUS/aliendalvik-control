@@ -24,9 +24,6 @@ public:
 
     static int getPackageUid(const QString &packageName);
     static QList<QSharedPointer<ResolveInfo> > queryIntentActivities(Intent intent);
-
-protected:
-    void registrationCompleted() override;
 };
 
 #endif // PACKAGEMANAGER_H

@@ -22,14 +22,12 @@ void BinderInterfaceAbstract::deathHandler(GBinderRemoteObject *obj, void *user_
 
 BinderInterfaceAbstract::BinderInterfaceAbstract(const char *serviceName,
                                                  const char *interfaceName,
-                                                 const char *listenInterface,
                                                  QObject *parent,
                                                  const char *loggingCategoryName)
     : AliendalvikController(parent)
     , LoggingClassWrapper(loggingCategoryName)
     , m_serviceName(serviceName)
     , m_interfaceName(interfaceName)
-    , m_listenInterface(listenInterface)
 {
 }
 
@@ -38,22 +36,32 @@ BinderInterfaceAbstract::~BinderInterfaceAbstract()
     binderDisconnect();
 }
 
+bool BinderInterfaceAbstract::isBinderReady() const
+{
+    return m_client;
+}
+
+bool BinderInterfaceAbstract::wait(quint64 timeout)
+{
+    if (isBinderReady()) {
+        return true;
+    }
+    QTimer timer;
+    QEventLoop loop;
+    connect(this, &BinderInterfaceAbstract::binderConnected, &loop, &QEventLoop::quit);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(timeout);
+    loop.exec();
+
+    return isBinderReady();
+}
+
 QSharedPointer<Parcel> BinderInterfaceAbstract::createTransaction()
 {
-    qCDebug(logging) << Q_FUNC_INFO;
     QSharedPointer<Parcel> dataParcel;
+    qCDebug(logging) << Q_FUNC_INFO;
 
-    if (!m_client) {
-        binderConnect();
-
-        QEventLoop loop;
-        QTimer timer;
-        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start(2000);
-        loop.exec();
-    }
-
-    if (!m_client) {
+    if (!wait()) {
         qCCritical(logging) << Q_FUNC_INFO << "No client!";
         return dataParcel;
     }
@@ -83,11 +91,6 @@ QSharedPointer<Parcel> BinderInterfaceAbstract::sendTransaction(int code, QShare
 GBinderServiceManager *BinderInterfaceAbstract::manager()
 {
     return m_serviceManager;
-}
-
-GBinderLocalObject *BinderInterfaceAbstract::localHandler()
-{
-    return m_local;
 }
 
 GBinderLocalReply *BinderInterfaceAbstract::onTransact(GBinderLocalObject *obj, GBinderRemoteRequest *req, guint code, guint flags, int *status, void *user_data)
@@ -122,8 +125,8 @@ void BinderInterfaceAbstract::binderConnect()
     qCDebug(logging) << Q_FUNC_INFO << "Binder connect" << m_serviceName << m_interfaceName;
 
     if (!m_serviceManager) {
-        qCDebug(logging) << Q_FUNC_INFO << "Creating service manager";
-        m_serviceManager = gbinder_servicemanager_new("/dev/puddlejumper");
+        qCDebug(logging) << Q_FUNC_INFO << "Creating service manager for" << binderDevice();
+        m_serviceManager = gbinder_servicemanager_new(binderDevice());
     }
 
     if (!m_serviceManager) {
@@ -161,18 +164,6 @@ void BinderInterfaceAbstract::binderDisconnect()
         m_remote = nullptr;
     }
 
-    if (m_localHandler) {
-        qCWarning(logging) << Q_FUNC_INFO << "Removing local handler";
-        gbinder_servicemanager_cancel(m_serviceManager, m_localHandler);
-        m_localHandler = 0;
-    }
-
-    if (m_local) {
-        qCWarning(logging) << Q_FUNC_INFO << "Removing local";
-        gbinder_local_object_drop(m_local);
-        m_local = nullptr;
-    }
-
     if (m_registrationHandler && m_serviceManager) {
         qCWarning(logging) << Q_FUNC_INFO << "Removing registration handler";
         gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
@@ -184,6 +175,8 @@ void BinderInterfaceAbstract::binderDisconnect()
         gbinder_servicemanager_unref(m_serviceManager);
         m_serviceManager = nullptr;
     }
+
+    emit binderDisconnected();
 }
 
 void BinderInterfaceAbstract::registerManager()
@@ -223,24 +216,5 @@ void BinderInterfaceAbstract::registerManager()
     gbinder_servicemanager_remove_handler(m_serviceManager, m_registrationHandler);
     m_registrationHandler = 0;
 
-    if (strlen(m_listenInterface) > 0) {
-        qCDebug(logging) << Q_FUNC_INFO << "Register listener" << m_listenInterface;
-
-        m_local = gbinder_servicemanager_new_local_object(m_serviceManager,
-                                                          m_listenInterface,
-                                                          BinderInterfaceAbstract::onTransact,
-                                                          this);
-
-//        char result[100];
-//        strcpy(result, m_serviceName);
-//        strcat(result, "_listener");
-
-//        m_localHandler = gbinder_servicemanager_add_service_sync(m_serviceManager,
-//                                                result,
-//                                                m_local);
-
-        qCDebug(logging) << Q_FUNC_INFO << "Local handler created:" << m_localHandler << m_local;
-    }
-
-    registrationCompleted();
+    emit binderConnected();
 }

@@ -11,7 +11,6 @@ static AppOpsService *s_instance = nullptr;
 AppOpsService::AppOpsService(QObject *parent, const char *loggingCategoryName)
     : BinderInterfaceAbstract(AO_SERVICE_NAME,
                               AO_INTERFACE_NAME,
-                              "android.os.Binder",
                               parent,
                               loggingCategoryName)
 {
@@ -56,9 +55,4 @@ GBinderRemoteObject *AppOpsService::getToken(GBinderLocalObject *clientToken)
     result = in->readStrongBinder();
 
     return result;
-}
-
-void AppOpsService::registrationCompleted()
-{
-    qCDebug(logging) << Q_FUNC_INFO;
 }

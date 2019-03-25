@@ -12,7 +12,6 @@ static WindowManager *s_instance = nullptr;
 WindowManager::WindowManager(QObject *parent, const char *loggingCategoryName)
     : BinderInterfaceAbstract(WM_SERVICE_NAME,
                               WM_INTERFACE_NAME,
-                              "",
                               parent,
                               loggingCategoryName)
 {
@@ -53,9 +52,4 @@ void WindowManager::setOverscan(int displayId, int left, int top, int right, int
     int status = 0;
     manager->sendTransaction(TRANSACTION_setOverscan, parcel, &status);
     qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
-}
-
-void WindowManager::registrationCompleted()
-{
-    qCDebug(logging) << Q_FUNC_INFO;
 }

@@ -17,9 +17,6 @@ public:
     static WindowManager *GetInstance();
 
     static void setOverscan(int displayId, int left, int top, int right, int bottom);
-
-protected:
-    void registrationCompleted() override;
 };
 
 #endif // WINDOWMANAGER_H

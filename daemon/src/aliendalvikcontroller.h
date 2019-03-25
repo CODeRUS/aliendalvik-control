@@ -3,11 +3,19 @@
 
 #include <QObject>
 
+class SystemdController;
 class AliendalvikController : public QObject
 {
     Q_OBJECT
 public:
     explicit AliendalvikController(QObject *parent = nullptr);
+
+    const char *binderDevice() const;
+
+    bool isServiceActive() const;
+
+private:
+    SystemdController *m_controller = nullptr;
 
 private slots:
     virtual void serviceStopped() = 0;

@@ -13,6 +13,7 @@ public:
     virtual ~SystemdController();
 
     static SystemdController *GetInstance(const QString &unit);
+    bool isActive() const;
 
 signals:
     void serviceStopped();
