@@ -1,6 +1,6 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import org.nemomobile.dbus 2.0
+import Nemo.DBus 2.0
 
 Page {
     id: page
@@ -8,7 +8,7 @@ Page {
     DBusInterface {
         id: dbus
 
-        bus: DBus.SessionBus
+        bus: DBus.SystemBus
         service: "org.coderus.aliendalvikcontrol"
         path: "/"
         iface: "org.coderus.aliendalvikcontrol"
@@ -41,26 +41,46 @@ Page {
             }
 
             SectionHeader {
-                text: "Reset android handler"
+                text: "Launch"
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "HTTP"
+                text: "Downloads"
                 onClicked: {
-                    dbus.call("uriActivitySelector", ["http://openrepos.net"])
+                    dbus.call("openDownloads", [])
                 }
             }
 
-            SectionHeader {
-                text: "Downloads"
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Settings"
+                onClicked: {
+                    dbus.call("openSettings", [])
+                }
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Open"
+                text: "Contacts"
                 onClicked: {
-                    dbus.call("openDownloads", [])
+                    dbus.call("openContacts", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Gallery"
+                onClicked: {
+                    dbus.call("openGallery", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Camera"
+                onClicked: {
+                    dbus.call("openCamera", [])
                 }
             }
 
@@ -84,113 +104,6 @@ Page {
                     text: "Show"
                     onClicked: {
                         dbus.call("showNavBar", [])
-                    }
-                }
-            }
-
-            SectionHeader {
-                text: "Android settings"
-            }
-
-            TextSwitch {
-                width: parent.width
-                text: "Touch sounds"
-                checked: false
-                enabled: false
-                onClicked: {
-                    dbus.typedCall("putSettings", [{"type": "s", "value": "system"},
-                                                   {"type": "s", "value": "sound_effects_enabled"},
-                                                   {"type": "s", "value": checked ? "1" : "0"}])
-                }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "system"},
-                                                   {"type": "s", "value": "sound_effects_enabled"}],
-                                   function(value) {
-                                       checked = value == 1
-                                       enabled = true
-                                   })
-                }
-            }
-
-            TextSwitch {
-                width: parent.width
-                text: "Allow mock location"
-                checked: false
-                enabled: false
-                onClicked: {
-                    dbus.typedCall("putSettings", [{"type": "s", "value": "secure"},
-                                                   {"type": "s", "value": "mock_location"},
-                                                   {"type": "s", "value": checked ? "1" : "0"}])
-                }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "secure"},
-                                                   {"type": "s", "value": "mock_location"}],
-                                   function(value) {
-                                       checked = value == 1
-                                       enabled = true
-                                   })
-                }
-            }
-
-            TextSwitch {
-                width: parent.width
-                text: "Allow install non-market apps"
-                checked: false
-                enabled: false
-                onClicked: {
-                    dbus.typedCall("putSettings", [{"type": "s", "value": "global"},
-                                                   {"type": "s", "value": "install_non_market_apps"},
-                                                   {"type": "s", "value": checked ? "1" : "0"}])
-                }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "global"},
-                                                   {"type": "s", "value": "install_non_market_apps"}],
-                                   function(value) {
-                                       checked = value == 1
-                                       enabled = true
-                                   })
-                }
-            }
-
-            SectionHeader {
-                text: "Input methods"
-            }
-
-            Repeater {
-                id: imeRepeater
-                width: parent.width
-                model: []
-                delegate: Component {
-                    ListItem {
-                        property bool imeEnabled: modelData.enabled
-                        highlighted: down || imeEnabled
-                        showMenuOnPressAndHold: imeEnabled
-                        width: parent.width
-                        menu: contextMenu
-                        contentHeight: imeLabel.height
-                        Component {
-                            id: contextMenu
-                            ContextMenu {
-                                MenuItem {
-                                    text: "Select"
-                                    onClicked: {
-                                        dbus.call("setImeMethod", [modelData.name])
-                                    }
-                                }
-                            }
-                        }
-                        Label {
-                            id: imeLabel
-                            x: Theme.horizontalPageMargin
-                            width: parent.width - Theme.horizontalPageMargin * 2
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: modelData.name
-                        }
-                        onClicked: {
-                            dbus.call("triggerImeMethod", [modelData.name, !imeEnabled])
-                            imeEnabled = !imeEnabled
-                            dbus.call("getImeList", [])
-                        }
                     }
                 }
             }

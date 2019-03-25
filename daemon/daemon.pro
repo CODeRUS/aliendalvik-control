@@ -3,32 +3,39 @@ target.path = /usr/bin
 
 INSTALLS += target
 
-QT += dbus
+QT += dbus network
 
 SOURCES += \
     src/main.cpp \
-    src/dbusmain.cpp \
-    src/mimehandleradaptor.cpp
+    src/dbusservice.cpp \
+    src/inotifywatcher.cpp \
+    src/aliendalvikcontroller.cpp \
+    src/systemdcontroller.cpp
 
 HEADERS += \
-    src/dbusmain.h \
-    src/mimehandleradaptor.h
+    src/dbusservice.h \
+    src/inotifywatcher.h \
+    src/aliendalvikcontroller.h \
+    src/systemdcontroller.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
-dbus.path = /usr/share/dbus-1/services
+dbus.path = /usr/share/dbus-1/system-services/
 
 INSTALLS += dbus
 
+dbusConf.files = dbus/org.coderus.aliendalvikcontrol.conf
+dbusConf.path = /etc/dbus-1/system.d/
+
+INSTALLS += dbusConf
+
 desktop.files = \
-#    desktop/aliendalvik-downloads.desktop \
-    desktop/android-open-url.desktop \
-    desktop/android-open-url-selector.desktop
+    desktop/android-open-url.desktop
 desktop.path = /usr/share/applications
 
 INSTALLS += desktop
 
 systemd.files = systemd/aliendalvik-control.service
-systemd.path = /usr/lib/systemd/user
+systemd.path = /lib/systemd/system/
 
 INSTALLS += systemd
 
@@ -44,13 +51,14 @@ settingsqml.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
 
 INSTALLS += settingsqml
 
-settingspng.files = \
-    settings/icon-m-aliendalvikcontrol.png \
-    settings/icon-m-aliendalvik-back.png
-settingspng.path = /usr/share/jolla-settings/pages/aliendalvikcontrol
+apk.files = apk/app-release.apk
+apk.path = /usr/share/aliendalvik-control/apk
 
-INSTALLS += settingspng
+INSTALLS += apk
 
-#icons.files = hicolor
-#icons.path = /usr/share/icons
-#INSTALLS += icons
+ad_dbus_adaptor.files = ../dbus/org.coderus.aliendalvikcontrol.xml
+ad_dbus_adaptor.source_flags = -c DBusAdaptor
+ad_dbus_adaptor.header_flags = -c DBusAdaptor
+DBUS_ADAPTORS += ad_dbus_adaptor
+
+INCLUDEPATH += /usr/include

@@ -18,22 +18,16 @@ void PluginInfo::query()
 {
     TransferMethodInfo info;
 
-    QStringList capabilities;
-    capabilities << QLatin1String("image/*")
-                 << QLatin1String("audio/*")
-                 << QLatin1String("video/*")
-                 << QLatin1String("text/*");
-
-    info.displayName     = QLatin1String("Android");
-    info.methodId        = QLatin1String("AliendalvikSharePlugin");
-    info.shareUIPath     = QLatin1String("/usr/share/nemo-transferengine/plugins/AliendalvikShare.qml");
-    info.capabilitities  = capabilities;
-    info.accountIcon     = QStringLiteral("image://theme/icon-m-share-gallery");
+    info.displayName     = QStringLiteral("Android");
+    info.methodId        = QStringLiteral("AliendalvikSharePlugin");
+    info.shareUIPath     = QStringLiteral("/usr/share/nemo-transferengine/plugins/AliendalvikShare.qml");
+    info.capabilitities  = QStringList({QStringLiteral("*")});
+    info.accountIcon     = QStringLiteral("image://theme/icon-m-share-aliendalvik");
     m_infoList.clear();
     m_infoList << info;
 
     m_ready = true;
-    Q_EMIT infoReady();
+    emit infoReady();
 }
 
 bool PluginInfo::ready() const

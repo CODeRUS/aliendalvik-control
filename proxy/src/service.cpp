@@ -1,19 +1,19 @@
-#include "dbusmain.h"
-#include "mimehandleradaptor.h"
+#include "adaptor.h"
+#include "service.h"
 
-#include <QDebug>
 #include <QDBusConnection>
-#include <QDBusError>
 #include <QCoreApplication>
+#include <QDebug>
 
-DBusMain::DBusMain(QObject *parent) :
-    QObject(parent)
+Service::Service(QObject *parent)
+    : QObject(parent)
 {
+
 }
 
-void DBusMain::start()
+void Service::start()
 {
-    QString service("org.coderus.aliendalvikcontrol");
+    const QString service = QStringLiteral("org.coderus.aliendalvikcontrol");
     qDebug() << "Starting dbus service" << service << "...";
     bool success = QDBusConnection::sessionBus().registerService(service);
     if (!success) {
@@ -24,13 +24,11 @@ void DBusMain::start()
 
     qDebug() << "Service registered successfully!";
 
-    MimeHandlerAdaptor *mimeHandlerAdaptor = new MimeHandlerAdaptor(this);
-
-    bool handler = QDBusConnection::sessionBus().registerVirtualObject("/", mimeHandlerAdaptor);
+    Adaptor *adaptor = new Adaptor(this);
+    bool handler = QDBusConnection::sessionBus().registerVirtualObject(QStringLiteral("/"), adaptor);
     if (handler) {
-        qDebug() << "Handler registered successfully!";
-    }
-    else {
+        qDebug() << "D-Bus handler registered successfully!";
+    } else {
         qWarning() << "Register hanler fails!";
         QCoreApplication::exit(0);
         return;
