@@ -4,7 +4,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    1.2.2
+Version:    1.2.3
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL

@@ -78,7 +78,6 @@ private:
 
     void requestDeviceInfo();
 
-    QString packageName(const QString &package);
     void runCommand(const QString &program, const QStringList &params);
     QString runCommandOutput(const QString &program, const QStringList &params);
 

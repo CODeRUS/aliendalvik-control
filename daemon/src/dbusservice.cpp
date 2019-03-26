@@ -205,6 +205,10 @@ void DBusService::sendInput(const QString &text)
 
 void DBusService::uriActivity(const QString &uri)
 {
+    if (!isServiceActive()) {
+        return;
+    }
+
     qDebug() << Q_FUNC_INFO << uri;
     runCommand(QStringLiteral("am"), {
                    QStringLiteral("start"),
@@ -268,6 +272,10 @@ void DBusService::openAppSettings(const QString &package)
 
 void DBusService::launchApp(const QString &packageName)
 {
+    if (!isServiceActive()) {
+        return;
+    }
+
     runCommand(QStringLiteral("am"), {
                    QStringLiteral("start"),
                    QStringLiteral("-n"),
@@ -707,6 +715,15 @@ void DBusService::componentActivity(const QString &package, const QString &class
 {
     qDebug() << Q_FUNC_INFO << package << className << data;
 
+    if (!isServiceActive()) {
+        QProcess apkdLauncher;
+        apkdLauncher.start(QStringLiteral("/usr/bin/apkd-launcher"), {
+                               QString(),
+                               QStringLiteral("%1/%2").arg(package, className)
+                           });
+        apkdLauncher.waitForFinished(-1);
+    }
+
     QStringList options = {
         QStringLiteral("start"),
         QStringLiteral("-n"),
@@ -727,20 +744,6 @@ void DBusService::componentActivity(const QString &package, const QString &class
     }
 
     runCommand("am", options);
-}
-
-QString DBusService::packageName(const QString &package)
-{
-    QProcess *proc = new QProcess(this);
-    proc->start("/system/bin/dumpsys", QStringList() << "package" << package);
-    proc->waitForFinished(5000);
-    if (proc->state() == QProcess::Running) {
-        proc->close();
-        proc->deleteLater();
-        return QString();
-    }
-    QString output = QString::fromUtf8(proc->readAll());
-    return output;
 }
 
 void DBusService::runCommand(const QString &program, const QStringList &params)
