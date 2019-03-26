@@ -20,10 +20,10 @@ static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcon
 static const QString c_dbus_path = QStringLiteral("/");
 static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
-static const QString s_localSocket = QStringLiteral("/home/.android/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
+static const QString s_localSocket = QStringLiteral("/opt/alien/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
 
 static const QString s_helperApk = QStringLiteral("/usr/share/aliendalvik-control/apk/app-release.apk");
-static const QString s_helperPath = QStringLiteral("/home/.android/data/app/aliendalvik-control.apk");
+static const QString s_helperPath = QStringLiteral("/opt/alien/data/app/aliendalvik-control.apk");
 
 DBusService::DBusService(QObject *parent)
     : AliendalvikController(parent)
@@ -36,6 +36,10 @@ DBusService::DBusService(QObject *parent)
     }
     qWarning() << Q_FUNC_INFO << "Installing helper apk:" <<
     QFile::copy(s_helperApk, s_helperPath);
+
+    m_alienEnvironment.insert(QStringLiteral("SYSTEM_USER_LANG"), QStringLiteral("C"));
+    m_alienEnvironment.insert(QStringLiteral("ANDROID_ROOT"), QStringLiteral("/system"));
+    m_alienEnvironment.insert(QStringLiteral("ANDROID_DATA"), QStringLiteral("/data"));
 
     m_alienEnvironment.insert(QStringLiteral("LD_LIBRARY_PATH"),
                               QStringLiteral("/system/vendor/lib:/system/lib:/vendor/lib:/system_jolla/lib:"));
@@ -606,7 +610,7 @@ bool DBusService::checkHelperSocket(bool remove)
         if (remove) {
             QEventLoop loop;
             QTimer timer;
-            QFileSystemWatcher watcher({QStringLiteral("/home/.android/data/data")});
+            QFileSystemWatcher watcher({QStringLiteral("/opt/alien/data/data")});
             connect(&watcher, &QFileSystemWatcher::directoryChanged, [helperSocket, &loop](const QString &) {
                 if (!helperSocket.dir().exists()) {
                     return;
