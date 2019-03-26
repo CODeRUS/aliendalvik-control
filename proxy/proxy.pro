@@ -8,11 +8,13 @@ QT += dbus
 SOURCES += \
     src/main.cpp \
     src/adaptor.cpp \
-    src/service.cpp
+    src/service.cpp \
+    src/handler.cpp
 
 HEADERS += \
     src/adaptor.h \
-    src/service.h
+    src/service.h \
+    src/handler.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/services/

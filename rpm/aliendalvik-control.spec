@@ -4,7 +4,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    1.2.0
+Version:    1.2.1
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -71,12 +71,14 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 %files
 %{_bindir}/aliendalvik-control
 %{_bindir}/aliendalvik-control-proxy
+%{_bindir}/aliendalvik-control-share
 
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
 /lib/systemd/system/aliendalvik-control.service
 
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
+%{_datadir}/dbus-1/services/org.coderus.aliendalvikshare.service
 
 %{_datadir}/applications/android-open-url.desktop
 
@@ -87,6 +89,9 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 
 %{_libdir}/nemo-transferengine/plugins/libaliendalvikshareplugin.so
 %{_datadir}/nemo-transferengine/plugins/AliendalvikShare.qml
+
+%{_datadir}/aliendalvik-control-share/qml/aliendalvik-control-share.qml
+%{_datadir}/aliendalvik-control-share/qml/aliendalvik-control-share-cover.qml
 
 %{_datadir}/aliendalvik-control/apk/app-release.apk
 

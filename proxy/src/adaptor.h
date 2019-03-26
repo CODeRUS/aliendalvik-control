@@ -10,7 +10,7 @@ class QDBusMessage;
 class Adaptor : public QDBusVirtualObject
 {
 public:
-    explicit Adaptor(QObject *parent = nullptr);
+    explicit Adaptor(DBusInterface *iface, QObject *parent = nullptr);
     virtual ~Adaptor();
 
     QString introspect(const QString &) const override;

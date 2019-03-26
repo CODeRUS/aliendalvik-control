@@ -10,13 +10,9 @@ static const QString s_introspect_xml = QStringLiteral(
 "  </interface>\n"
 );
 
-
-static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
-static const QString c_dbus_path = QStringLiteral("/");
-
-Adaptor::Adaptor(QObject *parent)
+Adaptor::Adaptor(DBusInterface *iface, QObject *parent)
     : QDBusVirtualObject(parent)
-    , m_iface(new DBusInterface(c_dbus_service, c_dbus_path, QDBusConnection::systemBus(), this))
+    , m_iface(iface)
 {
 
 }

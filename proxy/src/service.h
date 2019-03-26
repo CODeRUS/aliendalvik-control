@@ -3,6 +3,7 @@
 
 #include <QObject>
 
+class DBusInterface;
 class Service : public QObject
 {
     Q_OBJECT
@@ -11,6 +12,9 @@ public:
 
 public slots:
     void start();
+
+private:
+    DBusInterface *m_iface;
 };
 
 #endif // SERVICE_H

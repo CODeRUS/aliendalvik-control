@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.coderus.aliendalvikshare
+Interface=org.coderus.aliendalvikshare
+Exec=/usr/bin/aliendalvik-control-share

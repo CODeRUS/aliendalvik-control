@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 SUBDIRS = \
     proxy \
     daemon \
+    share \
     shareui \
     icons
 

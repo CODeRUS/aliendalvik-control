@@ -213,10 +213,10 @@ void DBusService::uriActivity(const QString &uri)
 
 void DBusService::hideNavBar()
 {
-    const QString navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), QStringLiteral("144")).toString();
+    const int navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), 96).toInt();
     runCommand(QStringLiteral("wm"), {
                    QStringLiteral("overscan"),
-                   QStringLiteral("0,0,0,-%1").arg(navbarHeight)
+                   QStringLiteral("0,0,0,-%1").arg(QString::number(navbarHeight))
                });
 }
 
@@ -264,7 +264,17 @@ void DBusService::openAppSettings(const QString &package)
 
 void DBusService::launchApp(const QString &packageName)
 {
-
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-n"),
+                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("command"),
+                   QStringLiteral("launchApp"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("android.intent.extra.TEXT"),
+                   packageName,
+               });
 }
 
 void DBusService::forceStop(const QString &packageName)
@@ -667,6 +677,25 @@ void DBusService::processHelperResult(const QByteArray &data)
     } else if (command == QLatin1String("deviceInfo")) {
         const QJsonObject devicePropertiesJson = object.value(QStringLiteral("deviceProperties")).toObject();
         m_deviceProperties = devicePropertiesJson.toVariantHash();
+    } else if (command == QLatin1String("launchApp")) {
+        const QJsonObject launchParametersJson = object.value(QStringLiteral("launchParameters")).toObject();
+        const QString packageName = launchParametersJson.value(QStringLiteral("packageName")).toString();
+        const QString className = launchParametersJson.value(QStringLiteral("className")).toString();
+        componentActivity(packageName, className);
+    } else if (command == QLatin1String("share")) {
+        const QJsonObject shareIntentJson = object.value(QStringLiteral("shareIntent")).toObject();
+        QDBusMessage msg = QDBusMessage::createMethodCall(
+                    QStringLiteral("org.coderus.aliendalvikshare"),
+                    QStringLiteral("/"),
+                    QStringLiteral("org.coderus.aliendalvikshare"),
+                    QStringLiteral("share"));
+        msg.setArguments({
+                             shareIntentJson.value(QStringLiteral("mimeType")).toString(),
+                             shareIntentJson.value(QStringLiteral("data")).toString(),
+                             shareIntentJson.value(QStringLiteral("fileName")).toString(),
+                         });
+        qDebug() << Q_FUNC_INFO << "Sending share to salifish:" <<
+                    m_sbus.send(msg);
     }
 }
 
