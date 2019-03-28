@@ -37,6 +37,7 @@ private slots:
     void sendKeyevent(int code);
     void sendInput(const QString &text);
     void uriActivity(const QString &uri);
+    void uriActivitySelector(const QString &uri);
     void hideNavBar();
     void showNavBar();
     void openDownloads();

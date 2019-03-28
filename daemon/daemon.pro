@@ -29,7 +29,8 @@ dbusConf.path = /etc/dbus-1/system.d/
 INSTALLS += dbusConf
 
 desktop.files = \
-    desktop/android-open-url.desktop
+    desktop/android-open-url.desktop \
+    desktop/android-open-url-selector.desktop
 desktop.path = /usr/share/applications
 
 INSTALLS += desktop

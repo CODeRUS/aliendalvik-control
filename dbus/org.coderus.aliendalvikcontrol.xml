@@ -13,6 +13,10 @@
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="uri" type="s" direction="in"/>
     </method>
+    <method name="uriActivitySelector">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="uri" type="s" direction="in"/>
+    </method>
     <method name="hideNavBar">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>

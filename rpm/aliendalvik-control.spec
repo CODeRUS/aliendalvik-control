@@ -4,7 +4,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    1.2.3
+Version:    1.2.4
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  desktop-file-utils
 BuildRequires:  pkgconfig(nemotransferengine-qt5)
 BuildRequires:  sailfish-svg2png >= 0.1.5
+BuildRequires:  pkgconfig(contentaction5)
 
 %description
 D-Bus daemon for sending commands to aliendalvik
@@ -72,6 +73,7 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 %{_bindir}/aliendalvik-control
 %{_bindir}/aliendalvik-control-proxy
 %{_bindir}/aliendalvik-control-share
+%{_bindir}/aliendalvik-control-selector
 
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
@@ -79,8 +81,10 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikshare.service
+%{_datadir}/dbus-1/services/org.coderus.aliendalvikselector.service
 
 %{_datadir}/applications/android-open-url.desktop
+%{_datadir}/applications/android-open-url-selector.desktop
 
 %{_datadir}/jolla-settings/entries/aliendalvikcontrol.json
 
@@ -92,6 +96,8 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 
 %{_datadir}/aliendalvik-control-share/qml/aliendalvik-control-share.qml
 %{_datadir}/aliendalvik-control-share/qml/aliendalvik-control-share-cover.qml
+
+%{_datadir}/aliendalvik-control-selector/qml/aliendalvik-control-selector.qml
 
 %{_datadir}/aliendalvik-control/apk/app-release.apk
 

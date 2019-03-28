@@ -16,3 +16,10 @@ void Handler::open(const QStringList &params)
 
     m_iface->uriActivity(params.first());
 }
+
+void Handler::openSelector(const QStringList &params)
+{
+    qDebug() << Q_FUNC_INFO << params;
+
+    m_iface->uriActivitySelector(params.first());
+}

@@ -13,6 +13,7 @@ public:
 
 public slots:
     void open(const QStringList &params);
+    void openSelector(const QStringList &params);
 
 private:
     DBusInterface *m_iface;

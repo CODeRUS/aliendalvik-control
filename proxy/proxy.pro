@@ -4,6 +4,8 @@ target.path = /usr/bin
 INSTALLS += target
 
 QT += dbus
+CONFIG += link_pkgconfig
+PKGCONFIG += contentaction5
 
 SOURCES += \
     src/main.cpp \

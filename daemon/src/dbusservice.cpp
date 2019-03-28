@@ -219,6 +219,34 @@ void DBusService::uriActivity(const QString &uri)
                });
 }
 
+void DBusService::uriActivitySelector(const QString &uri)
+{
+    if (!isServiceActive()) {
+        return;
+    }
+
+    qDebug() << Q_FUNC_INFO << uri;
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-a"),
+                   QStringLiteral("android.intent.action.VIEW"),
+                   QStringLiteral("-d"),
+                   uri,
+                   QStringLiteral("--selector")
+               });
+
+//    runCommand(QStringLiteral("am"), {
+//                   QStringLiteral("start"),
+//                   QStringLiteral("-n"),
+//                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+//                   QStringLiteral("--es"),
+//                   QStringLiteral("command"),
+//                   QStringLiteral("selector"),
+//                   QStringLiteral("-d"),
+//                   uri,
+//               });
+}
+
 void DBusService::hideNavBar()
 {
     const int navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), 96).toInt();
@@ -707,6 +735,16 @@ void DBusService::processHelperResult(const QByteArray &data)
                              shareIntentJson.value(QStringLiteral("fileName")).toString(),
                          });
         qDebug() << Q_FUNC_INFO << "Sending share to salifish:" <<
+                    m_sbus.send(msg);
+    } else if (command == QLatin1String("selector")) {
+        const QVariantList selectorList = object.value(QStringLiteral("candidates")).toArray().toVariantList();
+        QDBusMessage msg = QDBusMessage::createMethodCall(
+                    QStringLiteral("org.coderus.aliendalvikselector"),
+                    QStringLiteral("/"),
+                    QStringLiteral("org.coderus.aliendalvikselector"),
+                    QStringLiteral("openUrl"));
+        msg.setArguments({selectorList});
+        qDebug() << Q_FUNC_INFO << "Sending selector to salifish:" <<
                     m_sbus.send(msg);
     }
 }

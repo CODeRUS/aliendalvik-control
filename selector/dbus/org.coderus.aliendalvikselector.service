@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.coderus.aliendalvikselector
+Interface=org.coderus.aliendalvikselector
+Exec=/usr/bin/aliendalvik-control-selector
