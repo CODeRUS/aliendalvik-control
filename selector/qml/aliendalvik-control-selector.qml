@@ -2,6 +2,7 @@ import QtQuick 2.1
 import Sailfish.Silica 1.0
 import Sailfish.Silica.private 1.0
 import Nemo.DBus 2.0
+import Nemo.Configuration 1.0
 
 MouseArea
 {
@@ -16,11 +17,21 @@ MouseArea
         Qt.quit()
     }
 
+    ConfigurationGroup {
+        id: config
+        path: "/org/coderus/aliendalvikcontrol/selector"
+        property int windowPosX: -1
+        property int windowPosY: -1
+    }
+
     Wallpaper {
-        anchors.centerIn: parent
+        id: bg
+        x: config.windowPosX >= 0 ? config.windowPosX : (root.width - bg.width) / 2
+        y: config.windowPosY >= 0 ? config.windowPosY : (root.height - bg.height) / 2
         width: parent.width - Theme.horizontalPageMargin * 2
         height: Math.min(Theme.itemSizeMedium * 5, contentView.contentHeight)
         clip: true
+        blending: true
 
         Rectangle {
             anchors.fill: parent
@@ -33,9 +44,29 @@ MouseArea
             id: contentView
             anchors.fill: parent
             header: Component {
-                Item {
+                MouseArea {
                     width: parent.width
                     height: Theme.itemSizeMedium
+
+                    drag.minimumX: 0
+                    drag.maximumX: root.width - bg.width
+                    drag.minimumY: 0
+                    drag.maximumY: root.height - Theme.itemSizeMedium * 5
+
+                    onPressAndHold: {
+                        drag.target = bg
+                    }
+
+                    onReleased: {
+                        drag.target = undefined
+                        config.windowPosX = bg.x
+                        config.windowPosY = bg.y
+                        console.log("### saving posx:", config.windowPosX, "posy:", config.windowPosY)
+                    }
+
+                    onCanceled: {
+                        drag.target = undefined
+                    }
 
                     Column {
                         width: parent.width
@@ -47,7 +78,6 @@ MouseArea
                         }
 
                         Label {
-                            anchors.horizontalCenter: parent.horizontalCenter
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.margins: Theme.horizontalPageMargin
@@ -111,7 +141,6 @@ MouseArea
              '  </interface>\n'
 
         function openUrl(url, candidates) {
-            console.log("openUrl called:", url, JSON.stringify(candidates))
             root.url = url
             contentView.model = candidates
         }

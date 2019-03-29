@@ -4,7 +4,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    1.2.5
+Version:    9.9.9
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -75,6 +75,8 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 %{_bindir}/aliendalvik-control-proxy
 %{_bindir}/aliendalvik-control-share
 %{_bindir}/aliendalvik-control-selector
+
+%{_libdir}/libaliendalvikcontrolplugin-chroot.so
 
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf

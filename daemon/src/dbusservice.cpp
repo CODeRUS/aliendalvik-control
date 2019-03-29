@@ -16,64 +16,44 @@
 #include <QLocalSocket>
 #include <QLocalServer>
 
+#include "../abstract/src/alienabstract.h"
+
 static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
 static const QString c_dbus_path = QStringLiteral("/");
 static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
-static const QString s_localSocket = QStringLiteral("/opt/alien/data/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
-
 static const QString s_helperApk = QStringLiteral("/usr/share/aliendalvik-control/apk/app-release.apk");
-static const QString s_helperPath = QStringLiteral("/opt/alien/data/app/aliendalvik-control.apk");
+static const QString s_helperPathPart = QStringLiteral("%1/app/aliendalvik-control.apk");
+
+static const QString s_localSocketPart = QStringLiteral("%1/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
+
+typedef AlienAbstract *(*AlienLoader)(QObject *);
 
 DBusService::DBusService(QObject *parent)
     : AliendalvikController(parent)
     , _watcher(new INotifyWatcher(this))
     , m_sbus(s_sessionBusConnection)
 {
-    if (QFileInfo::exists(s_helperPath)) {
+    QLibrary alienLib;
+    alienLib.setFileName(QStringLiteral("aliendalvikcontrolplugin-chroot"));
+    AlienLoader loader = reinterpret_cast<AlienLoader>(alienLib.resolve("instance"));
+    if (!loader) {
+        qWarning() << Q_FUNC_INFO << "Error loading library" << alienLib.fileName() << alienLib.errorString();
+        return;
+    }
+
+    m_alien = loader(this);
+    m_localSocket = s_localSocketPart.arg(m_alien->dataPath());
+
+    const QString helperPath = s_helperPathPart.arg(m_alien->dataPath());
+    if (QFileInfo::exists(helperPath)) {
         qWarning() << Q_FUNC_INFO << "Removing old helper:" <<
-        QFile::remove(s_helperPath);
+        QFile::remove(helperPath);
     }
     qWarning() << Q_FUNC_INFO << "Installing helper apk:" <<
-    QFile::copy(s_helperApk, s_helperPath);
+    QFile::copy(s_helperApk, helperPath);
 
-    m_alienEnvironment.insert(QStringLiteral("SYSTEM_USER_LANG"), QStringLiteral("C"));
-    m_alienEnvironment.insert(QStringLiteral("ANDROID_ROOT"), QStringLiteral("/system"));
-    m_alienEnvironment.insert(QStringLiteral("ANDROID_DATA"), QStringLiteral("/data"));
-
-    m_alienEnvironment.insert(QStringLiteral("LD_LIBRARY_PATH"),
-                              QStringLiteral("/system/vendor/lib:/system/lib:/vendor/lib:/system_jolla/lib:"));
-
-    m_alienEnvironment.insert(QStringLiteral("PATH"),
-                              QStringLiteral("/system/vendor/bin:/system/sbin:/system/bin:/system/xbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"));
-
-    QFile init(QStringLiteral("/opt/alien/system/script/start_alien.sh"));
-    if (init.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&init);
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            if (line.startsWith(QLatin1String("export BOOTCLASSPATH="))) {
-                line=line.mid(21).replace(QLatin1String("$FRAMEWORK"), QLatin1String("/system/framework"));
-                qDebug() << "BOOTCLASSPATH:" << line;
-                m_alienEnvironment.insert(QStringLiteral("BOOTCLASSPATH"), line);
-                break;
-            }
-        }
-    }
-
-    QFile envsetup(QStringLiteral("/opt/alien/system/script/platform_envsetup.sh"));
-    if (envsetup.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&envsetup);
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            if (line.startsWith(QLatin1String("export ALIEN_ID="))) {
-                line=line.mid(16);
-                qDebug() << "ALIEN_ID:" << line;
-                m_alienEnvironment.insert(QStringLiteral("ALIEN_ID"), line);
-                break;
-            }
-        }
-    }
+    qDebug() << Q_FUNC_INFO << "Loaded alien plugin instance:" << m_alien;
 
     _watchDir = QStringLiteral("/usr/share/applications/");
     _watcher->addPaths({ _watchDir });
@@ -113,11 +93,6 @@ DBusService::DBusService(QObject *parent)
         topmostIdChanged(reply.value());
     });
 
-    apkdIface = new QDBusInterface(QStringLiteral("com.jolla.apkd"),
-                                   QStringLiteral("/com/jolla/apkd"),
-                                   QStringLiteral("com.jolla.apkd"),
-                                   QDBusConnection::systemBus(), this);
-
     m_sessionBusConnector = new QTimer(this);
     connect(m_sessionBusConnector, &QTimer::timeout, this, [this]() {
         QDBusConnection test = QDBusConnection::connectToBus(QDBusConnection::SessionBus, s_sessionBusConnection);
@@ -147,13 +122,13 @@ DBusService::DBusService(QObject *parent)
     connect(m_localServer, &QLocalServer::newConnection, this, &DBusService::startReadingLocalServer, Qt::DirectConnection);
     connect(m_serverThread, &QThread::started, this, [this](){
         qWarning() << Q_FUNC_INFO << "QThread::started";
-        bool listening = m_localServer->listen(s_localSocket);
+        bool listening = m_localServer->listen(m_localSocket);
         if (!listening // not listening
                 && m_localServer->serverError() == QAbstractSocket::AddressInUseError // because of AddressInUseError
-                && QFileInfo::exists(s_localSocket) // socket file already exists
-                && QFile::remove(s_localSocket)) { // and successfully removed it
+                && QFileInfo::exists(m_localSocket) // socket file already exists
+                && QFile::remove(m_localSocket)) { // and successfully removed it
             qWarning() << Q_FUNC_INFO << "Removed old stuck socket";
-            listening = m_localServer->listen(s_localSocket); // try to start lisening again
+            listening = m_localServer->listen(m_localSocket); // try to start lisening again
         }
         qDebug() << Q_FUNC_INFO << "Server listening:" << listening;
         if (!listening) {
@@ -195,12 +170,12 @@ void DBusService::start()
 
 void DBusService::sendKeyevent(int code)
 {
-    runCommand(QStringLiteral("input"), {QStringLiteral("keyevent"), QString::number(code)});
+    m_alien->sendKeyevent(code);
 }
 
 void DBusService::sendInput(const QString &text)
 {
-    runCommand(QStringLiteral("input"), {QStringLiteral("text"), text});
+    m_alien->sendInput(text);
 }
 
 void DBusService::uriActivity(const QString &uri)
@@ -208,15 +183,7 @@ void DBusService::uriActivity(const QString &uri)
     if (!isServiceActive()) {
         return;
     }
-
-    qDebug() << Q_FUNC_INFO << uri;
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-a"),
-                   QStringLiteral("android.intent.action.VIEW"),
-                   QStringLiteral("-d"),
-                   uri
-               });
+    m_alien->uriActivity(uri);
 }
 
 void DBusService::uriActivitySelector(const QString &uri)
@@ -225,67 +192,49 @@ void DBusService::uriActivitySelector(const QString &uri)
         return;
     }
 
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-n"),
-                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("command"),
-                   QStringLiteral("selector"),
-                   QStringLiteral("-d"),
-                   uri,
-               });
+    m_alien->uriActivitySelector(uri);
 }
 
 void DBusService::hideNavBar()
 {
     const int navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), 96).toInt();
-    runCommand(QStringLiteral("wm"), {
-                   QStringLiteral("overscan"),
-                   QStringLiteral("0,0,0,-%1").arg(QString::number(navbarHeight))
-               });
+
+    m_alien->hideNavBar(navbarHeight);
 }
 
 void DBusService::showNavBar()
 {
-    runCommand(QStringLiteral("wm"), {
-                   QStringLiteral("overscan"),
-                   QStringLiteral("0,0,0,0")
-               });
+    m_alien->showNavBar();
 }
 
 void DBusService::openDownloads()
 {
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-a"),
-                   QStringLiteral("android.intent.action.VIEW_DOWNLOADS")
-               });
+    m_alien->openDownloads();
 }
 
 void DBusService::openSettings()
 {
-
+    m_alien->openSettings();
 }
 
 void DBusService::openContacts()
 {
-
+    m_alien->openContacts();
 }
 
 void DBusService::openCamera()
 {
-
+    m_alien->openCamera();
 }
 
 void DBusService::openGallery()
 {
-
+    m_alien->openGallery();
 }
 
 void DBusService::openAppSettings(const QString &package)
 {
-
+    m_alien->openAppSettings(package);
 }
 
 void DBusService::launchApp(const QString &packageName)
@@ -293,26 +242,12 @@ void DBusService::launchApp(const QString &packageName)
     if (!isServiceActive()) {
         return;
     }
-
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-n"),
-                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("command"),
-                   QStringLiteral("launchApp"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("android.intent.extra.TEXT"),
-                   packageName,
-               });
+    m_alien->launchApp(packageName);
 }
 
 void DBusService::forceStop(const QString &packageName)
 {
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("force-stop"),
-                   packageName
-               });
+    m_alien->forceStop(packageName);
 }
 
 void DBusService::shareContent(const QVariantMap &content, const QString &source)
@@ -360,21 +295,7 @@ void DBusService::shareFile(const QString &filename, const QString &mimetype)
         return;
     }
 
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-n"),
-                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("command"),
-                   QStringLiteral("sharing"),
-                   QStringLiteral("-a"),
-                   QStringLiteral("android.intent.action.SEND"),
-                   QStringLiteral("-t"),
-                   mimetype,
-                   QStringLiteral("--eu"),
-                   QStringLiteral("android.intent.extra.STREAM"),
-                   filename
-               });
+    m_alien->shareFile(filename, mimetype);
 }
 
 void DBusService::shareText(const QString &text)
@@ -384,21 +305,7 @@ void DBusService::shareText(const QString &text)
         return;
     }
 
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-n"),
-                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("command"),
-                   QStringLiteral("sharing"),
-                   QStringLiteral("-a"),
-                   QStringLiteral("android.intent.action.SEND"),
-                   QStringLiteral("-t"),
-                   QStringLiteral("text/*"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("android.intent.extra.TEXT"),
-                   text
-               });
+    m_alien->shareText(text);
 }
 
 void DBusService::doShare(
@@ -414,30 +321,7 @@ void DBusService::doShare(
     componentActivity(packageName, launcherClass);
     waitForAndroidWindow();
 
-    QStringList options = {
-        QStringLiteral("start"),
-        QStringLiteral("-a"),
-        QStringLiteral("android.intent.action.SEND"),
-        QStringLiteral("-n"),
-        QStringLiteral("%1/%2").arg(packageName, className),
-        QStringLiteral("-t"),
-        mimetype
-    };
-    if (filename.isEmpty()) {
-        options.append({
-                           QStringLiteral("--es"),
-                           QStringLiteral("android.intent.extra.TEXT"),
-                           data
-                       });
-    } else {
-        options.append({
-                           QStringLiteral("--eu"),
-                           QStringLiteral("android.intent.extra.STREAM"),
-                           QStringLiteral("file://%1").arg(filename)
-                       });
-    }
-
-    runCommand(QStringLiteral("am"), options);
+    m_alien->doShare(mimetype, filename, data, packageName, className, launcherClass);
 }
 
 QString DBusService::getFocusedApp()
@@ -470,80 +354,38 @@ bool DBusService::isTopmostAndroid()
 
 void DBusService::getImeList()
 {
-    QString fullOutput = runCommandOutput(QStringLiteral("ime"), {
-                                              QStringLiteral("list"),
-                                              QStringLiteral("-s"),
-                                              QStringLiteral("-a")
-                                          });
-    QStringList fullOutputLines = fullOutput.trimmed().split("\n");
-    qDebug() << fullOutput.trimmed();
-
-    QString enabledOutput = runCommandOutput(QStringLiteral("ime"), {
-                                                 QStringLiteral("list"),
-                                                 QStringLiteral("-s")
-                                             });
-    QStringList enabledOutputLines = enabledOutput.trimmed().split("\n");
-    qDebug() << enabledOutput.trimmed();
-
-    QVariantList imeList;
-    for (const QString &imeName : fullOutputLines) {
-        QVariantMap imeMethod;
-        imeMethod["name"] = imeName;
-        imeMethod["enabled"] = enabledOutputLines.contains(imeName);
-        imeList.append(imeMethod);
-    }
-
+    const QVariantList imeList = m_alien->getImeList();
     emit m_adaptor->imeAvailable(imeList);
 }
 
 void DBusService::triggerImeMethod(const QString &ime, bool enable)
 {
-    runCommand(QStringLiteral("ime"), {
-                   enable ? QStringLiteral("enable") : QStringLiteral("disable"),
-                   ime
-               });
+    m_alien->triggerImeMethod(ime, enable);
 }
 
 void DBusService::setImeMethod(const QString &ime)
 {
-    runCommand(QStringLiteral("ime"), {
-                   QStringLiteral("set"),
-                   ime
-               });
+    m_alien->setImeMethod(ime);
 }
 
 QString DBusService::getSettings(const QString &nspace, const QString &key)
 {
-    QString value = runCommandOutput(QStringLiteral("settings"), {
-                                         QStringLiteral("get"),
-                                         nspace,
-                                         key
-                                     });
-    return value.trimmed();
+    return m_alien->getSettings(nspace, key);
 }
 
 void DBusService::putSettings(const QString &nspace, const QString &key, const QString &value)
 {
-    runCommand(QStringLiteral("settings"), {
-                   QStringLiteral("put"),
-                   nspace,
-                   key,
-                   value
-               });
+    m_alien->putSettings(nspace, key, value);
 }
 
 QString DBusService::getprop(const QString &key)
 {
-    QString value = runCommandOutput(QStringLiteral("/system/bin/getprop"), {key});
-    return value.trimmed();
+    return m_alien->getprop(key);
 }
 
 void DBusService::setprop(const QString &key, const QString &value)
 {
-    runCommand(QStringLiteral("/system/bin/setprop"), {
-                   key,
-                   value
-               });
+    m_alien->setprop(key, value);
 }
 
 void DBusService::quit()
@@ -587,7 +429,6 @@ void DBusService::startReadingLocalServer()
             m_pendingRequests[clientConnection] = m_pendingRequests[clientConnection] + request;
         }
         qWarning() << Q_FUNC_INFO << "Available:" << bytes << "Read:" << request.size();
-        qDebug().noquote() << request;
     }, Qt::DirectConnection);
 }
 
@@ -595,14 +436,14 @@ bool DBusService::checkHelperSocket(bool remove)
 {
     qDebug() << Q_FUNC_INFO;
 
-    const QFileInfo helperSocket(s_localSocket);
+    const QFileInfo helperSocket(m_localSocket);
     if (!helperSocket.dir().exists()) {
         qWarning() << Q_FUNC_INFO << "Helper not installed!";
 
         if (remove) {
             QEventLoop loop;
             QTimer timer;
-            QFileSystemWatcher watcher({QStringLiteral("/opt/alien/data/data")});
+            QFileSystemWatcher watcher({QStringLiteral("%1/data").arg(m_alien->dataPath())});
             connect(&watcher, &QFileSystemWatcher::directoryChanged, [helperSocket, &loop](const QString &) {
                 if (!helperSocket.dir().exists()) {
                     return;
@@ -619,7 +460,7 @@ bool DBusService::checkHelperSocket(bool remove)
     }
     if (helperSocket.exists()) {
         if (remove) {
-            QFile::remove(s_localSocket);
+            QFile::remove(m_localSocket);
         } else {
             return true;
         }
@@ -643,21 +484,12 @@ bool DBusService::checkHelperSocket(bool remove)
 
 void DBusService::requestDeviceInfo()
 {
-    qDebug() << Q_FUNC_INFO;
-
-    runCommand(QStringLiteral("am"), {
-                   QStringLiteral("start"),
-                   QStringLiteral("-n"),
-                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
-                   QStringLiteral("--es"),
-                   QStringLiteral("command"),
-                   QStringLiteral("deviceInfo")
-               });
+    m_alien->requestDeviceInfo();
 }
 
 void DBusService::processHelperResult(const QByteArray &data)
 {
-    qDebug() << Q_FUNC_INFO << data;
+    qDebug() << Q_FUNC_INFO;
     QJsonParseError error;
     error.error = QJsonParseError::NoError;
     const QJsonDocument doc = QJsonDocument::fromJson(data, &error);
@@ -724,26 +556,7 @@ void DBusService::componentActivity(const QString &package, const QString &class
         forceStop(package);
     }
 
-    QStringList options = {
-        QStringLiteral("start"),
-        QStringLiteral("-n"),
-        QStringLiteral("%1/%2").arg(package, className)
-    };
-    if (data.isEmpty()) {
-        options.append({
-                           QStringLiteral("-a"),
-                           QStringLiteral("android.intent.action.MAIN")
-                       });
-    } else {
-        options.append({
-                           QStringLiteral("-a"),
-                           QStringLiteral("android.intent.action.VIEW"),
-                           QStringLiteral("-d"),
-                           data
-                       });
-    }
-
-    runCommand("am", options);
+    m_alien->componentActivity(package, className, data);
 }
 
 void DBusService::uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data)
@@ -764,55 +577,7 @@ void DBusService::uriActivity(const QString &package, const QString &className, 
         forceStop(package);
     }
 
-    QStringList options = {
-        QStringLiteral("start"),
-        QStringLiteral("-n"),
-        QStringLiteral("%1/%2").arg(package, className),
-        QStringLiteral("-a"),
-        QStringLiteral("android.intent.action.VIEW"),
-        QStringLiteral("-d"),
-        data
-    };
-
-    runCommand("am", options);
-}
-
-void DBusService::runCommand(const QString &program, const QStringList &params)
-{
-    qDebug() << "Executing" << program << params;
-
-    const QString application = QStringLiteral("/usr/sbin/chroot");
-    QStringList arguments = {
-        QStringLiteral("/opt/alien"),
-        program
-    };
-    arguments.append(params);
-
-    QProcess process;
-    process.setProcessEnvironment(m_alienEnvironment);
-    process.start(application, arguments);
-    process.waitForFinished(5000);
-}
-
-QString DBusService::runCommandOutput(const QString &program, const QStringList &params)
-{
-    const QString application = QStringLiteral("/usr/sbin/chroot");
-    QStringList arguments = {
-        QStringLiteral("/opt/alien"),
-        program
-    };
-    arguments.append(params);
-
-    QProcess process;
-    process.setProcessEnvironment(m_alienEnvironment);
-    process.start(application, arguments);
-    process.waitForFinished(5000);
-    if (process.state() == QProcess::Running) {
-        process.close();
-        return QString();
-    }
-    const QString output = QString::fromUtf8(process.readAll());
-    return output;
+    m_alien->uriActivity(package, className, launcherClass, data);
 }
 
 bool DBusService::activateApp(const QString &packageName, const QString &launcherClass)

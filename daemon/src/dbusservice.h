@@ -19,6 +19,7 @@ class INotifyWatcher;
 class QLocalServer;
 class QLocalSocket;
 class QTimer;
+class AlienAbstract;
 class DBusService : public AliendalvikController, public QDBusContext
 {
     Q_OBJECT
@@ -80,9 +81,6 @@ private:
 
     void requestDeviceInfo();
 
-    void runCommand(const QString &program, const QStringList &params);
-    QString runCommandOutput(const QString &program, const QStringList &params);
-
     bool activateApp(const QString &packageName, const QString &launcherClass);
     void waitForAndroidWindow();
 
@@ -93,8 +91,6 @@ private:
 
     bool _isTopmostAndroid;
 
-    QDBusInterface *apkdIface;
-
     QThread *m_serverThread = nullptr;
     QLocalServer *m_localServer = nullptr;
 
@@ -104,6 +100,9 @@ private:
 
     QTimer *m_sessionBusConnector = nullptr;
     QDBusConnection m_sbus;
+
+    AlienAbstract *m_alien = nullptr;
+    QString m_localSocket;
 
     QProcessEnvironment m_alienEnvironment;
 
