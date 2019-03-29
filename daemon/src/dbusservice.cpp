@@ -225,26 +225,16 @@ void DBusService::uriActivitySelector(const QString &uri)
         return;
     }
 
-    qDebug() << Q_FUNC_INFO << uri;
     runCommand(QStringLiteral("am"), {
                    QStringLiteral("start"),
-                   QStringLiteral("-a"),
-                   QStringLiteral("android.intent.action.VIEW"),
+                   QStringLiteral("-n"),
+                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("command"),
+                   QStringLiteral("selector"),
                    QStringLiteral("-d"),
                    uri,
-                   QStringLiteral("--selector")
                });
-
-//    runCommand(QStringLiteral("am"), {
-//                   QStringLiteral("start"),
-//                   QStringLiteral("-n"),
-//                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
-//                   QStringLiteral("--es"),
-//                   QStringLiteral("command"),
-//                   QStringLiteral("selector"),
-//                   QStringLiteral("-d"),
-//                   uri,
-//               });
 }
 
 void DBusService::hideNavBar()
@@ -421,43 +411,9 @@ void DBusService::doShare(
 {
     qDebug() << Q_FUNC_INFO << mimetype << filename << data << packageName << className << launcherClass;
 
-    const QString packageNameReplaced = QString(packageName).replace(QChar(u'.'), QChar(u'_'));
-    const QString launcherClassReplaced = QString(launcherClass).replace(QChar(u'.'), QChar(u'_'));
-    const QString desktopFile = QStringLiteral("/usr/share/applications/apkd_launcher_%1-%2.desktop").arg(packageNameReplaced, launcherClassReplaced);
+    componentActivity(packageName, launcherClass);
+    waitForAndroidWindow();
 
-    if (QFileInfo::exists(desktopFile)) {
-        qDebug() << Q_FUNC_INFO << "Activating desktop" << desktopFile;
-        componentActivity(packageName, launcherClass);
-        QDBusMessage activateDesktop = QDBusMessage::createMethodCall(
-                QStringLiteral("com.jolla.lipstick"),
-                QStringLiteral("/LauncherModel"),
-                QStringLiteral("org.nemomobile.lipstick.LauncherModel"),
-                QStringLiteral("notifyLaunching"));
-        activateDesktop.setArguments({desktopFile});
-        m_sbus.send(activateDesktop);
-    } else {
-        qDebug() << Q_FUNC_INFO << "Force stopping" << packageName;
-        forceStop(packageName);
-        componentActivity(packageName, launcherClass);
-    }
-
-    if (!_isTopmostAndroid) {
-        QEventLoop loop;
-        QTimer timer;
-        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        QMetaObject::Connection connection = connect(this, &DBusService::isTopmostAndroidChanged, [&loop](bool isTopmostAndroid){
-            if (isTopmostAndroid) {
-                loop.quit();
-            }
-        });
-        timer.start(5000);
-        loop.exec();
-        if (!timer.isActive()) {
-            qDebug() << Q_FUNC_INFO << "Timer expired. Cancel share!";
-            return;
-        }
-        disconnect(connection);
-    }
     QStringList options = {
         QStringLiteral("start"),
         QStringLiteral("-a"),
@@ -738,12 +694,13 @@ void DBusService::processHelperResult(const QByteArray &data)
                     m_sbus.send(msg);
     } else if (command == QLatin1String("selector")) {
         const QVariantList selectorList = object.value(QStringLiteral("candidates")).toArray().toVariantList();
+        const QString url = object.value(QStringLiteral("url")).toString();
         QDBusMessage msg = QDBusMessage::createMethodCall(
                     QStringLiteral("org.coderus.aliendalvikselector"),
                     QStringLiteral("/"),
                     QStringLiteral("org.coderus.aliendalvikselector"),
                     QStringLiteral("openUrl"));
-        msg.setArguments({selectorList});
+        msg.setArguments({url, selectorList});
         qDebug() << Q_FUNC_INFO << "Sending selector to salifish:" <<
                     m_sbus.send(msg);
     }
@@ -760,6 +717,11 @@ void DBusService::componentActivity(const QString &package, const QString &class
                                QStringLiteral("%1/%2").arg(package, className)
                            });
         apkdLauncher.waitForFinished(-1);
+    }
+
+    if (!activateApp(package, className)) {
+        qDebug() << Q_FUNC_INFO << "Force stopping" << package;
+        forceStop(package);
     }
 
     QStringList options = {
@@ -780,6 +742,37 @@ void DBusService::componentActivity(const QString &package, const QString &class
                            data
                        });
     }
+
+    runCommand("am", options);
+}
+
+void DBusService::uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data)
+{
+    qDebug() << Q_FUNC_INFO << package << className << launcherClass << data;
+
+    if (!isServiceActive()) {
+        QProcess apkdLauncher;
+        apkdLauncher.start(QStringLiteral("/usr/bin/apkd-launcher"), {
+                               QString(),
+                               QStringLiteral("%1/%2").arg(package, launcherClass)
+                           });
+        apkdLauncher.waitForFinished(-1);
+    }
+
+    if (!activateApp(package, launcherClass)) {
+        qDebug() << Q_FUNC_INFO << "Force stopping" << package;
+        forceStop(package);
+    }
+
+    QStringList options = {
+        QStringLiteral("start"),
+        QStringLiteral("-n"),
+        QStringLiteral("%1/%2").arg(package, className),
+        QStringLiteral("-a"),
+        QStringLiteral("android.intent.action.VIEW"),
+        QStringLiteral("-d"),
+        data
+    };
 
     runCommand("am", options);
 }
@@ -820,6 +813,61 @@ QString DBusService::runCommandOutput(const QString &program, const QStringList 
     }
     const QString output = QString::fromUtf8(process.readAll());
     return output;
+}
+
+bool DBusService::activateApp(const QString &packageName, const QString &launcherClass)
+{
+    const QString packageNameReplaced = QString(packageName).replace(QChar(u'.'), QChar(u'_'));
+    const QString launcherClassReplaced = QString(launcherClass).replace(QChar(u'.'), QChar(u'_'));
+    QString desktopFile = QStringLiteral("/usr/share/applications/apkd_launcher_%1-%2.desktop").arg(packageNameReplaced, launcherClassReplaced);
+
+    if (!QFileInfo::exists(desktopFile)) {
+        if (packageName != QLatin1String("org.mozilla.firefox")) {
+            qWarning() << Q_FUNC_INFO << "Desktop does not exists:" << desktopFile;
+            return false;
+        }
+
+        desktopFile = QStringLiteral("/usr/share/applications/apkd_launcher_org_mozilla_firefox-org_mozilla_gecko_LauncherActivity.desktop");
+        if (!QFileInfo::exists(desktopFile)) {
+            return false;
+        }
+    }
+
+    qDebug() << Q_FUNC_INFO << "Activating desktop" << desktopFile;
+    QDBusMessage activateDesktop = QDBusMessage::createMethodCall(
+            QStringLiteral("com.jolla.lipstick"),
+            QStringLiteral("/LauncherModel"),
+            QStringLiteral("org.nemomobile.lipstick.LauncherModel"),
+            QStringLiteral("notifyLaunching"));
+    activateDesktop.setArguments({desktopFile});
+    const bool result = m_sbus.send(activateDesktop);
+    if (!result) {
+        qWarning() << Q_FUNC_INFO << "Failed to send dbus message:" << m_sbus.lastError().message();
+    }
+    return result;
+}
+
+void DBusService::waitForAndroidWindow()
+{
+    if (_isTopmostAndroid) {
+        return;
+    }
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    QMetaObject::Connection connection = connect(this, &DBusService::isTopmostAndroidChanged, [&loop](bool isTopmostAndroid){
+        if (isTopmostAndroid) {
+            loop.quit();
+        }
+    });
+    timer.start(5000);
+    loop.exec();
+    disconnect(connection);
+    if (!timer.isActive()) {
+        qDebug() << Q_FUNC_INFO << "Timer expired. Cancel waiting!";
+        return;
+    }
 }
 
 void DBusService::desktopChanged(const QString &path)

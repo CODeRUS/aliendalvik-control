@@ -6,8 +6,12 @@
 
 #include <qpa/qplatformnativeinterface.h>
 
+#include "sailfishbrowser.h"
+
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
+    qmlRegisterSingletonType<SailfishBrowser>("org.coderus.aliendalvikcontrol", 1, 0, "SailfishBrowser", &SailfishBrowser::qmlSingleton);
+
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     QObject::connect(view->engine(), &QQmlEngine::quit, app.data(), &QGuiApplication::quit);
@@ -17,7 +21,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     view->create();
 
     QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
-    native->setWindowProperty(view->handle(), QStringLiteral("CATEGORY"), QStringLiteral("notification"));
+    native->setWindowProperty(view->handle(), QStringLiteral("CATEGORY"), QStringLiteral("dialog"));
 
     view->setSource(SailfishApp::pathToMainQml());
     view->show();

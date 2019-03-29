@@ -4,12 +4,13 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    1.2.4
+Version:    1.2.5
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
 Source0:    %{name}-%{version}.tar.bz2
+Requires:   sailfish-version >= 3
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   aliendalvik < 8
 Conflicts:  android-shareui
