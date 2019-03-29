@@ -1,6 +1,9 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="org.coderus.aliendalvikcontrol">
+    <method name="getApiVersion">
+      <arg name="api" type="i" direction="out"/>
+    </method>
     <method name="sendKeyevent">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="code" type="i" direction="in"/>
@@ -82,7 +85,7 @@
       <arg name="className" type="s" direction="in"/>
       <arg name="data" type="s" direction="in"/>
     </method>
-    <method name="uriActivity">
+    <method name="uriLaunchActivity">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="package" type="s" direction="in"/>
       <arg name="className" type="s" direction="in"/>

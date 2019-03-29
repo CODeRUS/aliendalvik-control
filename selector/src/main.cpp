@@ -6,12 +6,8 @@
 
 #include <qpa/qplatformnativeinterface.h>
 
-#include "sailfishbrowser.h"
-
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
-    qmlRegisterSingletonType<SailfishBrowser>("org.coderus.aliendalvikcontrol", 1, 0, "SailfishBrowser", &SailfishBrowser::qmlSingleton);
-
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     QObject::connect(view->engine(), &QQmlEngine::quit, app.data(), &QGuiApplication::quit);

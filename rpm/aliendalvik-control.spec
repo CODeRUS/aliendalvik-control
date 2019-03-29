@@ -4,7 +4,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.9.9
+Version:    9.0.0
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -12,7 +12,6 @@ URL:        https://github.com/CODeRUS/aliendalvik-control
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfish-version >= 3
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   aliendalvik < 8
 Conflicts:  android-shareui
 Obsoletes:  android-shareui
 Requires:   nemo-transferengine-qt5 >= 0.3.1
@@ -24,7 +23,6 @@ BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  desktop-file-utils
 BuildRequires:  pkgconfig(nemotransferengine-qt5)
 BuildRequires:  sailfish-svg2png >= 0.1.5
-BuildRequires:  pkgconfig(contentaction5)
 BuildRequires:  pkgconfig(libgbinder)
 
 %description
@@ -69,7 +67,11 @@ fi
 /usr/bin/aliendalvik-control restore ||:
 umount /home/.android/data/media/0/sdcard_external ||:
 /usr/bin/update-desktop-database ||:
-apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
+if [ -f /opt/alien/data/app/aliendalvik-control.apk ]; then
+apkd-uninstall /opt/alien/data/app/aliendalvik-control.apk ||:
+else
+apkd-uninstall org.coderus.aliendalvikcontrol ||:
+fi
 
 %files
 %{_bindir}/aliendalvik-control
@@ -78,6 +80,7 @@ apkd-uninstall /home/.android/data/app/aliendalvik-control.apk ||:
 %{_bindir}/aliendalvik-control-selector
 
 %{_libdir}/libaliendalvikcontrolplugin-chroot.so
+%{_libdir}/libaliendalvikcontrolplugin-binder8.so
 
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf

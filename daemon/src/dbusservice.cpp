@@ -23,7 +23,6 @@ static const QString c_dbus_path = QStringLiteral("/");
 static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
 static const QString s_helperApk = QStringLiteral("/usr/share/aliendalvik-control/apk/app-release.apk");
-static const QString s_helperPathPart = QStringLiteral("%1/app/aliendalvik-control.apk");
 
 static const QString s_localSocketPart = QStringLiteral("%1/data/org.coderus.aliendalvikcontrol/.aliendalvik-control-socket");
 
@@ -35,7 +34,11 @@ DBusService::DBusService(QObject *parent)
     , m_sbus(s_sessionBusConnection)
 {
     QLibrary alienLib;
-    alienLib.setFileName(QStringLiteral("aliendalvikcontrolplugin-chroot"));
+    if (QFileInfo::exists("/opt/alien/system.img")) {
+        alienLib.setFileName(QStringLiteral("/usr/lib/libaliendalvikcontrolplugin-binder8.so"));
+    } else {
+        alienLib.setFileName(QStringLiteral("/usr/lib/libaliendalvikcontrolplugin-chroot.so"));
+    }
     AlienLoader loader = reinterpret_cast<AlienLoader>(alienLib.resolve("instance"));
     if (!loader) {
         qWarning() << Q_FUNC_INFO << "Error loading library" << alienLib.fileName() << alienLib.errorString();
@@ -44,14 +47,7 @@ DBusService::DBusService(QObject *parent)
 
     m_alien = loader(this);
     m_localSocket = s_localSocketPart.arg(m_alien->dataPath());
-
-    const QString helperPath = s_helperPathPart.arg(m_alien->dataPath());
-    if (QFileInfo::exists(helperPath)) {
-        qWarning() << Q_FUNC_INFO << "Removing old helper:" <<
-        QFile::remove(helperPath);
-    }
-    qWarning() << Q_FUNC_INFO << "Installing helper apk:" <<
-    QFile::copy(s_helperApk, helperPath);
+    m_alien->installApk(s_helperApk);
 
     qDebug() << Q_FUNC_INFO << "Loaded alien plugin instance:" << m_alien;
 
@@ -168,6 +164,11 @@ void DBusService::start()
     m_adaptor = new DBusAdaptor(this);
 }
 
+int DBusService::getApiVersion()
+{
+    return m_deviceProperties.value(QStringLiteral("api"), 19).toInt();
+}
+
 void DBusService::sendKeyevent(int code)
 {
     m_alien->sendKeyevent(code);
@@ -198,13 +199,16 @@ void DBusService::uriActivitySelector(const QString &uri)
 void DBusService::hideNavBar()
 {
     const int navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), 96).toInt();
+    const int api = m_deviceProperties.value(QStringLiteral("api"), 19).toInt();
 
-    m_alien->hideNavBar(navbarHeight);
+    m_alien->hideNavBar(navbarHeight, api);
 }
 
 void DBusService::showNavBar()
 {
-    m_alien->showNavBar();
+    const int api = m_deviceProperties.value(QStringLiteral("api"), 19).toInt();
+
+    m_alien->showNavBar(api);
 }
 
 void DBusService::openDownloads()
@@ -559,7 +563,7 @@ void DBusService::componentActivity(const QString &package, const QString &class
     m_alien->componentActivity(package, className, data);
 }
 
-void DBusService::uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data)
+void DBusService::uriLaunchActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data)
 {
     qDebug() << Q_FUNC_INFO << package << className << launcherClass << data;
 
@@ -577,7 +581,7 @@ void DBusService::uriActivity(const QString &package, const QString &className, 
         forceStop(package);
     }
 
-    m_alien->uriActivity(package, className, launcherClass, data);
+    componentActivity(package, className, data);
 }
 
 bool DBusService::activateApp(const QString &packageName, const QString &launcherClass)
@@ -698,6 +702,10 @@ void DBusService::serviceStopped()
 
 void DBusService::serviceStarted()
 {
+    if (!m_alien) {
+        return;
+    }
+
     if (checkHelperSocket(true)) {
         requestDeviceInfo();
     }

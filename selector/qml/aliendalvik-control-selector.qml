@@ -116,7 +116,7 @@ MouseArea
 
                     onClicked: {
                         console.log("###", modelData.packageName)
-                        control.call("uriActivity", [modelData.packageName, modelData.className, modelData.launcherClass, modelData.data])
+                        control.call("uriLaunchActivity", [modelData.packageName, modelData.className, modelData.launcherClass, modelData.data])
 
                         Qt.quit()
                     }

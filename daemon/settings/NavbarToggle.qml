@@ -6,6 +6,8 @@ import com.jolla.settings 1.0
 SettingsToggle {
     id: root
 
+    property int apiVersion: 0
+
     DBusInterface {
         id: dbus
 
@@ -13,10 +15,18 @@ SettingsToggle {
         service: "org.coderus.aliendalvikcontrol"
         path: "/"
         iface: "org.coderus.aliendalvikcontrol"
+
+        Component.onCompleted: {
+            dbus.typedCall("getApiVersion", [],
+                           function(result) {
+                               console.log("Api version:", result)
+                               apiVersion = result
+                           })
+        }
     }
 
     name: "NavBar"
-    icon.source: "image://theme/icon-m-aliendalvik-back"
+    icon.source: "image://theme/icon-m-aliendalvik-back" + (apiVersion <= 19 ? "4" : "8")
     checked: true
 
     onToggled: {

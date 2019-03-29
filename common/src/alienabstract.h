@@ -1,10 +1,12 @@
 #ifndef ALIENABSTRACT_H
 #define ALIENABSTRACT_H
 
+#include "aliendalvikcontroller.h"
+
 #include <QObject>
 #include <QVariantList>
 
-class AlienAbstract : public QObject
+class AlienAbstract : public AliendalvikController
 {
     Q_OBJECT
 public:
@@ -17,8 +19,8 @@ public slots:
     virtual void sendInput(const QString &text) = 0;
     virtual void uriActivity(const QString &uri) = 0;
     virtual void uriActivitySelector(const QString &uri) = 0;
-    virtual void hideNavBar(int height) = 0;
-    virtual void showNavBar() = 0;
+    virtual void hideNavBar(int height, int api = 0) = 0;
+    virtual void showNavBar(int api = 0) = 0;
     virtual void openDownloads() = 0;
     virtual void openSettings() = 0;
     virtual void openContacts() = 0;
@@ -27,7 +29,6 @@ public slots:
     virtual void openAppSettings(const QString &package) = 0;
     virtual void launchApp(const QString &packageName) = 0;
     virtual void componentActivity(const QString &package, const QString &className, const QString &data = QString()) = 0;
-    virtual void uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data = QString()) = 0;
     virtual void forceStop(const QString &packageName) = 0;
     virtual void shareFile(const QString &filename, const QString &mimetype) = 0;
     virtual void shareText(const QString &text) = 0;
@@ -46,6 +47,8 @@ public slots:
     virtual void setprop(const QString &key, const QString &value) = 0;
 
     virtual void requestDeviceInfo() = 0;
+
+    virtual void installApk(const QString &fileName) = 0;
 };
 
 #endif // ALIENABSTRACT_H

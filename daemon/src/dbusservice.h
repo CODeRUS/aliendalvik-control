@@ -35,6 +35,8 @@ signals:
     void isTopmostAndroidChanged(bool isAndroid);
 
 private slots:
+    int getApiVersion();
+
     void sendKeyevent(int code);
     void sendInput(const QString &text);
     void uriActivity(const QString &uri);
@@ -49,7 +51,7 @@ private slots:
     void openAppSettings(const QString &package);
     void launchApp(const QString &packageName);
     void componentActivity(const QString &package, const QString &className, const QString &data = QString());
-    void uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data = QString());
+    void uriLaunchActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data = QString());
     void forceStop(const QString &packageName);
     void shareContent(const QVariantMap &content, const QString &source);
     void shareFile(const QString &filename, const QString &mimetype);

@@ -62,3 +62,5 @@ TARGET = aliendalvikcontrolplugin-binder8
 target.path = /usr/lib
 
 INSTALLS = target
+
+INCLUDEPATH += /usr/include

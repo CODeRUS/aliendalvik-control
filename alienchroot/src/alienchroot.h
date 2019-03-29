@@ -18,8 +18,8 @@ public slots:
     void sendInput(const QString &text) override;
     void uriActivity(const QString &uri) override;
     void uriActivitySelector(const QString &uri) override;
-    void hideNavBar(int height) override;
-    void showNavBar() override;
+    void hideNavBar(int height, int api) override;
+    void showNavBar(int api) override;
     void openDownloads() override;
     void openSettings() override;
     void openContacts() override;
@@ -28,7 +28,6 @@ public slots:
     void openAppSettings(const QString &) override;
     void launchApp(const QString &packageName) override;
     void componentActivity(const QString &package, const QString &className, const QString &data) override;
-    void uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data) override;
     void forceStop(const QString &packageName) override;
     void shareFile(const QString &filename, const QString &mimetype) override;
     void shareText(const QString &text) override;
@@ -43,11 +42,18 @@ public slots:
 
     void requestDeviceInfo() override;
 
+    void installApk(const QString &fileName) override;
+
 private:
     void runCommand(const QString &program, const QStringList &params);
     QString runCommandOutput(const QString &program, const QStringList &params);
 
     QProcessEnvironment m_alienEnvironment;
+
+private slots:
+    void serviceStopped() override;
+    void serviceStarted() override;
+
 };
 
 #endif // ALIENCHROOT_H

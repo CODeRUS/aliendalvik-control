@@ -5,6 +5,8 @@ import Nemo.DBus 2.0
 Page {
     id: page
 
+    property int apiVersion: 0
+
     DBusInterface {
         id: dbus
 
@@ -18,10 +20,18 @@ Page {
         function imeAvailable(imeList) {
             imeRepeater.model = imeList
         }
+
+        Component.onCompleted: {
+            dbus.typedCall("getApiVersion", [],
+                           function(result) {
+                               console.log("Api version:", result)
+                               apiVersion = result
+                           })
+        }
     }
 
     onStatusChanged: {
-        if (status == PageStatus.Activating) {
+        if (status == PageStatus.Activating && apiVersion <= 19) {
             dbus.call("getImeList", [])
         }
     }
@@ -52,6 +62,42 @@ Page {
                 }
             }
 
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Settings"
+                visible: apiVersion >= 27
+                onClicked: {
+                    dbus.call("openSettings", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Contacts"
+                visible: apiVersion >= 27
+                onClicked: {
+                    dbus.call("openContacts", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Gallery"
+                visible: apiVersion >= 27
+                onClicked: {
+                    dbus.call("openGallery", [])
+                }
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Camera"
+                visible: apiVersion >= 27
+                onClicked: {
+                    dbus.call("openCamera", [])
+                }
+}
+
             SectionHeader {
                 text: "Navigation bar"
             }
@@ -78,6 +124,7 @@ Page {
 
             SectionHeader {
                 text: "Android settings"
+                visible: apiVersion <= 19
             }
 
             TextSwitch {
@@ -85,6 +132,7 @@ Page {
                 text: "Touch sounds"
                 checked: false
                 enabled: false
+                visible: apiVersion <= 19
                 onClicked: {
                     dbus.typedCall("putSettings", [{"type": "s", "value": "system"},
                                                    {"type": "s", "value": "sound_effects_enabled"},
@@ -94,7 +142,7 @@ Page {
                     dbus.typedCall("getSettings", [{"type": "s", "value": "system"},
                                                    {"type": "s", "value": "sound_effects_enabled"}],
                                    function(value) {
-                                       checked = value == 1
+                                       checked = value == "1"
                                        enabled = true
                                    })
                 }
@@ -105,6 +153,7 @@ Page {
                 text: "Allow mock location"
                 checked: false
                 enabled: false
+                visible: apiVersion <= 19
                 onClicked: {
                     dbus.typedCall("putSettings", [{"type": "s", "value": "secure"},
                                                    {"type": "s", "value": "mock_location"},
@@ -114,7 +163,7 @@ Page {
                     dbus.typedCall("getSettings", [{"type": "s", "value": "secure"},
                                                    {"type": "s", "value": "mock_location"}],
                                    function(value) {
-                                       checked = value == 1
+                                       checked = value == "1"
                                        enabled = true
                                    })
                 }
@@ -125,6 +174,7 @@ Page {
                 text: "Allow install non-market apps"
                 checked: false
                 enabled: false
+                visible: apiVersion <= 19
                 onClicked: {
                     dbus.typedCall("putSettings", [{"type": "s", "value": "global"},
                                                    {"type": "s", "value": "install_non_market_apps"},
@@ -134,7 +184,7 @@ Page {
                     dbus.typedCall("getSettings", [{"type": "s", "value": "global"},
                                                    {"type": "s", "value": "install_non_market_apps"}],
                                    function(value) {
-                                       checked = value == 1
+                                       checked = value == "1"
                                        enabled = true
                                    })
                 }
@@ -142,12 +192,14 @@ Page {
 
             SectionHeader {
                 text: "Input methods"
+                visible: apiVersion <= 19
             }
 
             Repeater {
                 id: imeRepeater
                 width: parent.width
                 model: []
+                visible: apiVersion <= 19
                 delegate: Component {
                     ListItem {
                         property bool imeEnabled: modelData.enabled

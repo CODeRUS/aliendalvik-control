@@ -2,11 +2,14 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 
 static const QString s_dataPath = QStringLiteral("/opt/alien/data");
 
 static const QString s_chrootExecutable = QStringLiteral("/usr/sbin/chroot");
 static const QString s_chrootPath = QStringLiteral("/opt/alien");
+
+static const QString s_helperPath = QStringLiteral("/opt/alien/data/app/aliendalvik-control.apk");
 
 static AlienAbstract *s_instance = nullptr;
 
@@ -102,20 +105,38 @@ void AlienChroot::uriActivitySelector(const QString &uri)
                });
 }
 
-void AlienChroot::hideNavBar(int height)
+void AlienChroot::hideNavBar(int height, int api)
 {
-    runCommand(QStringLiteral("wm"), {
-                   QStringLiteral("overscan"),
-                   QStringLiteral("0,0,0,-%1").arg(QString::number(height))
-               });
+    if (api == 19) {
+        runCommand(QStringLiteral("wm"), {
+                       QStringLiteral("overscan"),
+                       QStringLiteral("0,0,0,-%1").arg(QString::number(height))
+                   });
+    } else {
+        runCommand(QStringLiteral("/system/bin/service"), {
+                       QStringLiteral("call"),
+                       QStringLiteral("activity"),
+                       QStringLiteral("42"),
+                       QStringLiteral("s16"),
+                       QStringLiteral("com.android.systemui")
+                   });
+    }
 }
 
-void AlienChroot::showNavBar()
+void AlienChroot::showNavBar(int api)
 {
-    runCommand(QStringLiteral("wm"), {
-                   QStringLiteral("overscan"),
-                   QStringLiteral("0,0,0,0")
-               });
+    if (api == 19) {
+        runCommand(QStringLiteral("wm"), {
+                       QStringLiteral("overscan"),
+                       QStringLiteral("0,0,0,0")
+                   });
+    } else {
+        runCommand(QStringLiteral("am"), {
+                       QStringLiteral("startservice"),
+                       QStringLiteral("-n"),
+                       QStringLiteral("com.android.systemui/.SystemUIService")
+                   });
+    }
 }
 
 void AlienChroot::openDownloads()
@@ -187,21 +208,6 @@ void AlienChroot::componentActivity(const QString &package, const QString &class
                            data
                        });
     }
-
-    runCommand("am", options);
-}
-
-void AlienChroot::uriActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data)
-{
-    QStringList options = {
-        QStringLiteral("start"),
-        QStringLiteral("-n"),
-        QStringLiteral("%1/%2").arg(package, className),
-        QStringLiteral("-a"),
-        QStringLiteral("android.intent.action.VIEW"),
-        QStringLiteral("-d"),
-        data
-    };
 
     runCommand("am", options);
 }
@@ -372,6 +378,16 @@ void AlienChroot::requestDeviceInfo()
                });
 }
 
+void AlienChroot::installApk(const QString &fileName)
+{
+    if (QFileInfo::exists(s_helperPath)) {
+        qWarning() << Q_FUNC_INFO << "Removing old helper:" <<
+        QFile::remove(s_helperPath);
+    }
+    qWarning() << Q_FUNC_INFO << "Installing helper apk:" <<
+    QFile::copy(fileName, s_helperPath);
+}
+
 void AlienChroot::runCommand(const QString &program, const QStringList &params)
 {
     qDebug() << "Executing" << program << params;
@@ -405,4 +421,14 @@ QString AlienChroot::runCommandOutput(const QString &program, const QStringList 
         return QString();
     }
     return QString::fromUtf8(process.readAll());
+}
+
+void AlienChroot::serviceStopped()
+{
+
+}
+
+void AlienChroot::serviceStarted()
+{
+
 }
