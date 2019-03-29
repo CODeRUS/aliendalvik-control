@@ -1,7 +1,7 @@
 #ifndef DBUSSERVICE_H
 #define DBUSSERVICE_H
 
-#include "aliendalvikcontroller.h"
+#include "../common/src/aliendalvikcontroller.h"
 
 #include <QObject>
 #include <QStandardPaths>

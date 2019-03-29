@@ -5,11 +5,11 @@
 
 #include <QProcessEnvironment>
 
-class AlienChroot : public AlienAbstract
+class AlienBinder8 : public AlienAbstract
 {
     Q_OBJECT
 public:
-    explicit AlienChroot(QObject *parent = nullptr);
+    explicit AlienBinder8(QObject *parent = nullptr);
 
 public slots:
     QString dataPath() const override;
@@ -44,10 +44,6 @@ public slots:
     void requestDeviceInfo() override;
 
 private:
-    void runCommand(const QString &program, const QStringList &params);
-    QString runCommandOutput(const QString &program, const QStringList &params);
-
-    QProcessEnvironment m_alienEnvironment;
 };
 
 #endif // ALIENCHROOT_H

@@ -16,7 +16,7 @@
 #include <QLocalSocket>
 #include <QLocalServer>
 
-#include "../abstract/src/alienabstract.h"
+#include "../common/src/alienabstract.h"
 
 static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
 static const QString c_dbus_path = QStringLiteral("/");

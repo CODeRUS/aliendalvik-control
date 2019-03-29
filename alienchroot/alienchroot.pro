@@ -4,11 +4,11 @@ QT = core dbus network
 CONFIG += plugin
 
 HEADERS += \
-    ../abstract/src/alienabstract.h \
+    ../common/src/alienabstract.h \
     src/alienchroot.h
 
 SOURCES += \
-    ../abstract/src/alienabstract.cpp \
+    ../common/src/alienabstract.cpp \
     src/alienchroot.cpp
 
 TARGET = aliendalvikcontrolplugin-chroot

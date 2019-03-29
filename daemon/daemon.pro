@@ -9,14 +9,14 @@ SOURCES += \
     src/main.cpp \
     src/dbusservice.cpp \
     src/inotifywatcher.cpp \
-    src/aliendalvikcontroller.cpp \
-    src/systemdcontroller.cpp
+    ../common/src/aliendalvikcontroller.cpp \
+    ../common/src/systemdcontroller.cpp
 
 HEADERS += \
     src/dbusservice.h \
     src/inotifywatcher.h \
-    src/aliendalvikcontroller.h \
-    src/systemdcontroller.h
+    ../common/src/aliendalvikcontroller.h \
+    ../common/src/systemdcontroller.h
 
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/

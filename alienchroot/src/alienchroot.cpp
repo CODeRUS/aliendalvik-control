@@ -1,7 +1,7 @@
 #include "alienchroot.h"
 
 #include <QDebug>
-#include <QFileInfo>
+#include <QFile>
 
 static const QString s_dataPath = QStringLiteral("/opt/alien/data");
 
