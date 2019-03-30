@@ -1,11 +1,12 @@
 %define theme sailfish-default
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
+%define __requires_exclude ^libgbinder.*$
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
 Version:    9.0.0
-Release:    1
+Release:    2
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
