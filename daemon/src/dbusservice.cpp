@@ -713,7 +713,7 @@ void DBusService::serviceStarted()
     }
 
     checkHelperSocket();
-    requestDeviceInfo();
+    QTimer::singleShot(5000, this, &DBusService::requestDeviceInfo);
 }
 
 void DBusService::readApplications(const QString &)

@@ -82,7 +82,6 @@ private:
     void checkHelperSocket();
     void installApkSync();
 
-    void requestDeviceInfo();
 
     bool activateApp(const QString &packageName, const QString &launcherClass);
     void waitForAndroidWindow();
@@ -110,6 +109,8 @@ private:
     QProcessEnvironment m_alienEnvironment;
 
 private slots:
+    void requestDeviceInfo();
+
     void readApplications(const QString &);
     void desktopChanged(const QString &path);
 
