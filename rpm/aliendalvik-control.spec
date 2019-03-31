@@ -107,3 +107,15 @@ fi
 %{_datadir}/themes/%{theme}/meegotouch/z1.5-large/icons/*.png
 %{_datadir}/themes/%{theme}/meegotouch/z1.75/icons/*.png
 %{_datadir}/themes/%{theme}/meegotouch/z2.0/icons/*.png
+
+%package logging
+Summary:    Aliendalvik control logging enabler
+Requires:   %{name}
+BuildArch:  noarch
+
+%description logging
+%{summary}.
+
+%files logging
+%defattr(-,root,root,-)
+%{_sharedstatedir}/environment/aliendalvik-control/10-debug.conf
