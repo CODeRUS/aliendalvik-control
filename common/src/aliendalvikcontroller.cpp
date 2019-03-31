@@ -29,3 +29,8 @@ bool AliendalvikController::isServiceActive() const
 
     return m_controller->isActive();
 }
+
+SystemdController *AliendalvikController::controller() const
+{
+    return m_controller;
+}

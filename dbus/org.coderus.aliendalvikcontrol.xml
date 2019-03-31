@@ -79,6 +79,12 @@
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="package" type="s" direction="in"/>
     </method>
+    <method name="launcherActivity">
+    <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    <arg name="package" type="s" direction="in"/>
+    <arg name="className" type="s" direction="in"/>
+    <arg name="data" type="s" direction="in"/>
+    </method>
     <method name="componentActivity">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="package" type="s" direction="in"/>

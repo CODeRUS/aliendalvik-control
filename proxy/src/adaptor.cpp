@@ -46,7 +46,7 @@ bool Adaptor::handleMessage(const QDBusMessage &message, const QDBusConnection &
         data = dbusArguments.first().toString();
     }
 
-    m_iface->componentActivity(interface, className, data);
+    m_iface->launcherActivity(interface, className, data);
 
     connection.send(message.createReply());
     return true;

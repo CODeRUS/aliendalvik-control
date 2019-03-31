@@ -17,6 +17,7 @@
 #include <QLocalServer>
 
 #include "../common/src/alienabstract.h"
+#include "../common/src/systemdcontroller.h"
 
 static const QString c_dbus_service = QStringLiteral("org.coderus.aliendalvikcontrol");
 static const QString c_dbus_path = QStringLiteral("/");
@@ -548,23 +549,44 @@ void DBusService::processHelperResult(const QByteArray &data)
     }
 }
 
-void DBusService::componentActivity(const QString &package, const QString &className, const QString &data)
+void DBusService::launcherActivity(const QString &package, const QString &className, const QString &data)
 {
-    qDebug() << Q_FUNC_INFO << package << className << data;
+    qDebug() << Q_FUNC_INFO << package << className << data << isServiceActive();
+    QString classNameReplaced = className;
+    if (className == QLatin1String("org.mozilla.gecko.LauncherActivity")) {
+        classNameReplaced = QStringLiteral("org.mozilla.firefox.App");
+        qDebug() << Q_FUNC_INFO << "Replacing" << className << "with" << classNameReplaced;
+    }
 
     if (!isServiceActive()) {
         QProcess apkdLauncher;
         apkdLauncher.start(QStringLiteral("/usr/bin/apkd-launcher"), {
-                               QString(),
-                               QStringLiteral("%1/%2").arg(package, className)
+                               package,
+                               QStringLiteral("%1/%2").arg(package, classNameReplaced)
                            });
         apkdLauncher.waitForFinished(-1);
+    } else {
+        launchApp(package);
     }
 
-    if (!activateApp(package, className)) {
-        qDebug() << Q_FUNC_INFO << "Force stopping" << package;
-        forceStop(package);
+    if (data.isEmpty()) {
+        return;
     }
+
+    if (!isServiceActive()) {
+        QEventLoop loop;
+        connect(controller(), &SystemdController::serviceStarted, &loop, &QEventLoop::quit);
+        loop.exec();
+    }
+
+    waitForAndroidWindow();
+
+    componentActivity(package, className, data);
+}
+
+void DBusService::componentActivity(const QString &package, const QString &className, const QString &data)
+{
+    qDebug() << Q_FUNC_INFO << package << className << data;
 
     m_alien->componentActivity(package, className, data);
 }

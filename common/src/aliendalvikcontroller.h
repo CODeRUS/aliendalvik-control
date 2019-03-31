@@ -13,6 +13,7 @@ public:
     const char *binderDevice() const;
 
     bool isServiceActive() const;
+    SystemdController *controller() const;
 
 private:
     SystemdController *m_controller = nullptr;

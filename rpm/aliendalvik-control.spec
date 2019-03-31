@@ -66,6 +66,7 @@ apkd-uninstall org.coderus.aliendalvikcontrol ||:
 fi
 
 %files
+%defattr(-,root,root,-)
 %{_bindir}/aliendalvik-control
 %{_bindir}/aliendalvik-control-proxy
 %{_bindir}/aliendalvik-control-share

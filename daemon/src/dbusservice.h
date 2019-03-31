@@ -50,6 +50,7 @@ private slots:
     void openGallery();
     void openAppSettings(const QString &package);
     void launchApp(const QString &packageName);
+    void launcherActivity(const QString &package, const QString &className, const QString &data = QString());
     void componentActivity(const QString &package, const QString &className, const QString &data = QString());
     void uriLaunchActivity(const QString &package, const QString &className, const QString &launcherClass, const QString &data = QString());
     void forceStop(const QString &packageName);
