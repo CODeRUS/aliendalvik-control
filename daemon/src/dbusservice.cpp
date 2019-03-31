@@ -573,6 +573,17 @@ void DBusService::uriLaunchActivity(const QString &package, const QString &class
 {
     qDebug() << Q_FUNC_INFO << package << className << launcherClass << data;
 
+    if (package == QLatin1String("com.myriadgroup.nativeapp.browser")) {
+        QProcess lca;
+        lca.start(QStringLiteral("/usr/bin/lca-tool"), {
+                      QStringLiteral("--triggerdesktop"),
+                      QStringLiteral("open-url.desktop"),
+                      data
+                  });
+        lca.waitForFinished(5000);
+        return;
+    }
+
     if (!isServiceActive()) {
         QProcess apkdLauncher;
         apkdLauncher.start(QStringLiteral("/usr/bin/apkd-launcher"), {
