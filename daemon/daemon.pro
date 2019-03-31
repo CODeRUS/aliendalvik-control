@@ -5,6 +5,9 @@ INSTALLS += target
 
 QT += dbus network
 
+DEFINES += RPM_VERSION=\\\"$$RPM_VERSION\\\"
+DEFINES += HELPER_VERSION=\\\"$$HELPER_VERSION\\\"
+
 SOURCES += \
     src/main.cpp \
     src/dbusservice.cpp \

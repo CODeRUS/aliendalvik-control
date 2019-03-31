@@ -47,7 +47,6 @@ DBusService::DBusService(QObject *parent)
 
     m_alien = loader(this);
     m_localSocket = s_localSocketPart.arg(m_alien->dataPath());
-    m_alien->installApk(s_helperApk);
 
     qDebug() << Q_FUNC_INFO << "Loaded alien plugin instance:" << m_alien;
 
@@ -295,20 +294,22 @@ void DBusService::shareContent(const QVariantMap &content, const QString &source
 void DBusService::shareFile(const QString &filename, const QString &mimetype)
 {
     qDebug() << Q_FUNC_INFO << filename << mimetype;
-    if (!checkHelperSocket()) {
+    if (!m_alien) {
         return;
     }
 
+    checkHelperSocket();
     m_alien->shareFile(filename, mimetype);
 }
 
 void DBusService::shareText(const QString &text)
 {
     qDebug() << Q_FUNC_INFO << text;
-    if (!checkHelperSocket()) {
+    if (!m_alien) {
         return;
     }
 
+    checkHelperSocket();
     m_alien->shareText(text);
 }
 
@@ -436,7 +437,7 @@ void DBusService::startReadingLocalServer()
     }, Qt::DirectConnection);
 }
 
-bool DBusService::checkHelperSocket(bool remove)
+void DBusService::checkHelperSocket()
 {
     qDebug() << Q_FUNC_INFO;
 
@@ -444,46 +445,45 @@ bool DBusService::checkHelperSocket(bool remove)
     if (!helperSocket.dir().exists()) {
         qWarning() << Q_FUNC_INFO << "Helper not installed!";
 
-        if (remove) {
-            QEventLoop loop;
-            QTimer timer;
-            QFileSystemWatcher watcher({QStringLiteral("%1/data").arg(m_alien->dataPath())});
-            connect(&watcher, &QFileSystemWatcher::directoryChanged, [helperSocket, &loop](const QString &) {
-                if (!helperSocket.dir().exists()) {
-                    return;
-                }
-                loop.quit();
-            });
-            connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-            timer.start(5000);
-            loop.exec();
-            timer.stop();
-        } else {
-            return false;
-        }
+        installApkSync();
     }
     if (helperSocket.exists()) {
-        if (remove) {
-            QFile::remove(m_localSocket);
-        } else {
-            return true;
-        }
+        QFile::remove(m_localSocket);
     }
 
     QEventLoop loop;
     QMetaObject::Connection conn =
     connect(m_serverThread, &QThread::started, &loop, &QEventLoop::quit);
-    if (m_serverThread->isRunning()) {
-        QTimer::singleShot(2000, m_serverThread, &QThread::quit);
-    } else {
-        QTimer::singleShot(2000, this, [this](){
+    QTimer::singleShot(2000, this, [this](){
+        if (m_serverThread->isRunning()) {
+            m_serverThread->quit();
+        } else {
             m_serverThread->start();
-        });
-    }
+        }
+    });
     loop.exec();
     disconnect(conn);
+}
 
-    return true;
+void DBusService::installApkSync()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    m_alien->installApk(s_helperApk);
+
+    QEventLoop loop;
+    QTimer timer;
+    QFileSystemWatcher watcher({QStringLiteral("%1/data").arg(m_alien->dataPath())});
+    connect(&watcher, &QFileSystemWatcher::directoryChanged, [this, &loop](const QString &) {
+        if (!QFileInfo(m_localSocket).dir().exists()) {
+            return;
+        }
+        loop.quit();
+    });
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(5000);
+    loop.exec();
+    timer.stop();
 }
 
 void DBusService::requestDeviceInfo()
@@ -509,6 +509,12 @@ void DBusService::processHelperResult(const QByteArray &data)
     } else if (command == QLatin1String("deviceInfo")) {
         const QJsonObject devicePropertiesJson = object.value(QStringLiteral("deviceProperties")).toObject();
         m_deviceProperties = devicePropertiesJson.toVariantHash();
+        qDebug().noquote() << data;
+        const int versionCode = m_deviceProperties.value(QStringLiteral("versionCode"), 0).toInt();
+        if (versionCode < QStringLiteral(HELPER_VERSION).toInt()) {
+            installApkSync();
+            requestDeviceInfo();
+        }
     } else if (command == QLatin1String("launchApp")) {
         const QJsonObject launchParametersJson = object.value(QStringLiteral("launchParameters")).toObject();
         const QString packageName = launchParametersJson.value(QStringLiteral("packageName")).toString();
@@ -706,9 +712,8 @@ void DBusService::serviceStarted()
         return;
     }
 
-    if (checkHelperSocket(true)) {
-        requestDeviceInfo();
-    }
+    checkHelperSocket();
+    requestDeviceInfo();
 }
 
 void DBusService::readApplications(const QString &)

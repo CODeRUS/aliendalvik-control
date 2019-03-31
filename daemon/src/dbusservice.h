@@ -79,7 +79,8 @@ private slots:
 private:
     friend class DBusAdaptor;
 
-    bool checkHelperSocket(bool remove = false);
+    void checkHelperSocket();
+    void installApkSync();
 
     void requestDeviceInfo();
 

@@ -34,24 +34,15 @@ D-Bus daemon for sending commands to aliendalvik
 
 %build
 
-%qtc_qmake5
+%qtc_qmake5 \
+    RPM_VERSION=%{version}-%{release} \
+    HELPER_VERSION=4
 
 %qtc_make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
 %qmake5_install
-
-%pre
-systemctl stop aliendalvik-control ||:
-if /sbin/pidof aliendalvik-control > /dev/null; then
-killall -9 aliendalvik-control ||:
-fi
-if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
-killall -9 aliendalvik-control-proxy ||:
-fi
-/usr/bin/aliendalvik-control restore ||:
-/usr/bin/update-desktop-database ||:
 
 %post
 systemctl daemon-reload
