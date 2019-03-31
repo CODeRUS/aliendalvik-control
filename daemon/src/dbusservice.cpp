@@ -35,7 +35,7 @@ DBusService::DBusService(QObject *parent)
     , m_sbus(s_sessionBusConnection)
 {
     QLibrary alienLib;
-    if (QFileInfo::exists("/opt/alien/system.img")) {
+    if (guessApi() >= 27) {
         alienLib.setFileName(QStringLiteral("/usr/lib/libaliendalvikcontrolplugin-binder8.so"));
     } else {
         alienLib.setFileName(QStringLiteral("/usr/lib/libaliendalvikcontrolplugin-chroot.so"));
@@ -199,14 +199,14 @@ void DBusService::uriActivitySelector(const QString &uri)
 void DBusService::hideNavBar()
 {
     const int navbarHeight = m_deviceProperties.value(QStringLiteral("navbarHeight"), 96).toInt();
-    const int api = m_deviceProperties.value(QStringLiteral("api"), 19).toInt();
+    const int api = m_deviceProperties.value(QStringLiteral("api"), guessApi()).toInt();
 
     m_alien->hideNavBar(navbarHeight, api);
 }
 
 void DBusService::showNavBar()
 {
-    const int api = m_deviceProperties.value(QStringLiteral("api"), 19).toInt();
+    const int api = m_deviceProperties.value(QStringLiteral("api"), guessApi()).toInt();
 
     m_alien->showNavBar(api);
 }
@@ -485,6 +485,17 @@ void DBusService::installApkSync()
     timer.start(5000);
     loop.exec();
     timer.stop();
+}
+
+int DBusService::guessApi()
+{
+    if (QFileInfo::exists("/opt/alien/system.img")) {
+        return 27;
+    }
+    if (QFileInfo::exists("/opt/alien/system/bin/wm")) {
+        return 19;
+    }
+    return 16;
 }
 
 void DBusService::requestDeviceInfo()

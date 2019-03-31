@@ -83,6 +83,7 @@ private:
     void checkHelperSocket();
     void installApkSync();
 
+    int guessApi();
 
     bool activateApp(const QString &packageName, const QString &launcherClass);
     void waitForAndroidWindow();
