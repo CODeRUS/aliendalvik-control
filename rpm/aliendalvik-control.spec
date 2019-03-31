@@ -5,8 +5,8 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.0.0
-Release:    2
+Version:    9.0.1
+Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
