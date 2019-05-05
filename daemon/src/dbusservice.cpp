@@ -569,7 +569,7 @@ void DBusService::launcherActivity(const QString &package, const QString &classN
         qDebug() << Q_FUNC_INFO << "Replacing" << className << "with" << classNameReplaced;
     }
 
-    if (!isServiceActive()) {
+    if (!isServiceActive() || !m_serverThread->isRunning()) {
         QProcess apkdLauncher;
         apkdLauncher.start(QStringLiteral("/usr/bin/apkd-launcher"), {
                                package,
@@ -587,6 +587,12 @@ void DBusService::launcherActivity(const QString &package, const QString &classN
     if (!isServiceActive()) {
         QEventLoop loop;
         connect(controller(), &SystemdController::serviceStarted, &loop, &QEventLoop::quit);
+        loop.exec();
+    }
+
+    if (!m_serverThread->isRunning()) {
+        QEventLoop loop;
+        connect(m_serverThread, &QThread::started, &loop, &QEventLoop::quit);
         loop.exec();
     }
 
