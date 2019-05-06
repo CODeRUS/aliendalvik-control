@@ -78,7 +78,7 @@ void AlienBinder8::showNavBar(int)
 
 void AlienBinder8::openDownloads()
 {
-    launchApp(QStringLiteral(""));
+    launchApp(QStringLiteral("com.android.documentsui"));
 }
 
 void AlienBinder8::openSettings()
