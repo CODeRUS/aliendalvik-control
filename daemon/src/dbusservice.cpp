@@ -181,6 +181,7 @@ void DBusService::sendInput(const QString &text)
 
 void DBusService::uriActivity(const QString &uri)
 {
+    qDebug() << Q_FUNC_INFO << uri;
     if (!isServiceActive()) {
         return;
     }
@@ -189,6 +190,7 @@ void DBusService::uriActivity(const QString &uri)
 
 void DBusService::uriActivitySelector(const QString &uri)
 {
+    qDebug() << Q_FUNC_INFO << uri;
     if (!isServiceActive()) {
         return;
     }
@@ -243,6 +245,7 @@ void DBusService::openAppSettings(const QString &package)
 
 void DBusService::launchApp(const QString &packageName)
 {
+    qDebug() << Q_FUNC_INFO << packageName;
     if (!isServiceActive()) {
         return;
     }
@@ -562,7 +565,7 @@ void DBusService::processHelperResult(const QByteArray &data)
 
 void DBusService::launcherActivity(const QString &package, const QString &className, const QString &data)
 {
-    qDebug() << Q_FUNC_INFO << package << className << data << isServiceActive();
+    qDebug() << Q_FUNC_INFO << package << className << data << isServiceActive() << m_serverThread->isRunning();
     QString classNameReplaced = className;
     if (className == QLatin1String("org.mozilla.gecko.LauncherActivity")) {
         classNameReplaced = QStringLiteral("org.mozilla.firefox.App");
@@ -570,6 +573,7 @@ void DBusService::launcherActivity(const QString &package, const QString &classN
     }
 
     if (!isServiceActive() || !m_serverThread->isRunning()) {
+        qDebug() << Q_FUNC_INFO << "Calling apkd-launcher";
         QProcess apkdLauncher;
         apkdLauncher.start(QStringLiteral("/usr/bin/apkd-launcher"), {
                                package,
