@@ -5,7 +5,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.0.4
+Version:    9.0.5
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
