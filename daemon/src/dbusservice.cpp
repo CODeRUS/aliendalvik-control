@@ -492,10 +492,10 @@ void DBusService::installApkSync()
 
 int DBusService::guessApi()
 {
-    if (QFileInfo::exists("/opt/alien/system.img")) {
+    if (QFileInfo::exists(QStringLiteral("/opt/alien/system.img"))) {
         return 27;
     }
-    if (QFileInfo::exists("/opt/alien/system/bin/wm")) {
+    if (QFileInfo::exists(QStringLiteral("/opt/alien/system/bin/wm"))) {
         return 19;
     }
     return 16;
@@ -560,6 +560,12 @@ void DBusService::processHelperResult(const QByteArray &data)
         msg.setArguments({url, selectorList});
         qDebug() << Q_FUNC_INFO << "Sending selector to salifish:" <<
                     m_sbus.send(msg);
+    } else if (command == QLatin1String("uri")) {
+        const QJsonObject defaultApplicationJson = object.value(QStringLiteral("default")).toObject();
+        const QString packageName = defaultApplicationJson.value(QStringLiteral("packageName")).toString();
+        const QString className = defaultApplicationJson.value(QStringLiteral("className")).toString();
+        const QString data = defaultApplicationJson.value(QStringLiteral("data")).toString();
+        componentActivity(packageName, className, data);
     }
 }
 

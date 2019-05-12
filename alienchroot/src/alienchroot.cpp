@@ -84,10 +84,13 @@ void AlienChroot::uriActivity(const QString &uri)
     qDebug() << Q_FUNC_INFO << uri;
     runCommand(QStringLiteral("am"), {
                    QStringLiteral("start"),
-                   QStringLiteral("-a"),
-                   QStringLiteral("android.intent.action.VIEW"),
+                   QStringLiteral("-n"),
+                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("command"),
+                   QStringLiteral("uri"),
                    QStringLiteral("-d"),
-                   uri
+                   uri,
                });
 }
 

@@ -5,7 +5,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.0.2
+Version:    9.0.3
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -36,7 +36,7 @@ D-Bus daemon for sending commands to aliendalvik
 
 %qtc_qmake5 \
     RPM_VERSION=%{version}-%{release} \
-    HELPER_VERSION=4
+    HELPER_VERSION=19
 
 %qtc_make %{?_smp_mflags}
 

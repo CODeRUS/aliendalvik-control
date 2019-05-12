@@ -48,8 +48,13 @@ void AlienBinder8::sendInput(const QString &)
 void AlienBinder8::uriActivity(const QString &uri)
 {
     Intent intent;
-    intent.action = QStringLiteral("android.intent.action.VIEW");
     intent.data = uri;
+    intent.extras = {
+        {QStringLiteral("command"), QStringLiteral("uri")},
+    };
+    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+
     ActivityManager::startActivity(intent);
 }
 
