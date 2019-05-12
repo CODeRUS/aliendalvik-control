@@ -21,32 +21,32 @@ Service::Service(QObject *parent)
 void Service::start()
 {
     const QString service = QStringLiteral("org.coderus.aliendalvikcontrol");
-    qDebug() << "Starting dbus service" << service << "...";
+    qDebug() << Q_FUNC_INFO << "Starting dbus service" << service << "...";
     bool success = QDBusConnection::sessionBus().registerService(service);
     if (!success) {
-        qWarning() << "Register service failed!";
+        qWarning() << Q_FUNC_INFO << "Register service failed!";
         QCoreApplication::exit(0);
         return;
     }
-    qDebug() << "Service registered successfully!";
+    qDebug() << Q_FUNC_INFO << "Service registered successfully!";
 
     Handler *urlHandler = new Handler(m_iface, this);
     const bool urlHandlerSuccess =
             QDBusConnection::sessionBus().registerObject(QStringLiteral("/urlHandler"), urlHandler, QDBusConnection::ExportAllSlots);
     if (!urlHandlerSuccess) {
-        qWarning() << "Register urlHandler failed!";
+        qWarning() << Q_FUNC_INFO << "Register urlHandler failed!";
         QCoreApplication::exit(0);
         return;
     }
-    qDebug() << "urlHandler registered successfully!";
+    qDebug() << Q_FUNC_INFO << "urlHandler registered successfully!";
 
     Adaptor *adaptor = new Adaptor(m_iface, this);
     const bool adaptorSuccess =
             QDBusConnection::sessionBus().registerVirtualObject(QStringLiteral("/"), adaptor);
     if (adaptorSuccess) {
-        qDebug() << "D-Bus handler registered successfully!";
+        qDebug() << Q_FUNC_INFO << "D-Bus handler registered successfully!";
     } else {
-        qWarning() << "Register hanler failed!";
+        qWarning() << Q_FUNC_INFO << "Register hanler failed!";
         QCoreApplication::exit(0);
         return;
     }

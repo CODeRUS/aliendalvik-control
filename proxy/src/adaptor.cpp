@@ -36,10 +36,25 @@ bool Adaptor::handleMessage(const QDBusMessage &message, const QDBusConnection &
     }
 
     const QString member = message.member();
-    const QString className = QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
     const QVariantList dbusArguments = message.arguments();
+    qDebug() << Q_FUNC_INFO << interface << member << dbusArguments;
 
-    qDebug() << interface << member << dbusArguments;
+    if (interface == QLatin1String("org.coderus.aliendalvikcontrol")) {
+        const QString serviceName = message.service();
+        const QString patchName = message.path();
+        const QString methodName = message.member();
+        QDBusMessage systemMessage = QDBusMessage::createMethodCall(
+                    interface,
+                    patchName,
+                    interface,
+                    methodName);
+        systemMessage.setArguments(dbusArguments);
+        qDebug() << Q_FUNC_INFO << "Forwarding to system bus:" << serviceName << patchName << interface << methodName <<
+        QDBusConnection::systemBus().send(systemMessage);
+        return true;
+    }
+
+    const QString className = QString::fromLatin1(QByteArray::fromPercentEncoding(member.toLatin1().replace("_", "%")));
 
     QString data;
     if (dbusArguments.size() == 1) {
