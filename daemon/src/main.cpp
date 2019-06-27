@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
                             !line.startsWith(QLatin1String("X-Maemo-Object")) &&
                             !line.startsWith(QLatin1String("X-Maemo-Service"))) {
                         data.append(line);
-                        data.append("\n");
+                        data.append(QChar(u'\n'));
                     }
                 }
                 desktop.seek(0);
@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/100000/dbus/user_bus_socket");
-    qputenv("LC_ALL", "en_US.utf8");
+    qputenv("DBUS_SESSION_BUS_ADDRESS", QByteArrayLiteral("unix:path=/run/user/100000/dbus/user_bus_socket"));
+    qputenv("LC_ALL", QByteArrayLiteral("en_US.utf8"));
 
     QCoreApplication app(argc, argv);
     DBusService context;

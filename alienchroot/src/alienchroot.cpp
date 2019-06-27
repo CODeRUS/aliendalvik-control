@@ -110,7 +110,7 @@ void AlienChroot::uriActivitySelector(const QString &uri)
 
 void AlienChroot::hideNavBar(int height, int api)
 {
-    if (api == 19) {
+    if (api >= 19) {
         runCommand(QStringLiteral("wm"), {
                        QStringLiteral("overscan"),
                        QStringLiteral("0,0,0,-%1").arg(QString::number(height))
@@ -128,7 +128,7 @@ void AlienChroot::hideNavBar(int height, int api)
 
 void AlienChroot::showNavBar(int api)
 {
-    if (api == 19) {
+    if (api >= 19) {
         runCommand(QStringLiteral("wm"), {
                        QStringLiteral("overscan"),
                        QStringLiteral("0,0,0,0")
@@ -212,7 +212,7 @@ void AlienChroot::componentActivity(const QString &package, const QString &class
                        });
     }
 
-    runCommand("am", options);
+    runCommand(QStringLiteral("am"), options);
 }
 
 void AlienChroot::forceStop(const QString &packageName)
@@ -263,6 +263,8 @@ void AlienChroot::shareText(const QString &text)
 
 void AlienChroot::doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className, const QString &launcherClass)
 {
+    Q_UNUSED(launcherClass)
+
     QStringList options = {
         QStringLiteral("start"),
         QStringLiteral("-a"),

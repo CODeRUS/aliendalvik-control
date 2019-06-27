@@ -336,7 +336,7 @@ void DBusService::doShare(
 QString DBusService::getFocusedApp()
 {
     QProcess *proc = new QProcess(this);
-    proc->start("/system/bin/dumpsys", QStringList() << "window" << "windows");
+    proc->start(QStringLiteral("/system/bin/dumpsys"), {QStringLiteral("window"), QStringLiteral("windows")});
     proc->waitForFinished(5000);
     if (proc->state() == QProcess::Running) {
         proc->close();
@@ -344,12 +344,12 @@ QString DBusService::getFocusedApp()
         return QString();
     }
     QString output = QString::fromUtf8(proc->readAll());
-    int pos1 = output.indexOf("mCurrentFocus");
-    int pos2 = output.indexOf("\n", pos1);
+    int pos1 = output.indexOf(QLatin1String("mCurrentFocus"));
+    int pos2 = output.indexOf(QChar(u'\n'), pos1);
     output = output.mid(pos1, pos2 - pos1);
-    if (output.indexOf(" ") > 0) {
-        output = output.split(" ")[1];
-        output = output.split("/")[0];
+    if (output.indexOf(QChar(u' ')) > 0) {
+        output = output.split(QChar(u' '))[1];
+        output = output.split(QChar(u'/'))[0];
         return output;
     }
 
@@ -399,7 +399,7 @@ void DBusService::setprop(const QString &key, const QString &value)
 
 void DBusService::quit()
 {
-    QTimer::singleShot(10, qApp, SLOT(quit()));
+    QTimer::singleShot(10, qApp, &QCoreApplication::quit);
 }
 
 void DBusService::startReadingLocalServer()
@@ -724,13 +724,13 @@ void DBusService::desktopChanged(const QString &path)
     }
     const int off1 = content.indexOf(QChar(u' '), off0 + 20) + 1;
     const int off2 = content.indexOf(QChar(u'\n'), off1) - 1;
-    const QStringList data = content.mid(off1, off2 - off1 + 1).split("/");
+    const QStringList data = content.mid(off1, off2 - off1 + 1).split(QChar(u'/'));
     const QString package = data.first();
     QString activity = QStringLiteral("empty");
     if (data.length() >= 2) {
         activity = data.at(1);
     }
-    activity = QString::fromLatin1(activity.toLatin1().toPercentEncoding(QByteArray(), QByteArray("-._~")).replace("%", "_"));
+    activity = QString::fromLatin1(activity.toLatin1().toPercentEncoding(QByteArray(), QByteArrayLiteral("-._~")).replace("%", "_"));
     qDebug() << path << package << activity;
     QTextStream out(&desktop);
     desktop.seek(desktop.size() - 1);

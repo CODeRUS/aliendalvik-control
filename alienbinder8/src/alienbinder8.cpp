@@ -131,6 +131,8 @@ void AlienBinder8::launchApp(const QString &packageName)
 
 void AlienBinder8::componentActivity(const QString &package, const QString &className, const QString &data)
 {
+    Q_UNUSED(className)
+
     launchApp(package);
 
     if (data.isEmpty()) {
@@ -204,6 +206,8 @@ void AlienBinder8::shareText(const QString &text)
 
 void AlienBinder8::doShare(const QString &mimetype, const QString &filename, const QString &data, const QString &packageName, const QString &className, const QString &launcherClass)
 {
+    Q_UNUSED(launcherClass)
+
     Intent intent;
     intent.action = QStringLiteral("android.intent.action.SEND");
     intent.type = mimetype;
@@ -227,34 +231,34 @@ QVariantList AlienBinder8::getImeList()
     return QVariantList();
 }
 
-void AlienBinder8::triggerImeMethod(const QString &ime, bool enable)
+void AlienBinder8::triggerImeMethod(const QString &, bool)
 {
     qWarning() << Q_FUNC_INFO << "Not implemented!";
 }
 
-void AlienBinder8::setImeMethod(const QString &ime)
+void AlienBinder8::setImeMethod(const QString &)
 {
     qWarning() << Q_FUNC_INFO << "Not implemented!";
 }
 
-QString AlienBinder8::getSettings(const QString &nspace, const QString &key)
-{
-    qWarning() << Q_FUNC_INFO << "Not implemented!";
-    return QString();
-}
-
-void AlienBinder8::putSettings(const QString &nspace, const QString &key, const QString &value)
-{
-    qWarning() << Q_FUNC_INFO << "Not implemented!";
-}
-
-QString AlienBinder8::getprop(const QString &key)
+QString AlienBinder8::getSettings(const QString &, const QString &)
 {
     qWarning() << Q_FUNC_INFO << "Not implemented!";
     return QString();
 }
 
-void AlienBinder8::setprop(const QString &key, const QString &value)
+void AlienBinder8::putSettings(const QString &, const QString &, const QString &)
+{
+    qWarning() << Q_FUNC_INFO << "Not implemented!";
+}
+
+QString AlienBinder8::getprop(const QString &)
+{
+    qWarning() << Q_FUNC_INFO << "Not implemented!";
+    return QString();
+}
+
+void AlienBinder8::setprop(const QString &, const QString &)
 {
     qWarning() << Q_FUNC_INFO << "Not implemented!";
 }

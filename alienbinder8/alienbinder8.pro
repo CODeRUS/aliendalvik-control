@@ -58,6 +58,13 @@ SOURCES += \
     src/windowmanager.cpp
 
 
+DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
+
+EXTRA_CFLAGS=-W -Wall -Wextra -Wpedantic -Werror
+QMAKE_CXXFLAGS += $$EXTRA_CFLAGS
+QMAKE_CFLAGS += $$EXTRA_CFLAGS
+
 TARGET = aliendalvikcontrolplugin-binder8
 target.path = /usr/lib
 

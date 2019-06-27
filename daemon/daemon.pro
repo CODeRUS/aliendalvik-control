@@ -21,6 +21,13 @@ HEADERS += \
     ../common/src/aliendalvikcontroller.h \
     ../common/src/systemdcontroller.h
 
+DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
+
+EXTRA_CFLAGS=-W -Wall -Wextra -Wpedantic -Werror
+QMAKE_CXXFLAGS += $$EXTRA_CFLAGS
+QMAKE_CFLAGS += $$EXTRA_CFLAGS
+
 dbus.files = dbus/org.coderus.aliendalvikcontrol.service
 dbus.path = /usr/share/dbus-1/system-services/
 
