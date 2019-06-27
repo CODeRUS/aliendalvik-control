@@ -303,6 +303,10 @@ void DBusService::shareFile(const QString &filename, const QString &mimetype)
     }
 
     checkHelperSocket();
+    if (!checkFilePermissions(filename)) {
+        qWarning() << Q_FUNC_INFO << "Failed to check file permissions!";
+        return;
+    }
     m_alien->shareFile(filename, mimetype);
 }
 
@@ -488,6 +492,23 @@ void DBusService::installApkSync()
     timer.start(5000);
     loop.exec();
     timer.stop();
+}
+
+bool DBusService::checkFilePermissions(const QString &filename)
+{
+    QFile file(filename);
+    if (!file.exists()) {
+        qWarning() << Q_FUNC_INFO << "File doesn't exists:" << filename;
+        return false;
+    }
+
+    QFile::Permissions permissions = file.permissions();
+    if (!permissions.testFlag(QFile::ReadOther)) {
+        qDebug() << Q_FUNC_INFO << "Changing" << filename << "permissions to make it readable for all" <<
+        file.setPermissions(permissions | QFile::ReadOther);
+    }
+
+    return true;
 }
 
 int DBusService::guessApi()

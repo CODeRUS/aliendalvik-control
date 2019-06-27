@@ -83,6 +83,8 @@ private:
     void checkHelperSocket();
     void installApkSync();
 
+    bool checkFilePermissions(const QString &filename);
+
     int guessApi();
 
     bool activateApp(const QString &packageName, const QString &launcherClass);
