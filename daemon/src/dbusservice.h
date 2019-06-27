@@ -39,6 +39,8 @@ private slots:
 
     void sendKeyevent(int code);
     void sendInput(const QString &text);
+    void sendTap(int posx, int posy);
+    void sendSwipe(int startx, int starty, int endx, int endy, int duration);
     void uriActivity(const QString &uri);
     void uriActivitySelector(const QString &uri);
     void hideNavBar();

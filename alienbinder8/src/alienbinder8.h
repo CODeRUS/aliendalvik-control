@@ -16,6 +16,8 @@ public slots:
 
     void sendKeyevent(int) override;
     void sendInput(const QString &) override;
+    void sendTap(int posx, int posy) override;
+    void sendSwipe(int startx, int starty, int endx, int endy, int duration) override;
     void uriActivity(const QString &uri) override;
     void uriActivitySelector(const QString &uri) override;
     void hideNavBar(int height, int) override;

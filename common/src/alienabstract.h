@@ -17,6 +17,8 @@ public slots:
 
     virtual void sendKeyevent(int code) = 0;
     virtual void sendInput(const QString &text) = 0;
+    virtual void sendTap(int posx, int posy) = 0;
+    virtual void sendSwipe(int startx, int starty, int endx, int endy, int duration) = 0;
     virtual void uriActivity(const QString &uri) = 0;
     virtual void uriActivitySelector(const QString &uri) = 0;
     virtual void hideNavBar(int height, int api = 0) = 0;

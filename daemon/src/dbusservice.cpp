@@ -179,6 +179,16 @@ void DBusService::sendInput(const QString &text)
     m_alien->sendInput(text);
 }
 
+void DBusService::sendTap(int posx, int posy)
+{
+    m_alien->sendTap(posx, posy);
+}
+
+void DBusService::sendSwipe(int startx, int starty, int endx, int endy, int duration)
+{
+    m_alien->sendSwipe(startx, starty, endx, endy, duration);
+}
+
 void DBusService::uriActivity(const QString &uri)
 {
     qDebug() << Q_FUNC_INFO << uri;

@@ -12,6 +12,19 @@
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="text" type="s" direction="in"/>
     </method>
+    <method name="sendTap">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="posx" type="i" direction="in"/>
+      <arg name="posy" type="i" direction="in"/>
+    </method>
+    <method name="sendSwipe">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <arg name="startx" type="i" direction="in"/>
+      <arg name="starty" type="i" direction="in"/>
+      <arg name="endx" type="i" direction="in"/>
+      <arg name="endy" type="i" direction="in"/>
+      <arg name="duration" type="i" direction="in"/>
+    </method>
     <method name="uriActivity">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="uri" type="s" direction="in"/>

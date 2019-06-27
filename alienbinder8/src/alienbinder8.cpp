@@ -45,6 +45,16 @@ void AlienBinder8::sendInput(const QString &)
     qWarning() << Q_FUNC_INFO << "Not implemented!";
 }
 
+void AlienBinder8::sendTap(int, int)
+{
+    qWarning() << Q_FUNC_INFO << "Not implemented!";
+}
+
+void AlienBinder8::sendSwipe(int, int, int, int, int)
+{
+    qWarning() << Q_FUNC_INFO << "Not implemented!";
+}
+
 void AlienBinder8::uriActivity(const QString &uri)
 {
     Intent intent;

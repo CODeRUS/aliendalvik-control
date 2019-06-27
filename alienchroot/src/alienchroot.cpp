@@ -79,6 +79,17 @@ void AlienChroot::sendInput(const QString &text)
     runCommand(QStringLiteral("input"), {QStringLiteral("text"), text});
 }
 
+void AlienChroot::sendTap(int posx, int posy)
+{
+    runCommand(QStringLiteral("input"), {QStringLiteral("tap"), QString::number(posx), QString::number(posy)});
+}
+
+void AlienChroot::sendSwipe(int startx, int starty, int endx, int endy, int duration)
+{
+    runCommand(QStringLiteral("input"), {QStringLiteral("swipe"), QString::number(startx), QString::number(starty),
+                                         QString::number(endx), QString::number(endy), QString::number(duration)});
+}
+
 void AlienChroot::uriActivity(const QString &uri)
 {
     qDebug() << Q_FUNC_INFO << uri;
