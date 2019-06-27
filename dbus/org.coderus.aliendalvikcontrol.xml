@@ -56,6 +56,9 @@
     <method name="isTopmostAndroid">
       <arg name="value" type="b" direction="out"/>
     </method>
+    <signal name="isTopmostAndroidChanged">
+        <arg name="value" type="b" direction="out"/>
+    </signal>
     <method name="openDownloads">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>

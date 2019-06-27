@@ -757,7 +757,11 @@ void DBusService::topmostIdChanged(int pId)
         return;
     }
     const QByteArray out = proc.readAll().trimmed();
-    _isTopmostAndroid = (out == QByteArrayLiteral("system_server"));
+    const bool value = (out == QByteArrayLiteral("system_server"));
+    if (_isTopmostAndroid == value) {
+        return;
+    }
+    _isTopmostAndroid = value;
     emit isTopmostAndroidChanged(_isTopmostAndroid);
 }
 
