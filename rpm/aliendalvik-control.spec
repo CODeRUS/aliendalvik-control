@@ -5,7 +5,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.0.6
+Version:    9.0.7
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -36,7 +36,7 @@ D-Bus daemon for sending commands to aliendalvik
 
 %qtc_qmake5 \
     RPM_VERSION=%{version}-%{release} \
-    HELPER_VERSION=19
+    HELPER_VERSION=23
 
 %qtc_make %{?_smp_mflags}
 
@@ -71,6 +71,7 @@ fi
 %{_bindir}/aliendalvik-control-proxy
 %{_bindir}/aliendalvik-control-share
 %{_bindir}/aliendalvik-control-selector
+%{_bindir}/aliendalvik-control-edge
 
 %{_libdir}/libaliendalvikcontrolplugin-chroot.so
 %{_libdir}/libaliendalvikcontrolplugin-binder8.so
@@ -98,6 +99,8 @@ fi
 %{_datadir}/aliendalvik-control-share/qml/aliendalvik-control-share-cover.qml
 
 %{_datadir}/aliendalvik-control-selector/qml/aliendalvik-control-selector.qml
+
+%{_datadir}/aliendalvik-control-edge/qml/aliendalvik-control-edge.qml
 
 %{_datadir}/aliendalvik-control/apk/app-release.apk
 

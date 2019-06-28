@@ -36,3 +36,5 @@ Makefile*
 *.png
 
 \.build*/
+
+*.avi
