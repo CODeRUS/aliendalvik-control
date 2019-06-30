@@ -1,6 +1,7 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import Nemo.DBus 2.0
+import Nemo.Configuration 1.0
 
 Page {
     id: page
@@ -27,6 +28,20 @@ Page {
                                console.log("Api version:", result)
                                apiVersion = result
                            })
+        }
+    }
+
+    ConfigurationGroup {
+        id: edgeConfiguration
+        path: "/org/coderus/aliendalvikcontrol/edge"
+        property bool active: false
+        property bool leftHanded: false
+        onLeftHandedChanged: {
+            if (!isActive) {
+                return
+            }
+
+            setTouchRegionDelayed.start()
         }
     }
 
@@ -233,6 +248,26 @@ Page {
                         }
                     }
                 }
+            }
+
+            SectionHeader {
+                text: "Onehand control"
+            }
+
+            TextSwitch {
+                id: edgeActiveSwitch
+                text: "Enable onehand control"
+                checked: edgeConfiguration.active
+                onClicked: edgeConfiguration.active = checked
+
+            }
+
+            TextSwitch {
+                id: edgeLeftHandedSwitch
+                text: "Left handed control"
+                visible: edgeActiveSwitch.checked
+                checked: edgeConfiguration.leftHanded
+                onClicked: edgeConfiguration.leftHanded = checked
             }
 
             Item {
