@@ -21,6 +21,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
     QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
     native->setWindowProperty(view->handle(), QStringLiteral("CATEGORY"), QStringLiteral("notification"));
+    native->setWindowProperty(view->handle(), QStringLiteral("MOUSE_REGION"), QRegion(0, 0, 0, 0));
 
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
