@@ -181,7 +181,7 @@ void DBusService::sendInput(const QString &text)
 
 void DBusService::sendTap(int posx, int posy)
 {
-    m_alien->sendTap(posx, posy);
+    m_alien->sendTap(posx, posy, 0);
 }
 
 void DBusService::sendSwipe(int startx, int starty, int endx, int endy, int duration)
@@ -597,6 +597,26 @@ void DBusService::processHelperResult(const QByteArray &data)
         const QString className = defaultApplicationJson.value(QStringLiteral("className")).toString();
         const QString data = defaultApplicationJson.value(QStringLiteral("data")).toString();
         componentActivity(packageName, className, data);
+    } else if (command == QLatin1String("uptime")) {
+        const quint64 uptime = object.value(QStringLiteral("value")).toVariant().toULongLong();
+        qDebug() << Q_FUNC_INFO << "Received android uptime:" << uptime;
+        const QString payloadString = object.value(QStringLiteral("payload")).toString();
+        if (payloadString.isEmpty()) {
+            return;
+        }
+        QJsonParseError error;
+        QJsonDocument payloadDoc = QJsonDocument::fromJson(payloadString.toLatin1(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qWarning() << Q_FUNC_INFO << "Error parsing payload:" << error.errorString();
+            return;
+        }
+        const QJsonObject payloadObject = payloadDoc.object();
+        const QString payloadCommand = payloadObject.value(QStringLiteral("command")).toString();
+        if (payloadCommand == QLatin1String("sendTap")) {
+            const int posx = payloadObject.value(QStringLiteral("x")).toInt();
+            const int posy = payloadObject.value(QStringLiteral("y")).toInt();
+            m_alien->sendTap(posx, posy, uptime);
+        }
     }
 }
 

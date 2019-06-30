@@ -2,12 +2,14 @@
 #include "alienbinder8.h"
 #include "intent.h"
 #include "windowmanager.h"
+#include "inputmanager.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonDocument>
 #include <QUrl>
 
 #include <unistd.h>
@@ -45,9 +47,17 @@ void AlienBinder8::sendInput(const QString &)
     qWarning() << Q_FUNC_INFO << "Not implemented!";
 }
 
-void AlienBinder8::sendTap(int, int)
+void AlienBinder8::sendTap(int posx, int posy, quint64 uptime)
 {
-    qWarning() << Q_FUNC_INFO << "Not implemented!";
+    qDebug() << Q_FUNC_INFO << posx << posy << uptime;
+
+    if (uptime == 0) {
+        requestUptimePayload({{QStringLiteral("command"), QStringLiteral("sendTap")},
+                              {QStringLiteral("x"), posx},
+                              {QStringLiteral("y"), posy}});
+    } else {
+        InputManager::sendTap(posx, posy, uptime);
+    }
 }
 
 void AlienBinder8::sendSwipe(int, int, int, int, int)
@@ -285,6 +295,18 @@ void AlienBinder8::requestDeviceInfo()
     ActivityManager::startActivity(intent);
 }
 
+void AlienBinder8::requestUptime()
+{
+    Intent intent;
+    intent.extras = {
+        {QStringLiteral("command"), QStringLiteral("uptime")},
+    };
+    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+
+    ActivityManager::startActivity(intent);
+}
+
 void AlienBinder8::installApk(const QString &fileName)
 {
     qDebug() << Q_FUNC_INFO << fileName;
@@ -292,6 +314,19 @@ void AlienBinder8::installApk(const QString &fileName)
     QProcess apkdInstall;
     apkdInstall.start(QStringLiteral("/usr/bin/apkd-install"), {fileName});
     apkdInstall.waitForFinished(5000);
+}
+
+void AlienBinder8::requestUptimePayload(const QVariantMap &payload)
+{
+    Intent intent;
+    intent.extras = {
+        {QStringLiteral("command"), QStringLiteral("uptime")},
+        {QStringLiteral("payload"), QString::fromLatin1(QJsonDocument::fromVariant(payload).toJson(QJsonDocument::Compact))}
+    };
+    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+
+    ActivityManager::startActivity(intent);
 }
 
 void AlienBinder8::mountSdcard(const QString mountPath)

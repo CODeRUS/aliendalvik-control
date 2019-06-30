@@ -7,8 +7,6 @@
 #include <qpa/qplatformnativeinterface.h>
 #include "nativewindowhelper.h"
 
-#include <QDebug>
-
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
     qmlRegisterSingletonType<NativeWindowHelper>("org.coderus.aliendalvikcontrol.edge", 1, 0, "NativeWindowHelper", &NativeWindowHelper::qmlSingleton);
@@ -23,7 +21,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
     QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
     native->setWindowProperty(view->handle(), QStringLiteral("CATEGORY"), QStringLiteral("notification"));
-    qDebug() << view->handle();
 
     view->setSource(SailfishApp::pathToMainQml());
     view->show();

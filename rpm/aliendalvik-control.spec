@@ -36,7 +36,7 @@ D-Bus daemon for sending commands to aliendalvik
 
 %qtc_qmake5 \
     RPM_VERSION=%{version}-%{release} \
-    HELPER_VERSION=23
+    HELPER_VERSION=53
 
 %qtc_make %{?_smp_mflags}
 

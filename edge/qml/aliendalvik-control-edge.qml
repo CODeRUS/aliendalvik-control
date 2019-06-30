@@ -1,6 +1,8 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
 import Nemo.DBus 2.0
+import Nemo.Configuration 1.0
+import QtSensors 5.0
 import org.coderus.aliendalvikcontrol.edge 1.0
 
 Item {
@@ -9,9 +11,38 @@ Item {
     width: Screen.width
     height: Screen.height
 
+    property bool initialized: false
     property bool isTopmostAndroid: false
-    onIsTopmostAndroidChanged: {
-        setTouchRegion(isTopmostAndroid)
+    property bool isTopUp: orientationSensor.reading.orientation === OrientationReading.TopUp
+    readonly property bool isActive: configuration.active && isTopmostAndroid && isTopUp
+    onIsActiveChanged: {
+        setTouchRegion(isActive)
+    }
+
+    OrientationSensor {
+        id: orientationSensor
+        active: true
+    }
+
+    ConfigurationGroup {
+        id: configuration
+        path: "/org/coderus/aliendalvikcontrol/edge"
+        property bool active: false
+        property bool leftHanded: false
+        onLeftHandedChanged: {
+            if (!isActive) {
+                return
+            }
+
+            setTouchRegionDelayed.start()
+        }
+    }
+
+    Timer {
+        id: setTouchRegionDelayed
+        interval: 1000
+        repeat: false
+        onTriggered: setTouchRegion(isActive)
     }
 
     DBusInterface {
@@ -29,13 +60,17 @@ Item {
         Component.onCompleted: {
             typedCall("isTopmostAndroid", [],
                       function(value) {
+                          initialized = true
                           isTopmostAndroid = value
-                          setTouchRegion(isTopmostAndroid)
                       })
         }
     }
 
     function setTouchRegion(enabled) {
+        if (!initialized) {
+            return
+        }
+
         NativeWindowHelper.setTouchRegion(mouseArea, enabled)
     }
 
@@ -46,27 +81,36 @@ Item {
     MouseArea {
         id: mouseArea
 
-        anchors.right: parent.right
+        x: configuration.leftHanded ? 0 : (parent.width - width)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Theme.itemSizeHuge
 
         height: Screen.height / 2
         width: Theme.horizontalPageMargin
 
-        enabled: isTopmostAndroid
+        enabled: isActive
 
         Rectangle {
             anchors.fill: parent
             color: Theme.rgba(Theme.highlightBackgroundColor, Theme.highlightBackgroundOpacity)
-            visible: isTopmostAndroid
+            visible: isActive
         }
 
         property point startPoint
 
+        function processMouse(mouse) {
+            if (configuration.leftHanded) {
+                pointItem.progressX = Math.min(1, (mouse.x - startPoint.x - width / 2) / (Screen.width / 2))
+            } else {
+                pointItem.progressX = Math.min(1, (startPoint.x - mouse.x - width / 2) / (Screen.width / 2))
+            }
+
+            pointItem.offsetY = Math.max(0, mouse.y - startPoint.y)
+        }
+
         onPressed: {
             startPoint = Qt.point(mouse.x, mouse.y)
-            pointItem.progressX = Math.min(1, (startPoint.x - mouse.x) / (Screen.width / 2 - Theme.horizontalPageMargin))
-            pointItem.offsetY = Math.max(0, mouse.y - startPoint.y)
+            processMouse(mouse)
             pointItem.visible = true
         }
 
@@ -75,8 +119,7 @@ Item {
         }
 
         onPositionChanged: {
-            pointItem.progressX = Math.min(1, (startPoint.x - mouse.x) / (Screen.width / 2 - Theme.horizontalPageMargin))
-            pointItem.offsetY = Math.max(0, mouse.y - startPoint.y)
+            processMouse(mouse)
         }
 
         onReleased: {
@@ -99,7 +142,10 @@ Item {
         width: Theme.itemSizeSmall
         height: Theme.itemSizeSmall
 
-        x: Screen.width - progressBetween(progressX, width, Screen.width)
+        readonly property int posX: progressBetween(progressX, width, Screen.width)
+
+        x: configuration.leftHanded ? posX - width
+                                    : Screen.width - posX
         y: offsetY
 
         radius: width / 2

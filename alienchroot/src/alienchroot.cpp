@@ -79,7 +79,7 @@ void AlienChroot::sendInput(const QString &text)
     runCommand(QStringLiteral("input"), {QStringLiteral("text"), text});
 }
 
-void AlienChroot::sendTap(int posx, int posy)
+void AlienChroot::sendTap(int posx, int posy, quint64)
 {
     runCommand(QStringLiteral("input"), {QStringLiteral("tap"), QString::number(posx), QString::number(posy)});
 }
@@ -391,6 +391,20 @@ void AlienChroot::requestDeviceInfo()
                    QStringLiteral("--es"),
                    QStringLiteral("command"),
                    QStringLiteral("deviceInfo")
+               });
+}
+
+void AlienChroot::requestUptime()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    runCommand(QStringLiteral("am"), {
+                   QStringLiteral("start"),
+                   QStringLiteral("-n"),
+                   QStringLiteral("org.coderus.aliendalvikcontrol/.MainActivity"),
+                   QStringLiteral("--es"),
+                   QStringLiteral("command"),
+                   QStringLiteral("uptime")
                });
 }
 

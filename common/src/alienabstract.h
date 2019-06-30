@@ -17,7 +17,7 @@ public slots:
 
     virtual void sendKeyevent(int code) = 0;
     virtual void sendInput(const QString &text) = 0;
-    virtual void sendTap(int posx, int posy) = 0;
+    virtual void sendTap(int posx, int posy, quint64 uptime) = 0;
     virtual void sendSwipe(int startx, int starty, int endx, int endy, int duration) = 0;
     virtual void uriActivity(const QString &uri) = 0;
     virtual void uriActivitySelector(const QString &uri) = 0;
@@ -49,6 +49,7 @@ public slots:
     virtual void setprop(const QString &key, const QString &value) = 0;
 
     virtual void requestDeviceInfo() = 0;
+    virtual void requestUptime() = 0;
 
     virtual void installApk(const QString &fileName) = 0;
 };

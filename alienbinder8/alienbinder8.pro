@@ -2,6 +2,7 @@ TEMPLATE = lib
 
 QT = core dbus network
 CONFIG += plugin
+CONFIG += c++11
 CONFIG += link_pkgconfig
 PKGCONFIG += libgbinder
 
@@ -29,7 +30,11 @@ HEADERS += \
     src/alienservice.h \
     src/binderlocalobject.h \
     src/binderlocalservice.h \
-    src/windowmanager.h
+    src/windowmanager.h \
+    src/inputmanager.h \
+    src/bitset.h \
+    src/input.h \
+    src/errors.h
 
 SOURCES += \
     ../common/src/alienabstract.cpp \
@@ -55,7 +60,9 @@ SOURCES += \
     src/alienservice.cpp \
     src/binderlocalobject.cpp \
     src/binderlocalservice.cpp \
-    src/windowmanager.cpp
+    src/windowmanager.cpp \
+    src/inputmanager.cpp \
+    src/input.cpp
 
 
 DEFINES += QT_DEPRECATED_WARNINGS

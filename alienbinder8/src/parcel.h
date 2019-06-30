@@ -56,17 +56,22 @@ public:
     void writeStrongBinder(GBinderRemoteObject *value);
     void writeString(const QString &value);
     void writeInt(int value);
+    void writeFloat(float value);
+    void writeDouble(double value);
+    void writeInt64(quint64 value);
     void writeBundle(const QVariantHash &value);
     void writeValue(const QVariant &value);
     void writeParcelable(const Parcelable &parcelable);
 
     int readInt() const;
+    quint64 readInt64() const;
     QString readString() const;
     QVariantHash readBundle() const;
     qlonglong readLong() const;
     bool readBoolean() const;
     double readDouble() const;
     QStringList readStringList() const;
+    QList<int> readIntList() const;
     QHash<int, QVariant> readSparseArray() const;
     QVariant readValue() const;
     float readFloat() const;

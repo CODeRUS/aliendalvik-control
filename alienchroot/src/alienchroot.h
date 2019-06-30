@@ -16,7 +16,7 @@ public slots:
 
     void sendKeyevent(int code) override;
     void sendInput(const QString &text) override;
-    void sendTap(int posx, int posy) override;
+    void sendTap(int posx, int posy, quint64 uptime) override;
     void sendSwipe(int startx, int starty, int endx, int endy, int duration) override;
     void uriActivity(const QString &uri) override;
     void uriActivitySelector(const QString &uri) override;
@@ -43,6 +43,7 @@ public slots:
     void setprop(const QString &key, const QString &value) override;
 
     void requestDeviceInfo() override;
+    void requestUptime() override;
 
     void installApk(const QString &fileName) override;
 

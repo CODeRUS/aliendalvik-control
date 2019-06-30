@@ -79,6 +79,33 @@ void Parcel::writeInt(int value)
     gbinder_writer_append_int32(m_writer, value);
 }
 
+void Parcel::writeFloat(float value)
+{
+    if (!m_writer) {
+        return;
+    }
+
+    gbinder_writer_append_float(m_writer, value);
+}
+
+void Parcel::writeDouble(double value)
+{
+    if (!m_writer) {
+        return;
+    }
+
+    gbinder_writer_append_double(m_writer, value);
+}
+
+void Parcel::writeInt64(quint64 value)
+{
+    if (!m_writer) {
+        return;
+    }
+
+    gbinder_writer_append_int64(m_writer, value);
+}
+
 void Parcel::writeBundle(const QVariantHash &value)
 {
     if (!m_writer) {
@@ -123,6 +150,10 @@ void Parcel::writeValue(const QVariant &value)
         writeInt(static_cast<int>(VAL_STRING));
         writeString(value.toString());
         break;
+    case QMetaType::Int:
+        writeInt(static_cast<int>(VAL_INTEGER));
+        writeInt(value.toInt());
+        break;
     case QVariant::UserType: {
         if (value.canConvert<Intent>()) {
             writeInt(static_cast<int>(VAL_PARCELABLE));
@@ -164,6 +195,19 @@ int Parcel::readInt() const
     }
 
     if (!gbinder_reader_read_int32(m_reader, &result)) {
+        qCCritical(logging) << Q_FUNC_INFO << "Error reading value!";
+    }
+    return result;
+}
+
+quint64 Parcel::readInt64() const
+{
+    quint64 result = 0;
+    if (!m_reader) {
+        return result;
+    }
+
+    if (!gbinder_reader_read_uint64(m_reader, &result)) {
         qCCritical(logging) << Q_FUNC_INFO << "Error reading value!";
     }
     return result;
@@ -248,6 +292,19 @@ QStringList Parcel::readStringList() const
     const int length = readInt();
     for (int i = 0; i < length; i++) {
         result.append(readString());
+    }
+    return result;
+}
+
+QList<int> Parcel::readIntList() const
+{
+    QList<int> result;
+    if (!m_reader) {
+        return result;
+    }
+    const int length = readInt();
+    for (int i = 0; i < length; i++) {
+        result.append(readInt());
     }
     return result;
 }
