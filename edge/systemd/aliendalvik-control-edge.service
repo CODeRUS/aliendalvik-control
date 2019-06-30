@@ -1,0 +1,13 @@
+[Unit]
+Description=Aliendalvik Control Edge
+After=lipstick.service
+Requires=lipstick.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/aliendalvik-control-edge
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=user-session.target

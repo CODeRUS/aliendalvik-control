@@ -50,11 +50,17 @@ if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
 killall -9 aliendalvik-control-proxy ||:
 fi
 systemctl restart aliendalvik-control ||:
+systemctl-user restart aliendalvik-control-edge ||:
+systemctl-user enable aliendalvik-control-edge ||:
 
 %preun
 systemctl stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
 killall -9 aliendalvik-control ||:
+fi
+systemctl-user stop aliendalvik-control-edge ||:
+if /sbin/pidof aliendalvik-control-edge > /dev/null; then
+killall -9 aliendalvik-control-edge ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
 umount /home/.android/data/media/0/sdcard_external ||:
@@ -79,6 +85,8 @@ fi
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
 /lib/systemd/system/aliendalvik-control.service
+
+%{_libdir}/systemd/user/aliendalvik-control-edge.service
 
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikshare.service

@@ -10,10 +10,10 @@ SOURCES += \
     src/main.cpp \
     src/nativewindowhelper.cpp
 
-#dbus.files = dbus/org.coderus.aliendalvikselector.service
-#dbus.path = /usr/share/dbus-1/services/
+systemd.files = systemd/aliendalvik-control-edge.service
+systemd.path = /usr/lib/systemd/user
 
-#INSTALLS += dbus
+INSTALLS += systemd
 
 INCLUDEPATH += /usr/include
 
