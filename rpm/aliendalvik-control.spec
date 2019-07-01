@@ -6,7 +6,7 @@
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
 Version:    9.0.9
-Release:    1
+Release:    2
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
@@ -55,13 +55,13 @@ systemctl-user enable aliendalvik-control-edge ||:
 
 if [ -f /var/lib/lxc/aliendalvik/config ]; then
 
-if grep /home/.media /etc/ld.so.preload > /dev/null; then
+if grep /home/.media /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
     echo "lxc extra_config media already configured"
 else
     echo "lxc.mount.entry = /home/.media data/media/0/sd none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
 fi
 
-if grep /home/.empty /etc/ld.so.preload > /dev/null; then
+if grep /home/.empty /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
     echo "lxc extra_config empty already configured"
 else
     echo "lxc.mount.entry = /home/.empty data/media/0/nemo/android_storage none bind,ro,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
