@@ -5,7 +5,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.0.7
+Version:    9.0.9
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -53,6 +53,24 @@ systemctl restart aliendalvik-control ||:
 systemctl-user restart aliendalvik-control-edge ||:
 systemctl-user enable aliendalvik-control-edge ||:
 
+if [ -f /var/lib/lxc/aliendalvik/config ]; then
+
+if grep /home/.media /etc/ld.so.preload > /dev/null; then
+    echo "lxc extra_config media already configured"
+else
+    echo "lxc.mount.entry = /home/.media data/media/0/sd none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
+fi
+
+if grep /home/.empty /etc/ld.so.preload > /dev/null; then
+    echo "lxc extra_config empty already configured"
+else
+    echo "lxc.mount.entry = /home/.empty data/media/0/nemo/android_storage none bind,ro,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
+fi
+
+systemctl enable aliendalvik-sd-mount.service
+
+fi
+
 %preun
 systemctl stop aliendalvik-control ||:
 if /sbin/pidof aliendalvik-control > /dev/null; then
@@ -71,6 +89,14 @@ else
 apkd-uninstall org.coderus.aliendalvikcontrol ||:
 fi
 
+if [ -f /var/lib/lxc/aliendalvik/config ]; then
+sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
+sed -i "/\\.empty/ d" /var/lib/lxc/aliendalvik/extra_config
+
+systemctl stop aliendalvik-sd-mount.service
+systemctl disable aliendalvik-sd-mount.service
+fi
+
 %files
 %defattr(-,root,root,-)
 %{_bindir}/aliendalvik-control
@@ -79,12 +105,17 @@ fi
 %{_bindir}/aliendalvik-control-selector
 %{_bindir}/aliendalvik-control-edge
 
+%attr(755,root,root) %{_bindir}/alien-mount-sdcard
+%attr(755,root,root) %{_bindir}/alien-umount-sdcard
+
 %{_libdir}/libaliendalvikcontrolplugin-chroot.so
 %{_libdir}/libaliendalvikcontrolplugin-binder8.so
 
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
 /lib/systemd/system/aliendalvik-control.service
+
+/lib/systemd/system/aliendalvik-sd-mount.service
 
 %{_libdir}/systemd/user/aliendalvik-control-edge.service
 

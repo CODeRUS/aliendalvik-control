@@ -179,15 +179,8 @@ void AlienBinder8::shareFile(const QString &filename, const QString &mimetype)
     if (filename.startsWith(QLatin1String("/home/nemo/"))) {
         containerPath.append(filename.mid(5));
     } else if (filename.startsWith(QLatin1String("/run/media/nemo"))) {
-        const QString sdcardPath = filename.section(QChar(u'/'), 0, 4);
-        const QString filePath = filename.section(QChar(u'/'), 5, -1);
-
-        if (!QFileInfo::exists(QStringLiteral("%1/%2").arg(s_sdcardMountPath, filePath))) {
-            mountSdcard(sdcardPath);
-        }
-
-        containerPath = filePath;
-        containerPath.prepend(QStringLiteral("/storage/emulated/0/nemo/android_storage/sdcard_external/"));
+        containerPath.append(QStringLiteral("/sd"));
+        containerPath.append(filename.mid(15));
     } else {
         containerPath = filename;
     }
@@ -329,56 +322,9 @@ void AlienBinder8::requestUptimePayload(const QVariantMap &payload)
     ActivityManager::startActivity(intent);
 }
 
-void AlienBinder8::mountSdcard(const QString mountPath)
-{
-    qDebug() << Q_FUNC_INFO << mountPath;
-
-    QDir sdcardMount(s_sdcardMountPath);
-    if (!sdcardMount.exists()) {
-        sdcardMount.mkpath(QStringLiteral("."));
-
-        const struct passwd *nemo_pwd = getpwnam("nemo");
-        if (!nemo_pwd) {
-            qWarning() << Q_FUNC_INFO << "Can't get nemo uid";
-            return;
-        }
-
-        const struct group *nemo_grp = getgrnam("nemo");
-        if (!nemo_grp) {
-            qWarning() << Q_FUNC_INFO << "Can't get nemo gid";
-            return;
-        }
-
-        const int status = chown(s_sdcardMountPath.toLatin1().constData(), nemo_pwd->pw_uid, nemo_grp->gr_gid);
-        qDebug() << Q_FUNC_INFO << "Sdcard mount chown to nemo status:" << status;
-    }
-
-    const int status = QProcess::execute(QStringLiteral("/bin/mount"), {QStringLiteral("--bind"), mountPath, sdcardMount.absolutePath()});
-
-    qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
-             << QString::number(status);
-}
-
-void AlienBinder8::umountSdcard()
-{
-    qDebug() << Q_FUNC_INFO;
-
-    QDir sdcardMount(s_sdcardMountPath);
-    if (!sdcardMount.exists()) {
-        return;
-    }
-
-    const int status = QProcess::execute(QStringLiteral("/bin/umount"), {sdcardMount.absolutePath()});
-
-    qDebug() << Q_FUNC_INFO << "Mounting sdcard:"
-             << QString::number(status);
-}
-
 void AlienBinder8::serviceStopped()
 {
     qDebug() << Q_FUNC_INFO;
-
-    umountSdcard();
 }
 
 void AlienBinder8::serviceStarted()

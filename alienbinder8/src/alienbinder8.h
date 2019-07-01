@@ -50,9 +50,6 @@ public slots:
 private:
     void requestUptimePayload(const QVariantMap &payload);
 
-    void mountSdcard(const QString mountPath);
-    void umountSdcard();
-
 private slots:
     void serviceStopped() override;
     void serviceStarted() override;

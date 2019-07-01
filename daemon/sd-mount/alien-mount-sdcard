@@ -1,0 +1,25 @@
+#!/bin/bash
+# map files from sdcard to alien
+
+MOUNTPATH=/home/.media
+MEDIAPATH=/run/media/nemo
+SYSTEMD_SERVICE=aliendalvik-sd-mounr.service
+
+echo "### alien-mount-sdcard"
+
+EMPTYPATH=/home/.empty
+if [ ! -d $MOUNTPATH ]; then
+        mkdir -p $EMPTYPATH
+fi
+
+if [ -d $MOUNTPATH ]; then
+        umount $MOUNTPATH || :
+else
+        mkdir -p $MOUNTPATH
+fi
+
+su -c "bindfs --chmod-ignore --chown-ignore --chgrp-ignore --map=100000/1023:@100000/@1023 $MEDIAPATH $MOUNTPATH"
+if [ "$?" != "0" ]; then
+    echo "Failed to mount media for alien"
+    exit 1
+fi
