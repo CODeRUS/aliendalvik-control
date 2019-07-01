@@ -17,7 +17,6 @@
 #include <grp.h>
 
 static const QString s_dataPath = QStringLiteral("/home/.android/data");
-static const QString s_sdcardMountPath = QStringLiteral("/home/.android/data/media/0/sdcard_external");
 
 static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
@@ -298,6 +297,30 @@ void AlienBinder8::requestUptime()
     intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
 
     ActivityManager::startActivity(intent);
+}
+
+QString AlienBinder8::checkShareFile(const QString &shareFilePath)
+{
+    qDebug() << Q_FUNC_INFO << shareFilePath;
+
+    if (shareFilePath.startsWith(QLatin1String("/data/user/0/org.coderus.aliendalvikcontrol"))) {
+        const QString fileName = shareFilePath.section(QChar(u'/'), -1);
+        QFile shareFile(QStringLiteral("%1/data/org.coderus.aliendalvikcontrol/files/%2").arg(s_dataPath, fileName));
+        const QString tempFilePath = QStringLiteral("/tmp/%1").arg(fileName);
+        if (QFile::exists(tempFilePath)) {
+            QFile::remove(tempFilePath);
+        }
+        if (shareFile.copy(tempFilePath)) {
+            shareFile.remove();
+            qWarning() << Q_FUNC_INFO << "Moved share file" << shareFile.fileName() << "to temp location" << tempFilePath;
+
+            return tempFilePath;
+        } else {
+            qWarning() << Q_FUNC_INFO << "Error moving to temp location" << shareFile.errorString();
+        }
+    }
+
+    return shareFilePath;
 }
 
 void AlienBinder8::installApk(const QString &fileName)

@@ -45,6 +45,8 @@ public slots:
     void requestDeviceInfo() override;
     void requestUptime() override;
 
+    QString checkShareFile(const QString &shareFilePath);
+
     void installApk(const QString &fileName) override;
 
 private:

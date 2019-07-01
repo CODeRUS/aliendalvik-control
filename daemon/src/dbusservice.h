@@ -92,6 +92,8 @@ private:
     bool activateApp(const QString &packageName, const QString &launcherClass);
     void waitForAndroidWindow();
 
+    QString checkShareFile(const QString &shareFilePath);
+
     DBusAdaptor *m_adaptor = nullptr;
 
     QString _watchDir;

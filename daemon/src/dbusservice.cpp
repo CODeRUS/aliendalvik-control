@@ -568,6 +568,8 @@ void DBusService::processHelperResult(const QByteArray &data)
         componentActivity(packageName, className);
     } else if (command == QLatin1String("share")) {
         const QJsonObject shareIntentJson = object.value(QStringLiteral("shareIntent")).toObject();
+        const QString shareFile = shareIntentJson.value(QStringLiteral("fileName")).toString();
+
         QDBusMessage msg = QDBusMessage::createMethodCall(
                     QStringLiteral("org.coderus.aliendalvikshare"),
                     QStringLiteral("/"),
@@ -576,7 +578,7 @@ void DBusService::processHelperResult(const QByteArray &data)
         msg.setArguments({
                              shareIntentJson.value(QStringLiteral("mimeType")).toString(),
                              shareIntentJson.value(QStringLiteral("data")).toString(),
-                             shareIntentJson.value(QStringLiteral("fileName")).toString(),
+                             checkShareFile(shareFile),
                          });
         qDebug() << Q_FUNC_INFO << "Sending share to salifish:" <<
                     m_sbus.send(msg);
@@ -754,6 +756,19 @@ void DBusService::waitForAndroidWindow()
         qDebug() << Q_FUNC_INFO << "Timer expired. Cancel waiting!";
         return;
     }
+}
+
+QString DBusService::checkShareFile(const QString &shareFilePath)
+{
+    const QString shareFileChecked = m_alien->checkShareFile(shareFilePath);
+    QFile shareFile(shareFileChecked);
+    QFile::Permissions permissions = shareFile.permissions();
+    if (!permissions.testFlag(QFile::ReadOther)) {
+        qDebug() << Q_FUNC_INFO << "Changing" << shareFileChecked << "permissions to make it readable for all" <<
+        shareFile.setPermissions(permissions | QFile::ReadOther);
+    }
+
+    return shareFileChecked;
 }
 
 void DBusService::desktopChanged(const QString &path)

@@ -86,15 +86,21 @@ ApplicationWindow
             busyInicator.visible = false
             expireTimer.stop()
 
+            appWindow.activate()
+            pageStack.clear()
+
+            var shareData = {
+                "mimeType": mimeType
+            }
+
+            if (fileName && fileName.length > 0) {
+                shareData["source"] = Qt.resolvedUrl(fileName)
+            } else {
+                shareData["data"] = data
+            }
+
             pageStack.animatorPush(
-                "Sailfish.TransferEngine.SharePage",
-                {
-                    "source": fileName,
-                    "mimeType": mimeType,
-                    "content": {
-                        "status": data
-                    }
-                })
+                "Sailfish.TransferEngine.SharePage", shareData)
         }
     }
 }

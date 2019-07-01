@@ -5,8 +5,8 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.0.9
-Release:    2
+Version:    9.1.0
+Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
@@ -36,7 +36,7 @@ D-Bus daemon for sending commands to aliendalvik
 
 %qtc_qmake5 \
     RPM_VERSION=%{version}-%{release} \
-    HELPER_VERSION=56
+    HELPER_VERSION=72
 
 %qtc_make %{?_smp_mflags}
 
@@ -49,9 +49,14 @@ systemctl daemon-reload
 if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
 killall -9 aliendalvik-control-proxy ||:
 fi
+
 systemctl restart aliendalvik-control ||:
 systemctl-user restart aliendalvik-control-edge ||:
 systemctl-user enable aliendalvik-control-edge ||:
+
+if /sbin/pidof aliendalvik-control-share > /dev/null; then
+killall -9 aliendalvik-control-share ||:
+fi
 
 if [ -f /var/lib/lxc/aliendalvik/config ]; then
 
@@ -79,6 +84,9 @@ fi
 systemctl-user stop aliendalvik-control-edge ||:
 if /sbin/pidof aliendalvik-control-edge > /dev/null; then
 killall -9 aliendalvik-control-edge ||:
+fi
+if /sbin/pidof aliendalvik-control-share > /dev/null; then
+killall -9 aliendalvik-control-share ||:
 fi
 /usr/bin/aliendalvik-control restore ||:
 umount /home/.android/data/media/0/sdcard_external ||:

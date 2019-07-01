@@ -51,6 +51,8 @@ public slots:
     virtual void requestDeviceInfo() = 0;
     virtual void requestUptime() = 0;
 
+    virtual QString checkShareFile(const QString &shareFilePath) = 0;
+
     virtual void installApk(const QString &fileName) = 0;
 };
 

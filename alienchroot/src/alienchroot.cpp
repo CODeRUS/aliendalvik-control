@@ -408,6 +408,30 @@ void AlienChroot::requestUptime()
                });
 }
 
+QString AlienChroot::checkShareFile(const QString &shareFilePath)
+{
+    qDebug() << Q_FUNC_INFO << shareFilePath;
+
+    if (shareFilePath.startsWith(QLatin1String("/data/data/org.coderus.aliendalvikcontrol"))) {
+        const QString fileName = shareFilePath.section(QChar(u'/'), -1);
+        QFile shareFile(QStringLiteral("%1/data/org.coderus.aliendalvikcontrol/files/%2").arg(s_dataPath, fileName));
+        const QString tempFilePath = QStringLiteral("/tmp/%1").arg(fileName);
+        if (QFile::exists(tempFilePath)) {
+            QFile::remove(tempFilePath);
+        }
+        if (shareFile.copy(tempFilePath)) {
+            shareFile.remove();
+            qWarning() << Q_FUNC_INFO << "Moved share file" << shareFile.fileName() << "to temp location" << tempFilePath;
+
+            return tempFilePath;
+        } else {
+            qWarning() << Q_FUNC_INFO << "Error moving to temp location" << shareFile.errorString();
+        }
+    }
+
+    return shareFilePath;
+}
+
 void AlienChroot::installApk(const QString &fileName)
 {
     if (QFileInfo::exists(s_helperPath)) {
