@@ -169,6 +169,11 @@ int DBusService::getApiVersion()
     return m_deviceProperties.value(QStringLiteral("api"), 19).toInt();
 }
 
+int DBusService::guessApiVersion()
+{
+    return guessApi();
+}
+
 void DBusService::sendKeyevent(int code)
 {
     m_alien->sendKeyevent(code);

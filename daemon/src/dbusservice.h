@@ -36,6 +36,7 @@ signals:
 
 private slots:
     int getApiVersion();
+    int guessApiVersion();
 
     void sendKeyevent(int code);
     void sendInput(const QString &text);

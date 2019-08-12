@@ -7,6 +7,32 @@ Page {
     id: page
 
     property int apiVersion: 0
+    onApiVersionChanged: {
+        if (apiVersion <= 19) {
+            dbus.call("getImeList", [])
+
+            dbus.typedCall("getSettings", [{"type": "s", "value": "system"},
+                                           {"type": "s", "value": "sound_effects_enabled"}],
+                           function(value) {
+                               touchSoundsSwitch.checked = value == "1"
+                               touchSoundsSwitch.enabled = true
+                           })
+
+            dbus.typedCall("getSettings", [{"type": "s", "value": "secure"},
+                                           {"type": "s", "value": "mock_location"}],
+                           function(value) {
+                               mockLocationSwitch.checked = value == "1"
+                               mockLocationSwitch.enabled = true
+                           })
+
+            dbus.typedCall("getSettings", [{"type": "s", "value": "global"},
+                                           {"type": "s", "value": "install_non_market_apps"}],
+                           function(value) {
+                               nonMarketSwitch.checked = value == "1"
+                               nonMarketSwitch.enabled = true
+                           })
+        }
+    }
 
     DBusInterface {
         id: dbus
@@ -23,7 +49,7 @@ Page {
         }
 
         Component.onCompleted: {
-            dbus.typedCall("getApiVersion", [],
+            dbus.typedCall("guessApiVersion", [],
                            function(result) {
                                console.log("Api version:", result)
                                apiVersion = result
@@ -42,12 +68,6 @@ Page {
             }
 
             setTouchRegionDelayed.start()
-        }
-    }
-
-    onStatusChanged: {
-        if (status == PageStatus.Activating && apiVersion <= 19) {
-            dbus.call("getImeList", [])
         }
     }
 
@@ -143,6 +163,7 @@ Page {
             }
 
             TextSwitch {
+                id: touchSoundsSwitch
                 width: parent.width
                 text: "Touch sounds"
                 checked: false
@@ -153,17 +174,10 @@ Page {
                                                    {"type": "s", "value": "sound_effects_enabled"},
                                                    {"type": "s", "value": checked ? "1" : "0"}])
                 }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "system"},
-                                                   {"type": "s", "value": "sound_effects_enabled"}],
-                                   function(value) {
-                                       checked = value == "1"
-                                       enabled = true
-                                   })
-                }
             }
 
             TextSwitch {
+                id: mockLocationSwitch
                 width: parent.width
                 text: "Allow mock location"
                 checked: false
@@ -174,17 +188,10 @@ Page {
                                                    {"type": "s", "value": "mock_location"},
                                                    {"type": "s", "value": checked ? "1" : "0"}])
                 }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "secure"},
-                                                   {"type": "s", "value": "mock_location"}],
-                                   function(value) {
-                                       checked = value == "1"
-                                       enabled = true
-                                   })
-                }
             }
 
             TextSwitch {
+                id: nonMarketSwitch
                 width: parent.width
                 text: "Allow install non-market apps"
                 checked: false
@@ -194,14 +201,6 @@ Page {
                     dbus.typedCall("putSettings", [{"type": "s", "value": "global"},
                                                    {"type": "s", "value": "install_non_market_apps"},
                                                    {"type": "s", "value": checked ? "1" : "0"}])
-                }
-                Component.onCompleted: {
-                    dbus.typedCall("getSettings", [{"type": "s", "value": "global"},
-                                                   {"type": "s", "value": "install_non_market_apps"}],
-                                   function(value) {
-                                       checked = value == "1"
-                                       enabled = true
-                                   })
                 }
             }
 

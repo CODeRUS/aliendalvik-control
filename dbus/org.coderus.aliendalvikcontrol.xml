@@ -1,9 +1,12 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="org.coderus.aliendalvikcontrol">
-    <method name="getApiVersion">
-      <arg name="api" type="i" direction="out"/>
-    </method>
+  <method name="getApiVersion">
+    <arg name="api" type="i" direction="out"/>
+  </method>
+  <method name="guessApiVersion">
+    <arg name="api" type="i" direction="out"/>
+  </method>
     <method name="sendKeyevent">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <arg name="code" type="i" direction="in"/>
