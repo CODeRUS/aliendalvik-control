@@ -122,6 +122,7 @@
     </method>
     <signal name="imeAvailable">
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantList"/>
       <arg name="imeList" type="a(v)" direction="out"/>
     </signal>
     <method name="setImeMethod">
@@ -161,7 +162,8 @@
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <signal name="sharingListReady">
-        <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantList"/>
       <arg name="list" type="a(v)" direction="out"/>
     </signal>
   </interface>
