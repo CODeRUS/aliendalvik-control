@@ -15,4 +15,4 @@ daemon.depends = \
     alienbinder8
 
 OTHER_FILES += \
-    rpm/aliendalvik-control.spec \
+    rpm/aliendalvik-control.spec

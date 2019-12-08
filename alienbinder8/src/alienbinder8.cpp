@@ -20,6 +20,9 @@ static const QString s_dataPath = QStringLiteral("/home/.android/data");
 
 static const QString s_sessionBusConnection = QStringLiteral("ad8connection");
 
+static const QString aliendalvikControlClassName = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
+static const QString aliendalvikControlClassPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+
 static AlienBinder8 *s_instance = nullptr;
 
 extern "C" AlienAbstract *instance(QObject *parent)
@@ -71,8 +74,8 @@ void AlienBinder8::uriActivity(const QString &uri)
     intent.extras = {
         {QStringLiteral("command"), QStringLiteral("uri")},
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
     ActivityManager::startActivity(intent);
 }
@@ -84,8 +87,8 @@ void AlienBinder8::uriActivitySelector(const QString &uri)
     intent.extras = {
         {QStringLiteral("command"), QStringLiteral("selector")},
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
     ActivityManager::startActivity(intent);
 }
@@ -193,8 +196,8 @@ void AlienBinder8::shareFile(const QString &filename, const QString &mimetype)
         {QStringLiteral("android.intent.extra.STREAM"), QUrl::fromLocalFile(containerPath)},
         {QStringLiteral("command"), QStringLiteral("sharing")},
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
 ActivityManager::startActivity(intent);
 }
@@ -210,8 +213,8 @@ void AlienBinder8::shareText(const QString &text)
         {QStringLiteral("android.intent.extra.TEXT"), text},
         {QStringLiteral("command"), QStringLiteral("sharing")},
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
     ActivityManager::startActivity(intent);
 }
@@ -281,8 +284,8 @@ void AlienBinder8::requestDeviceInfo()
     intent.extras = {
         {QStringLiteral("command"), QStringLiteral("deviceInfo")},
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
     ActivityManager::startActivity(intent);
 }
@@ -293,8 +296,8 @@ void AlienBinder8::requestUptime()
     intent.extras = {
         {QStringLiteral("command"), QStringLiteral("uptime")},
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
     ActivityManager::startActivity(intent);
 }
@@ -339,8 +342,8 @@ void AlienBinder8::requestUptimePayload(const QVariantMap &payload)
         {QStringLiteral("command"), QStringLiteral("uptime")},
         {QStringLiteral("payload"), QString::fromLatin1(QJsonDocument::fromVariant(payload).toJson(QJsonDocument::Compact))}
     };
-    intent.className = QStringLiteral("org.coderus.aliendalvikcontrol.MainActivity");
-    intent.classPackage = QStringLiteral("org.coderus.aliendalvikcontrol");
+    intent.className = aliendalvikControlClassName;
+    intent.classPackage = aliendalvikControlClassPackage;
 
     ActivityManager::startActivity(intent);
 }
