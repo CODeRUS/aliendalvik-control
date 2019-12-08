@@ -562,7 +562,9 @@ void DBusService::processHelperResult(const QByteArray &data)
         m_deviceProperties = devicePropertiesJson.toVariantHash();
         qDebug().noquote() << data;
         const int versionCode = m_deviceProperties.value(QStringLiteral("versionCode"), 0).toInt();
-        if (versionCode < QStringLiteral(HELPER_VERSION).toInt()) {
+        if (versionCode <= 0) {
+            requestDeviceInfo();
+        } else if (versionCode < QStringLiteral(HELPER_VERSION).toInt()) {
             installApkSync();
             requestDeviceInfo();
         }

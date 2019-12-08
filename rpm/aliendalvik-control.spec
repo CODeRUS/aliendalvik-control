@@ -5,12 +5,13 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.1.1
-Release:    1
+Version:    9.1.2
+Release:    2
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
 Source0:    %{name}-%{version}.tar.bz2
+Source1:    https://github.com/CODeRUS/AliendalvikControlJava/releases/download/103/app-release.apk
 Requires:   sailfish-version >= 3
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Conflicts:  android-shareui
@@ -36,7 +37,7 @@ D-Bus daemon for sending commands to aliendalvik
 
 %qtc_qmake5 \
     RPM_VERSION=%{version}-%{release} \
-    HELPER_VERSION=72
+    HELPER_VERSION=103
 
 %qtc_make %{?_smp_mflags}
 
