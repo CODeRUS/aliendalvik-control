@@ -5,7 +5,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.1.0
+Version:    9.1.1
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -61,16 +61,9 @@ fi
 if [ -f /var/lib/lxc/aliendalvik/config ]; then
 
 if grep /home/.media /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
-    echo "lxc extra_config media already configured"
-else
-    echo "lxc.mount.entry = /home/.media data/media/0/sd none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
+    sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
 fi
-
-if grep /home/.empty /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
-    echo "lxc extra_config empty already configured"
-else
-    echo "lxc.mount.entry = /home/.empty data/media/0/nemo/android_storage none bind,ro,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
-fi
+echo "lxc.mount.entry = /home/.media home/media none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
 
 systemctl enable aliendalvik-sd-mount.service
 

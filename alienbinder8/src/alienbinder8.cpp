@@ -177,11 +177,8 @@ void AlienBinder8::shareFile(const QString &filename, const QString &mimetype)
 {
     qDebug() << Q_FUNC_INFO << filename << mimetype;
 
-    QString containerPath = QStringLiteral("/storage/emulated/0");
-    if (filename.startsWith(QLatin1String("/home/nemo/"))) {
-        containerPath.append(filename.mid(5));
-    } else if (filename.startsWith(QLatin1String("/run/media/nemo"))) {
-        containerPath.append(QStringLiteral("/sd"));
+    QString containerPath = QStringLiteral("/home/media");
+    if (filename.startsWith(QLatin1String("/run/media/nemo"))) {
         containerPath.append(filename.mid(15));
     } else {
         containerPath = filename;
