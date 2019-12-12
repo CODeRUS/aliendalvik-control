@@ -5,8 +5,8 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.1.2
-Release:    2
+Version:    9.1.3
+Release:    1
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
@@ -48,55 +48,58 @@ rm -rf %{buildroot}
 %post
 systemctl daemon-reload
 if /sbin/pidof aliendalvik-control-proxy > /dev/null; then
-killall -9 aliendalvik-control-proxy ||:
+    killall -9 aliendalvik-control-proxy ||:
+fi
+
+if /sbin/pidof aliendalvik-control-share > /dev/null; then
+    killall -9 aliendalvik-control-share ||:
+fi
+
+if [ -f /var/lib/lxc/aliendalvik/config ]; then
+    if grep /home/.media /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
+        sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
+    fi
+    echo "lxc.mount.entry = /home/.media home/media none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
+
+    systemctl enable aliendalvik-sd-mount.service
 fi
 
 systemctl restart aliendalvik-control ||:
 systemctl-user restart aliendalvik-control-edge ||:
 systemctl-user enable aliendalvik-control-edge ||:
 
-if /sbin/pidof aliendalvik-control-share > /dev/null; then
-killall -9 aliendalvik-control-share ||:
-fi
-
-if [ -f /var/lib/lxc/aliendalvik/config ]; then
-
-if grep /home/.media /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
-    sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
-fi
-echo "lxc.mount.entry = /home/.media home/media none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
-
-systemctl enable aliendalvik-sd-mount.service
-
-fi
-
 %preun
-systemctl stop aliendalvik-control ||:
-if /sbin/pidof aliendalvik-control > /dev/null; then
-killall -9 aliendalvik-control ||:
-fi
-systemctl-user stop aliendalvik-control-edge ||:
-if /sbin/pidof aliendalvik-control-edge > /dev/null; then
-killall -9 aliendalvik-control-edge ||:
-fi
-if /sbin/pidof aliendalvik-control-share > /dev/null; then
-killall -9 aliendalvik-control-share ||:
-fi
-/usr/bin/aliendalvik-control restore ||:
-umount /home/.android/data/media/0/sdcard_external ||:
-/usr/bin/update-desktop-database ||:
-if [ -f /opt/alien/data/app/aliendalvik-control.apk ]; then
-apkd-uninstall /opt/alien/data/app/aliendalvik-control.apk ||:
-else
-apkd-uninstall org.coderus.aliendalvikcontrol ||:
-fi
+if [ "$1" = "0" ]; then
+    systemctl stop aliendalvik-control ||:
+    if /sbin/pidof aliendalvik-control > /dev/null; then
+        killall -9 aliendalvik-control ||:
+    fi
 
-if [ -f /var/lib/lxc/aliendalvik/config ]; then
-sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
-sed -i "/\\.empty/ d" /var/lib/lxc/aliendalvik/extra_config
+    systemctl-user stop aliendalvik-control-edge ||:
+    if /sbin/pidof aliendalvik-control-edge > /dev/null; then
+        killall -9 aliendalvik-control-edge ||:
+    fi
 
-systemctl stop aliendalvik-sd-mount.service
-systemctl disable aliendalvik-sd-mount.service
+    if /sbin/pidof aliendalvik-control-share > /dev/null; then
+        killall -9 aliendalvik-control-share ||:
+    fi
+
+    /usr/bin/aliendalvik-control restore ||:
+    /usr/bin/update-desktop-database ||:
+
+    if [ -f /opt/alien/data/app/aliendalvik-control.apk ]; then
+        apkd-uninstall /opt/alien/data/app/aliendalvik-control.apk ||:
+    else
+        apkd-uninstall org.coderus.aliendalvikcontrol ||:
+    fi
+
+    if [ -f /var/lib/lxc/aliendalvik/config ]; then
+        sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
+        sed -i "/\\.empty/ d" /var/lib/lxc/aliendalvik/extra_config
+
+        systemctl stop aliendalvik-sd-mount.service
+        systemctl disable aliendalvik-sd-mount.service
+    fi
 fi
 
 %files
