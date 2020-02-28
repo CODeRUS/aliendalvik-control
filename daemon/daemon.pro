@@ -46,8 +46,7 @@ desktop.path = /usr/share/applications
 INSTALLS += desktop
 
 systemd.files = \
-    systemd/aliendalvik-control.service \
-    systemd/aliendalvik-sd-mount.service
+    systemd/aliendalvik-control.service
 systemd.path = /lib/systemd/system/
 
 INSTALLS += systemd
@@ -73,13 +72,6 @@ env.files = environment/10-debug.conf
 env.path = /var/lib/environment/aliendalvik-control
 
 INSTALLS += env
-
-sd.files = \
-    sd-mount/alien-mount-sdcard \
-    sd-mount/alien-umount-sdcard
-sd.path = /usr/bin
-
-INSTALLS += sd
 
 ad_dbus_adaptor.files = ../dbus/org.coderus.aliendalvikcontrol.xml
 ad_dbus_adaptor.source_flags = -c DBusAdaptor

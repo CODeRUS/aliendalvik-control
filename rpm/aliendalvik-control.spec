@@ -5,7 +5,7 @@
 
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
-Version:    9.1.3
+Version:    9.2.0
 Release:    1
 Group:      Qt/Qt
 License:    WTFPL
@@ -59,9 +59,6 @@ if [ -f /var/lib/lxc/aliendalvik/config ]; then
     if grep /home/.media /var/lib/lxc/aliendalvik/extra_config > /dev/null; then
         sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
     fi
-    echo "lxc.mount.entry = /home/.media home/media none bind,rw,create=dir 0 0" >> /var/lib/lxc/aliendalvik/extra_config
-
-    systemctl enable aliendalvik-sd-mount.service
 fi
 
 systemctl restart aliendalvik-control ||:
@@ -97,8 +94,8 @@ if [ "$1" = "0" ]; then
         sed -i "/\\.media/ d" /var/lib/lxc/aliendalvik/extra_config
         sed -i "/\\.empty/ d" /var/lib/lxc/aliendalvik/extra_config
 
-        systemctl stop aliendalvik-sd-mount.service
-        systemctl disable aliendalvik-sd-mount.service
+        systemctl stop aliendalvik-sd-mount.service ||:
+        systemctl disable aliendalvik-sd-mount.service ||:
     fi
 fi
 
@@ -110,17 +107,12 @@ fi
 %{_bindir}/aliendalvik-control-selector
 %{_bindir}/aliendalvik-control-edge
 
-%attr(755,root,root) %{_bindir}/alien-mount-sdcard
-%attr(755,root,root) %{_bindir}/alien-umount-sdcard
-
 %{_libdir}/libaliendalvikcontrolplugin-chroot.so
 %{_libdir}/libaliendalvikcontrolplugin-binder8.so
 
 %{_datadir}/dbus-1/system-services/org.coderus.aliendalvikcontrol.service
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
 /lib/systemd/system/aliendalvik-control.service
-
-/lib/systemd/system/aliendalvik-sd-mount.service
 
 %{_libdir}/systemd/user/aliendalvik-control-edge.service
 

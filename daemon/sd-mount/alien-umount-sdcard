@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo "### alien-umount-sdcard"
-
-umount /home/.media || :
