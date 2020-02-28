@@ -70,6 +70,7 @@ ShareDialog {
         signalsEnabled: true
 
         function sharingListReady(sharingList) {
+            __silica_applicationwindow_instance.activate()
             ready = true
             sharingView.model = sharingList
         }
