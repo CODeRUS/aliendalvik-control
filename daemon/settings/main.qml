@@ -57,19 +57,19 @@ Page {
         }
     }
 
-    ConfigurationGroup {
-        id: edgeConfiguration
-        path: "/org/coderus/aliendalvikcontrol/edge"
-        property bool active: false
-        property bool leftHanded: false
-        onLeftHandedChanged: {
-            if (!isActive) {
-                return
-            }
+//    ConfigurationGroup {
+//        id: edgeConfiguration
+//        path: "/org/coderus/aliendalvikcontrol/edge"
+//        property bool active: false
+//        property bool leftHanded: false
+//        onLeftHandedChanged: {
+//            if (!isActive) {
+//                return
+//            }
 
-            setTouchRegionDelayed.start()
-        }
-    }
+//            setTouchRegionDelayed.start()
+//        }
+//    }
 
     SilicaFlickable {
         id: flick
@@ -249,25 +249,25 @@ Page {
                 }
             }
 
-            SectionHeader {
-                text: "Onehand control"
-            }
+//            SectionHeader {
+//                text: "Onehand control"
+//            }
 
-            TextSwitch {
-                id: edgeActiveSwitch
-                text: "Enable onehand control"
-                checked: edgeConfiguration.active
-                onClicked: edgeConfiguration.active = checked
+//            TextSwitch {
+//                id: edgeActiveSwitch
+//                text: "Enable onehand control"
+//                checked: edgeConfiguration.active
+//                onClicked: edgeConfiguration.active = checked
 
-            }
+//            }
 
-            TextSwitch {
-                id: edgeLeftHandedSwitch
-                text: "Left handed control"
-                visible: edgeActiveSwitch.checked
-                checked: edgeConfiguration.leftHanded
-                onClicked: edgeConfiguration.leftHanded = checked
-            }
+//            TextSwitch {
+//                id: edgeLeftHandedSwitch
+//                text: "Left handed control"
+//                visible: edgeActiveSwitch.checked
+//                checked: edgeConfiguration.leftHanded
+//                onClicked: edgeConfiguration.leftHanded = checked
+//            }
 
             Item {
                 width: 1; height: Theme.itemSizeSmall

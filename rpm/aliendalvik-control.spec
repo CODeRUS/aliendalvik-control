@@ -62,8 +62,8 @@ if [ -f /var/lib/lxc/aliendalvik/config ]; then
 fi
 
 systemctl restart aliendalvik-control ||:
-systemctl-user restart aliendalvik-control-edge ||:
-systemctl-user enable aliendalvik-control-edge ||:
+#systemctl-user restart aliendalvik-control-edge ||:
+#systemctl-user enable aliendalvik-control-edge ||:
 
 %preun
 if [ "$1" = "0" ]; then
@@ -72,9 +72,9 @@ if [ "$1" = "0" ]; then
         killall -9 aliendalvik-control ||:
     fi
 
-    systemctl-user stop aliendalvik-control-edge ||:
-    if /sbin/pidof aliendalvik-control-edge > /dev/null; then
-        killall -9 aliendalvik-control-edge ||:
+#    systemctl-user stop aliendalvik-control-edge ||:
+#    if /sbin/pidof aliendalvik-control-edge > /dev/null; then
+#        killall -9 aliendalvik-control-edge ||:
     fi
 
     if /sbin/pidof aliendalvik-control-share > /dev/null; then
@@ -105,7 +105,7 @@ fi
 %{_bindir}/aliendalvik-control-proxy
 %{_bindir}/aliendalvik-control-share
 %{_bindir}/aliendalvik-control-selector
-%{_bindir}/aliendalvik-control-edge
+#%{_bindir}/aliendalvik-control-edge
 
 %{_libdir}/libaliendalvikcontrolplugin-chroot.so
 %{_libdir}/libaliendalvikcontrolplugin-binder8.so
@@ -114,7 +114,7 @@ fi
 %{_sysconfdir}/dbus-1/system.d/org.coderus.aliendalvikcontrol.conf
 /lib/systemd/system/aliendalvik-control.service
 
-%{_libdir}/systemd/user/aliendalvik-control-edge.service
+#%{_libdir}/systemd/user/aliendalvik-control-edge.service
 
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikcontrol.service
 %{_datadir}/dbus-1/services/org.coderus.aliendalvikshare.service
@@ -136,7 +136,7 @@ fi
 
 %{_datadir}/aliendalvik-control-selector/qml/aliendalvik-control-selector.qml
 
-%{_datadir}/aliendalvik-control-edge/qml/aliendalvik-control-edge.qml
+#%{_datadir}/aliendalvik-control-edge/qml/aliendalvik-control-edge.qml
 
 %{_datadir}/aliendalvik-control/apk/app-release.apk
 

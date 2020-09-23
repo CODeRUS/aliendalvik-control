@@ -8,7 +8,8 @@ SUBDIRS = \
     share \
     shareui \
     icons \
-    edge
+#    edge \
+# SUBDIRS end
 
 daemon.depends = \
     alienchroot \
