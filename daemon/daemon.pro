@@ -77,5 +77,3 @@ ad_dbus_adaptor.files = ../dbus/org.coderus.aliendalvikcontrol.xml
 ad_dbus_adaptor.source_flags = -c DBusAdaptor
 ad_dbus_adaptor.header_flags = -c DBusAdaptor
 DBUS_ADAPTORS += ad_dbus_adaptor
-
-INCLUDEPATH += /usr/include

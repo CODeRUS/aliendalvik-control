@@ -13,5 +13,3 @@ dbus.files = dbus/org.coderus.aliendalvikselector.service
 dbus.path = /usr/share/dbus-1/services/
 
 INSTALLS += dbus
-
-INCLUDEPATH += /usr/include
