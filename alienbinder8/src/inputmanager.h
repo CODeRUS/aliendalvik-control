@@ -11,6 +11,12 @@ enum {
     TRANSACTION_injectInputEvent = 8,
 };
 
+enum {
+    ACTION_DOWN = 0,
+    ACTION_UP,
+    ACTION_MULTIPLE
+};
+
 class Intent;
 class InputManager : public BinderInterfaceAbstract
 {
@@ -24,6 +30,7 @@ public:
     // hacks
     static void sendTap(int posx, int posy, quint64 uptime);
     static void injectTapEvent(int action, float posx, float posy, float pressure, quint64 uptime);
+    static void keyevent(int keycode, quint64 uptime);
 };
 
 #endif // INPUTMANAGER_H

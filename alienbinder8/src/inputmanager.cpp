@@ -133,3 +133,38 @@ void InputManager::injectTapEvent(int action, float posx, float posy, float pres
     const int result = out->readInt();
     qCDebug(manager->logging) << Q_FUNC_INFO << "Result:" << result;
 }
+
+void InputManager::keyevent(int keycode, quint64 uptime)
+{
+    InputManager *manager = InputManager::GetInstance();
+    qCDebug(manager->logging) << Q_FUNC_INFO << keycode << uptime;
+
+    QSharedPointer<Parcel> parcel = manager->createTransaction();
+    parcel->writeInt(1); // have event
+    parcel->writeInt(2); // PARCEL_TOKEN_KEY_EVENT
+
+    parcel->writeInt(1); // mDeviceId
+    parcel->writeInt(0x1002); // mSource
+    parcel->writeInt(ACTION_DOWN); // mAction
+    parcel->writeInt(keycode); // mKeyCode
+    parcel->writeInt(0); // mRepeatCount
+    parcel->writeInt(0); // mMetaState
+    parcel->writeInt(0); // mScanCode
+    parcel->writeInt(0); // mFlags
+    parcel->writeInt64(uptime * 1000000); // mDownTime
+    parcel->writeInt64(uptime * 1000000); // mEventTime
+
+    int status = 0;
+    QSharedPointer<Parcel> out = manager->sendTransaction(TRANSACTION_injectInputEvent, parcel, &status);
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Status:" << status;
+    if (status < 0) {
+        return;
+    }
+    const int exception = out->readInt();
+    if (exception != 0) {
+        qCCritical(manager->logging) << Q_FUNC_INFO << "Exception:" << exception;
+        return;
+    }
+    const int result = out->readInt();
+    qCDebug(manager->logging) << Q_FUNC_INFO << "Result:" << result;
+}

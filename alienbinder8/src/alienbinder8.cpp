@@ -3,6 +3,7 @@
 #include "intent.h"
 #include "windowmanager.h"
 #include "inputmanager.h"
+#include "statusbarmanager.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -39,9 +40,16 @@ AlienBinder8::AlienBinder8(QObject *parent)
 {
 }
 
-void AlienBinder8::sendKeyevent(int)
+void AlienBinder8::sendKeyevent(int code, quint64 uptime)
 {
-    qWarning() << Q_FUNC_INFO << "Not implemented!";
+    qDebug() << Q_FUNC_INFO << code << uptime;
+
+    if (uptime == 0) {
+        requestUptimePayload({{QStringLiteral("command"), QStringLiteral("sendKeyevent")},
+                              {QStringLiteral("code"), code}});
+    } else {
+        InputManager::keyevent(code, uptime);
+    }
 }
 
 void AlienBinder8::sendInput(const QString &)
@@ -101,6 +109,16 @@ void AlienBinder8::hideNavBar(int height, int)
 void AlienBinder8::showNavBar(int)
 {
     WindowManager::setOverscan(0, 0, 0, 0, 0);
+}
+
+void AlienBinder8::hideStatusBar()
+{
+    StatusBarManager::collapse();
+}
+
+void AlienBinder8::showStatusBar()
+{
+    StatusBarManager::expand();
 }
 
 void AlienBinder8::openDownloads()

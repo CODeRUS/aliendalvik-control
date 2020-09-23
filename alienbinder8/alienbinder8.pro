@@ -21,6 +21,7 @@ HEADERS += \
     src/componentinfo.h \
     src/packageiteminfo.h \
     src/applicationinfo.h \
+    src/statusbarmanager.h \
     src/windowlayout.h \
     src/intentfilter.h \
     src/parcelable.h \
@@ -51,6 +52,7 @@ SOURCES += \
     src/componentinfo.cpp \
     src/packageiteminfo.cpp \
     src/applicationinfo.cpp \
+    src/statusbarmanager.cpp \
     src/windowlayout.cpp \
     src/intentfilter.cpp \
     src/parcelable.cpp \

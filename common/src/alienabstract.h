@@ -15,7 +15,7 @@ public:
 public slots:
     virtual QString dataPath() const = 0;
 
-    virtual void sendKeyevent(int code) = 0;
+    virtual void sendKeyevent(int code, quint64 uptime) = 0;
     virtual void sendInput(const QString &text) = 0;
     virtual void sendTap(int posx, int posy, quint64 uptime) = 0;
     virtual void sendSwipe(int startx, int starty, int endx, int endy, int duration) = 0;
@@ -23,6 +23,8 @@ public slots:
     virtual void uriActivitySelector(const QString &uri) = 0;
     virtual void hideNavBar(int height, int api = 0) = 0;
     virtual void showNavBar(int api = 0) = 0;
+    virtual void hideStatusBar() = 0;
+    virtual void showStatusBar() = 0;
     virtual void openDownloads() = 0;
     virtual void openSettings() = 0;
     virtual void openContacts() = 0;

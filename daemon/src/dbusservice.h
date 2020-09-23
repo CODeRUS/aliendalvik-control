@@ -46,6 +46,8 @@ private slots:
     void uriActivitySelector(const QString &uri);
     void hideNavBar();
     void showNavBar();
+    void hideStatusBar();
+    void showStatusBar();
     void openDownloads();
     void openSettings();
     void openContacts();

@@ -176,7 +176,7 @@ int DBusService::guessApiVersion()
 
 void DBusService::sendKeyevent(int code)
 {
-    m_alien->sendKeyevent(code);
+    m_alien->sendKeyevent(code, 0);
 }
 
 void DBusService::sendInput(const QString &text)
@@ -226,6 +226,16 @@ void DBusService::showNavBar()
     const int api = m_deviceProperties.value(QStringLiteral("api"), guessApi()).toInt();
 
     m_alien->showNavBar(api);
+}
+
+void DBusService::hideStatusBar()
+{
+    m_alien->hideStatusBar();
+}
+
+void DBusService::showStatusBar()
+{
+    m_alien->showStatusBar();
 }
 
 void DBusService::openDownloads()
@@ -625,6 +635,10 @@ void DBusService::processHelperResult(const QByteArray &data)
             const int posx = payloadObject.value(QStringLiteral("x")).toInt();
             const int posy = payloadObject.value(QStringLiteral("y")).toInt();
             m_alien->sendTap(posx, posy, uptime);
+        }
+        if (payloadCommand == QLatin1String("sendKeyevent")) {
+            const int code = payloadObject.value(QStringLiteral("code")).toInt();
+            m_alien->sendKeyevent(code, uptime);
         }
     }
 }

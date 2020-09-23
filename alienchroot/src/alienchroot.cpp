@@ -69,7 +69,7 @@ QString AlienChroot::dataPath() const
     return s_dataPath;
 }
 
-void AlienChroot::sendKeyevent(int code)
+void AlienChroot::sendKeyevent(int code, quint64)
 {
     runCommand(QStringLiteral("input"), {QStringLiteral("keyevent"), QString::number(code)});
 }
@@ -151,6 +151,16 @@ void AlienChroot::showNavBar(int api)
                        QStringLiteral("com.android.systemui/.SystemUIService")
                    });
     }
+}
+
+void AlienChroot::hideStatusBar()
+{
+    qWarning() << Q_FUNC_INFO << "Not implemented!";
+}
+
+void AlienChroot::showStatusBar()
+{
+    qWarning() << Q_FUNC_INFO << "Not implemented!";
 }
 
 void AlienChroot::openDownloads()

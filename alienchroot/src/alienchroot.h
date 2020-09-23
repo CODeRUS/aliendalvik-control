@@ -14,7 +14,7 @@ public:
 public slots:
     QString dataPath() const override;
 
-    void sendKeyevent(int code) override;
+    void sendKeyevent(int code, quint64) override;
     void sendInput(const QString &text) override;
     void sendTap(int posx, int posy, quint64 uptime) override;
     void sendSwipe(int startx, int starty, int endx, int endy, int duration) override;
@@ -22,6 +22,8 @@ public slots:
     void uriActivitySelector(const QString &uri) override;
     void hideNavBar(int height, int api) override;
     void showNavBar(int api) override;
+    void hideStatusBar() override;
+    void showStatusBar() override;
     void openDownloads() override;
     void openSettings() override;
     void openContacts() override;
