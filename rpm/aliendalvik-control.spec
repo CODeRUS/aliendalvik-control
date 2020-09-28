@@ -6,7 +6,7 @@
 Name:       aliendalvik-control
 Summary:    Aliendalvik control
 Version:    9.3.0
-Release:    1
+Release:    2
 Group:      Qt/Qt
 License:    WTFPL
 URL:        https://github.com/CODeRUS/aliendalvik-control
@@ -75,7 +75,7 @@ if [ "$1" = "0" ]; then
 #    systemctl-user stop aliendalvik-control-edge ||:
 #    if /sbin/pidof aliendalvik-control-edge > /dev/null; then
 #        killall -9 aliendalvik-control-edge ||:
-    fi
+#    fi
 
     if /sbin/pidof aliendalvik-control-share > /dev/null; then
         killall -9 aliendalvik-control-share ||:
